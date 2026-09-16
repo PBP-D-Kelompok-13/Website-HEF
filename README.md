@@ -3,14 +3,22 @@
 ## 📌 Application Overview
 HEF (Healthy Eco Foody) adalah platform website yang membantu pengguna menerapkan gaya hidup Sustainable Food & Diet dengan menganalisis kandungan nutrisi dari produk makanan serta resep harian. Dengan mengintegrasikan Open Food Facts API dan Spoonacular API, platform ini menyediakan fitur pemindaian barcode untuk mengecek Eco/Nutri-Score, perbandingan produk secara berdampingan, analisis keberlanjutan resep, serta manajemen inventaris bahan makanan rumah tangga lengkap dengan pengingat tanggal kadaluarsa untuk mencegah food waste. 
 
-## Peran Pengguna
-### Jenis User:
+## 📋 Daftar Anggota Kelompok dan Pembagian Modul
+| Nama | NPM | Modul |
+| :---: | :---: | :---: |
+| Angelica Christilia Talumewo | 2506536313 | Perbandingan 2-3 Produk melalui Eco/Nutrition Score
+| Celine Nafisa Setiawan | 2506590201 | Inventaris Bahan Makanan di Rumah beserta Pengingat Tanggal Kadaluarsa
+| Ferdinandus Pakasi | 2506602643 | Recipe Sustainability Analyzer
+| Muhammad Raihananta Adzaky Yuwono | 2506547853 | Sistem Login dan Otentikasi Akun Pengguna
+| Yazid Khairul Firmansyah | 2506537064 | Pencarian Produk dan Eco/Nutrition Score melalui Scan Barcode
+
+## 👤 Peran Pengguna
+### 🧑‍🤝‍🧑 Jenis User:
 1. Pembelanja peduli lingkungan
 2. Pelaku diet sehat dan berkelanjutan
 3. Edukator dan content creator lingkungan
 
-
-### User Persona & Story: 
+### 📖 User Persona & Story: 
 Persona 1: Sarah — Ibu Rumah Tangga Peduli Lingkungan
 - Sebagai Sarah, saya ingin scan/cari barcode produk di supermarket, supaya saya bisa langsung tahu eco-score-nya sebelum beli.
 - Sebagai Sarah, saya ingin membandingkan 2-3 produk sejenis, supaya saya bisa pilih yang paling ramah lingkungan untuk keluarga saya.
@@ -29,21 +37,7 @@ Persona 3: Rina — Content Creator Sustainability
 
 
 ---
-## Karya Kelompok 13 PBP-D:
-- Angelica Christilia Talumewo (2506536313)
-- Celine Nafisa Setiawan (2506590201)
-- Ferdinandus Pakasi (2506602643)
-- Muhammad Raihananta Adzaky Yuwono (2506547853)
-- Yazid Khairul Firmansyah (2506537064)
----
 
-## Public API yang akan digunakan
+## 📈 Public API yang akan digunakan
 - Open Food Facts API : https://world.openfoodfacts.org/data 
 - Spoonacular API : https://spoonacular.com/food-api 
-
-## Daftar Modul dan Pembagian
-- Modul (A) = Pencarian Produk dan Eco/Nutrition Score melalui Scan Barcode - Yazid
-- Modul (B) = Perbandingan 2-3 Produk melalui Eco/Nutrition Score - Angel
-- Modul (C) = Inventaris Bahan Makanan di Rumah beserta Pengingat Tanggal Kadaluarsa - Celine
-- Modul (D) = Recipe Sustainability Analyzer - Ferdinand
-- Modul (E) = Sistem Login dan Otentikasi Akun Pengguna - Nanta
