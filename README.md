@@ -3,6 +3,9 @@
 ## 📌 Application Overview
 HEF (Healthy Eco Foody) adalah platform website yang membantu pengguna menerapkan gaya hidup Sustainable Food & Diet dengan menganalisis kandungan nutrisi dari produk makanan serta resep harian. Dengan mengintegrasikan Open Food Facts API dan Spoonacular API, platform ini menyediakan fitur pemindaian barcode untuk mengecek Eco/Nutri-Score, perbandingan produk secara berdampingan, analisis keberlanjutan resep, serta manajemen inventaris bahan makanan rumah tangga lengkap dengan pengingat tanggal kadaluarsa untuk mencegah food waste. 
 
+## 📌 Important Links
+### - [Link Figma](https://www.figma.com/design/5cLDNeCMSgbMMEc6GVnsEz/HEF-Website?node-id=403-244&t=96ZWLJc0fwdndt1T-1)
+
 ## 📋 Daftar Anggota Kelompok dan Pembagian Modul
 | Nama | NPM | Modul |
 | :---: | :---: | :---: |
