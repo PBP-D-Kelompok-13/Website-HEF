@@ -1,0 +1,75 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#f7f7f0">
+    <meta name="description" content="Healthy Eco Foody helps you make food choices that are healthier for you and kinder to the planet.">
+    <title>HEF — Healthy Eco Foody</title>
+    <link rel="stylesheet" href="{% static 'css/index.css' %}">
+</head>
+<body>
+    <main class="landing-page">
+        <header class="site-header">
+            <nav class="desktop-navigation" aria-label="Main navigation">
+                <a class="wordmark" href="{% url 'main:show_main' %}" aria-label="HEF home">hef</a>
+                <a href="#welcome">Discover</a>
+                <a href="#welcome">Compare</a>
+                <a href="#welcome">Recipes</a>
+                <a href="#welcome">Pantry</a>
+            </nav>
+
+            <a class="button button-primary header-action" href="#welcome">Get started</a>
+
+            <details class="mobile-navigation">
+                <summary aria-label="Open navigation menu"><span aria-hidden="true">☰</span></summary>
+                <nav class="mobile-navigation-menu" aria-label="Mobile navigation">
+                    <a href="#welcome">Discover</a>
+                    <a href="#welcome">Compare</a>
+                    <a href="#welcome">Recipes</a>
+                    <a href="#welcome">Pantry</a>
+                </nav>
+            </details>
+        </header>
+
+        <section class="welcome-hero" id="welcome" aria-labelledby="welcome-title">
+            <div class="welcome-copy">
+                <p class="eyebrow">Welcome to HEF</p>
+                <h1 id="welcome-title">
+                    <span>Welcome to</span>
+                    <span>Healthy Eco Foody</span>
+                </h1>
+                <p class="welcome-description">
+                    A friendly place to make food choices that are healthier for you and kinder to the planet.
+                </p>
+                <div class="welcome-actions">
+                    <a class="button button-primary" href="#welcome">Explore HEF</a>
+                    <a class="button button-secondary" href="#site-footer">Learn more</a>
+                </div>
+            </div>
+
+            <aside class="hero-card" aria-label="Healthy Eco Foody">
+                <span class="watermelon" role="img" aria-label="Watermelon">🍉</span>
+                <h2>Good food, good choices.</h2>
+                <p>Healthy Eco Foody</p>
+            </aside>
+        </section>
+
+        <footer class="site-footer" id="site-footer">
+            <div class="footer-brand">
+                <a class="footer-wordmark" href="{% url 'main:show_main' %}">hef</a>
+                <p>Healthy Eco Foody</p>
+            </div>
+
+            <nav class="footer-navigation" aria-label="Footer navigation">
+                <a href="#welcome">Discover</a>
+                <a href="#welcome">About HEF</a>
+                <a href="#site-footer">Contact</a>
+            </nav>
+
+            <p class="copyright">© 2026 HEF · Eat well, live lightly.</p>
+        </footer>
+    </main>
+</body>
+</html>
