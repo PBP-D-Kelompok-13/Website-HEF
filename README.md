@@ -39,9 +39,58 @@ Persona 3: Rina — Content Creator Sustainability
 - Sebagai Rina, saya ingin akun login, supaya data favorit dan histori saya tersimpan permanen dan bisa diakses kapan saja.
 
 
-
----
-
-## 📈 Public API yang akan digunakan
+## 📈 Public API yang digunakan
 - Open Food Facts API : https://world.openfoodfacts.org/data 
 - Spoonacular API : https://spoonacular.com/food-api 
+
+## ⚙️ Setup  Instructions
+You can follow these steps to run the application locally on your machine. 
+
+### 1. Clone the repository: 
+```bash
+   git clone https://github.com/PBP-D-Kelompok-13/Website-HEF.git
+   cd your-repo-name
+```
+
+### 2. Setup & Activate Virtual Environment  
+**Windows:** 
+```bash
+python -m venv env
+env\Scripts\activate
+```
+
+**Unix (macOS, Linux):**
+```bash
+python3 -m venv env
+source env/bin/Activate
+```
+
+### 3. Install Dependencies
+```bash
+pip install -r requirements.txt
+```
+
+### 4. Configure Environment Variables
+Create a `.env` file in the root directory and configure local settings:
+```
+PRODUCTION=False
+```
+
+### 5. Run Migrations & Start Server
+```bash
+python manage.py migrate
+python manage.py runserver
+```
+Open http://localhost:8000 in your browser.
+
+## 📦 Tech Stack & Core Dependencies
+- Django: Core web framework handling routing, logic, and page generation.
+- Gunicorn: WSGI HTTP server for production environment handling.
+- WhiteNoise: Static file (CSS/JS) management for production.
+- psycopg2-binary: Database driver for PostgreSQL integration.
+- python-dotenv: Reads secrets securely from .env.
+- requests & urllib3: Facilitates external API communication.
+
+## 📝 Tambahan File untuk Grading
+- [File terkait AI Documentation masing-masing anggota](docs\ai-documentation.md) 
+- [File terkait Git Extra Contributions masing-masing anggota](docs\extra-contributions.md) 
