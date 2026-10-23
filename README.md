@@ -90,3 +90,7 @@ Open http://localhost:8000 in your browser.
 - psycopg2-binary: Database driver for PostgreSQL integration.
 - python-dotenv: Reads secrets securely from .env.
 - requests & urllib3: Facilitates external API communication.
+
+## 📝 Tambahan File untuk Grading
+- [File terkait AI Documentation masing-masing anggota](docs\ai-documentation.md) 
+- [File terkait Git Extra Contributions masing-masing anggota](docs\extra-contributions.md) 
