@@ -1,5 +1,7 @@
 django~=5.2
 gunicorn
-psycopg2-binary
-python-dotenv
 whitenoise
+psycopg2-binary
+requests
+urllib3
+python-dotenv
