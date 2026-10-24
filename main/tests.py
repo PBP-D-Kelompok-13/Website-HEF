@@ -23,4 +23,5 @@ class LandingPageTests(TestCase):
         self.assertTemplateUsed(self.response, "pages/landing_page.html")
 
     def test_contains_main_heading(self):
+        self.assertContains(self.response, "<h1")
         self.assertContains(self.response, "Healthy Eco Foody")

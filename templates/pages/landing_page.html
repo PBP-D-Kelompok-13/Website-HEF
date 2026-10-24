@@ -1,0 +1,88 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block head %}
+    <link rel="stylesheet" href="{% static 'css/landing_page.css' %}">
+{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<section class="container my-3 my-md-4">
+    <div class="hef-hero-card d-flex flex-column flex-lg-row align-items-center justify-content-between p-4 p-md-5 gap-4 shadow-sm">
+
+        <!-- Left Flex Container: Hero header, text, and CTA -->
+        <div class="hef-hero-content d-flex flex-column align-items-start w-100">
+            <div class="d-flex align-items-center gap-2 gap-md-3 mb-3">
+                <img src="{% static 'img/HEF Logo Icon.png' %}" alt="HEF Icon" class="hef-hero-brand-icon">
+                <h1 class="hef-hero-title mb-0">Healthy Eco Foody</h1>
+            </div>
+
+            <p class="hef-hero-desc mb-4">
+                Your one stop shop to make food choices that are healthier, both for you and the planet!
+            </p>
+
+            <div class="hef-hero-cta-group d-flex flex-column flex-sm-row align-items-center gap-2 gap-md-3 w-100">
+                <a href="#tools" class="btn-hef-primary">Explore HEF</a>
+                <a href="#" class="btn-hef-primary btn-fill-white">Get Started</a>
+            </div>
+        </div>
+
+        <!-- Right Flex Container: Food Bowl Image -->
+        <div class="hef-hero-media text-center w-100">
+            <img src="{% static 'img/Food Graphic.png' %}" alt="Healthy Eco Food Bowl" class="img-fluid hef-plate-img">
+        </div>
+
+    </div>
+</section>
+
+<!-- Explore Our Tools Section -->
+<section id="tools" class="container my-4 my-md-5">
+    <!-- Section Header -->
+    <h2 class="text-center hef-section-heading mb-4">Explore Our Tools</h2>
+
+    <!-- Responsive Tool Cards Grid -->
+    <div class="hef-tools-grid d-flex flex-wrap gap-3 gap-md-4">
+        
+        <!-- Tool Card 1: Search & Compare -->
+        <div class="hef-tool-card hef-bg-yellow p-3 p-md-4 shadow-sm">
+            <div class="hef-tool-icon-wrapper flex-shrink-0 d-flex align-items-center justify-content-center">
+                <img src="{% static 'img/tools-search.png' %}" alt="Search & Compare" class="img-fluid">
+            </div>
+            <h2 class="hef-tool-title mb-2">Search & Compare Your Product’s Eco Scores</h2>
+            <p class="hef-tool-desc mb-3">Find products and compare their eco scores to make better choices for a healthier, sustainable lifestyle.</p>
+            <a href="#" class="btn-hef-primary">Try Out</a>
+        </div>
+
+        <!-- Tool Card 2: Barcode Scanner -->
+        <div class="hef-tool-card hef-bg-blue p-3 p-md-4 shadow-sm">
+            <div class="hef-tool-icon-wrapper flex-shrink-0 d-flex align-items-center justify-content-center">
+                <img src="{% static 'img/tools-barcode.png' %}" alt="Scan Barcode" class="img-fluid">
+            </div>
+            <h2 class="hef-tool-title mb-2">Scan Your Product’s Barcode</h2>
+            <p class="hef-tool-desc mb-3">Scan the barcode on your product to find its nutrition score.</p>
+            <a href="#" class="btn-hef-primary">Try Out</a>
+        </div>
+
+        <!-- Tool Card 3: Recipe Analysis -->
+        <div class="hef-tool-card hef-bg-green p-3 p-md-4 shadow-sm">
+            <div class="hef-tool-icon-wrapper flex-shrink-0 d-flex align-items-center justify-content-center">
+                <img src="{% static 'img/tools-analyze.png' %}" alt="Analyze Recipe" class="img-fluid">
+            </div>
+            <h2 class="hef-tool-title mb-2">Analyze Your Recipe</h2>
+            <p class="hef-tool-desc mb-3">Submit your recipe and analyze it's overall nutritional value and sustainability.</p>
+            <a href="#" class="btn-hef-primary">Try Out</a>
+        </div>
+
+        <!-- Tool Card 4: Home Pantry -->
+        <div class="hef-tool-card hef-bg-pink p-3 p-md-4 shadow-sm">
+            <div class="hef-tool-icon-wrapper flex-shrink-0 d-flex align-items-center justify-content-center">
+                <img src="{% static 'img/tools-pantry.png' %}" alt="Home Pantry" class="img-fluid">
+            </div>
+            <h2 class="hef-tool-title mb-2">Inventorize Your Home Pantry</h2>
+            <p class="hef-tool-desc mb-3">Keep track of food products within your home pantry and their expiration dates to make sure nothing ever goes to waste.</p>
+            <a href="#" class="btn-hef-primary">Try Out</a>
+        </div>
+
+    </div>
+</section>
+{% endblock %}

@@ -1,0 +1,192 @@
+/* ====================
+   SMOOTH SCROLL
+   ==================== */
+html {
+  scroll-behavior: smooth;
+}
+ 
+#tools {
+  scroll-margin-top: 24px;
+}
+ 
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+}
+
+/* ====================
+   HERO BANNER SECTION 
+   ==================== */
+.hef-hero-card {
+  background-color: var(--hef-brand-mint);
+  border-radius: 28px;
+}
+
+.hef-hero-content {
+  max-width: 480px;
+}
+
+.hef-hero-brand-icon {
+  width: 72px;
+  height: 77px;
+  object-fit: contain;
+}
+
+.hef-hero-title {
+  font-size: 42px;
+  line-height: 46px;
+  color: var(--hef-brand-forest);
+}
+
+.hef-hero-desc {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 16px;
+  line-height: 24px;
+  color: var(--hef-text-primary);
+}
+
+.hef-hero-cta-group .btn-hef-primary {
+  width: 200px;
+  max-width: 100%;
+}
+
+.btn-hef-primary.btn-fill-white {
+  background-color: #FFFFFF;
+  color: #32694A !important;
+}
+
+.btn-hef-primary.btn-fill-white:hover {
+  background-color: #F4F4F4;
+  color: #32694A !important;
+}
+
+.hef-plate-img {
+  width: 455px;
+  height: auto;
+  max-width: 100%;
+  object-fit: contain;
+}
+
+/* ==========================
+   EXPLORE OUR TOOLS SECTION 
+   ========================== */
+
+.hef-section-heading {
+  color: var(--hef-brand-forest);
+  font-family: 'Space Grotesk', sans-serif;
+  font-weight: 700;
+}
+
+.hef-tools-grid > .hef-tool-card {
+  flex: 1 1 calc(50% - 16px);
+  min-width: 320px;
+}
+
+/* Tool Card Layout */
+.hef-tool-card {
+  display: grid;
+  grid-template-columns: 120px 1fr;
+  grid-template-rows: auto auto auto;
+  column-gap: 20px;
+  row-gap: 8px;
+  align-items: center;
+  border: 1px solid var(--hef-outline-black);
+  border-radius: 28px;
+}
+
+.hef-bg-yellow { background-color: var(--hef-accent-yellow); }
+.hef-bg-blue   { background-color: var(--hef-accent-blue); }
+.hef-bg-green  { background-color: var(--hef-accent-green); }
+.hef-bg-pink   { background-color: var(--hef-accent-pink); }
+
+.hef-tool-icon-wrapper {
+  grid-column: 1;
+  grid-row: 1 / span 3;
+  width: 120px;
+  height: 120px;
+  background-color: #FFFFFF;
+  border-radius: 50%;
+  padding: 14px;
+  align-self: center;
+}
+
+.hef-tool-title {
+  grid-column: 2;
+  grid-row: 1;
+  font-size: 20px;
+  line-height: 26px;
+  color: var(--hef-brand-forest);
+  margin-bottom: 0 !important;
+}
+
+.hef-tool-desc {
+  grid-column: 2;
+  grid-row: 2;
+  font-size: 14px;
+  line-height: 20px;
+  color: var(--hef-text-primary);
+  margin-bottom: 0 !important;
+}
+
+.hef-tool-card .btn-hef-primary {
+  grid-column: 2;
+  grid-row: 3;
+  justify-self: start;
+  height: 38px !important;
+  padding: 8px 22px !important;
+  margin-top: 4px;
+}
+
+/* ================================
+   MOBILE & RESPONSIVE BREAKPOINTS
+   ================================ */
+@media (max-width: 767.98px) {
+  .hef-hero-cta-group .btn-hef-primary {
+    width: 100% !important;
+    text-align: center;
+  }
+
+  /* Tool Cards 1-Column Mobile Layout) */
+  .hef-tools-grid > .hef-tool-card {
+    flex: 1 1 100%;
+    width: 100%;
+  }
+
+  .hef-tool-card {
+    grid-template-columns: 80px 1fr;
+    grid-template-rows: auto auto auto;
+    column-gap: 16px;
+    row-gap: 12px;
+  }
+
+  .hef-tool-icon-wrapper {
+    grid-column: 1;
+    grid-row: 1;
+    width: 80px;
+    height: 80px;
+    padding: 10px;
+  }
+
+  .hef-tool-title {
+    grid-column: 2;
+    grid-row: 1;
+    font-size: 18px;
+    line-height: 24px;
+  }
+
+  .hef-tool-desc {
+    grid-column: 1 / -1;
+    grid-row: 2;
+    font-size: 13px;
+    line-height: 18px;
+  }
+
+  .hef-tool-card .btn-hef-primary {
+    grid-column: 1 / -1;
+    grid-row: 3;
+    justify-self: stretch;
+    width: 100% !important;
+    text-align: center;
+  }
+}
