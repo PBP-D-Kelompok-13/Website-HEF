@@ -8,5 +8,6 @@ File ini dibuat sebagai bahan penilaian terkait Documentation & AI Disclosure di
 ### 👤 Ferdinandus Pakasi
 
 ### 👤 Muhammad Raihananta Adzaky Yuwono
+- Utilize Figma AI untuk membantu saat membuat wireframing e.g. mengatur autolayout, merapihkan framing, membantu convert dari wireframing desktop to mobile, membuat vector-vector simple untuk buttons. Masalah yang dihadapi adalah mengatur scope untuk agentnya atau frame yang bisa di edit e.g. restrict AInya mengubah main component/design system yang sudah disepakati dari awal.
 
 ### 👤 Yazid Khairul Firmansyah
