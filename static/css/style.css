@@ -1,0 +1,213 @@
+/*  ======================
+    System Design Styling
+    ====================== */
+
+:root {
+  /* Brand Palette */
+  --hef-brand-forest: #32694A;
+  --hef-brand-leaf: #477A52;
+  --hef-brand-mint: #DDEBD4;
+  --hef-brand-citrus: #E6B95C;
+  --hef-brand-watermelon: #E97560;
+
+  /* Surfaces & Backgrounds */
+  --hef-surface-paper: #F7F7F0;
+  --hef-surface-card: #FFFFFF;
+
+  /* Typography */
+  --hef-text-primary: #21352A;
+  --hef-text-secondary: #617064;
+
+  /* Borders & Outlines */
+  --hef-border-default: #D9E2D6;
+  --hef-outline-black: #000000;
+
+  /* Eco/Food Scores */
+  --hef-score-a: #4FC67B;
+  --hef-score-b: #B5E07A;
+  --hef-score-c: #F5D36C;
+  --hef-score-d: #FBAD72;
+  --hef-score-e: #E96D62;
+
+  /* Accents / Badges */
+  --hef-accent-pink: #EBD4DE;
+  --hef-accent-blue: #BDF3FA;
+  --hef-accent-green: #AAEB8C;
+  --hef-accent-yellow: #FFD681;
+
+  /* Bootstrap Variable Overrides */
+  --bs-primary: var(--hef-brand-forest);
+  --bs-secondary: var(--hef-brand-leaf);
+  --bs-body-bg: var(--hef-surface-paper);
+  --bs-body-color: var(--hef-text-primary);
+  --bs-border-color: var(--hef-border-default);
+  --bs-card-bg: var(--hef-surface-card);
+}
+
+/* Global Body & Typography */
+body {
+  font-family: 'Space Grotesk', system-ui, -apple-system, sans-serif;
+  font-size: 15px;
+  line-height: 21px;
+  font-weight: 400;
+  background-color: var(--bs-body-bg);
+  color: var(--bs-body-color);
+}
+
+h1, .h1 {
+  font-family: 'Space Grotesk', sans-serif;
+  font-weight: 700;
+  font-size: 32px;
+  line-height: 45px;
+  color: var(--hef-text-primary);
+}
+
+h2, .h2 {
+  font-family: 'Space Grotesk', sans-serif;
+  font-weight: 700;
+  font-size: 24px;
+  line-height: 34px;
+  color: var(--hef-text-primary);
+}
+
+.text-label {
+  font-family: 'Space Grotesk', sans-serif;
+  font-weight: 500;
+  font-size: 12px;
+  line-height: 14px;
+  color: var(--hef-text-secondary);
+  text-transform: uppercase;
+}
+
+/*  ==============================
+    Styling for Shared Components 
+    ============================= */
+.hef-navbar {
+  background-color: var(--hef-surface-card);
+  border: 1px solid var(--hef-border-default);
+  border-radius: 16px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
+}
+
+.hef-navbar .nav-link,
+.login-link {
+  font-family: 'Source Sans 3', system-ui, -apple-system, sans-serif;
+  font-size: 13px;
+  font-weight: 400;
+  color: var(--hef-text-primary) !important;
+  transition: color 0.2s ease-in-out;
+}
+
+.hef-navbar .nav-link:hover,
+.login-link:hover {
+  color: var(--hef-brand-forest) !important;
+}
+
+/* Floating menu button for mobile */
+.hef-mobile-toggle-wrapper {
+  position: fixed;
+  top: 16px;
+  left: 16px;
+  z-index: 1030;
+}
+
+.hef-mobile-toggle {
+  width: 48px;
+  height: 48px;
+  background-color: var(--hef-surface-card);
+  border: 1px solid var(--hef-border-default);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.06);
+  transition: all 0.2s ease-in-out;
+}
+
+.hef-mobile-toggle:hover,
+.hef-mobile-toggle:focus {
+  background-color: #FFFFFF;
+  border-color: var(--hef-brand-forest);
+}
+
+.hef-mobile-offcanvas {
+  width: 280px !important;
+  max-width: 85vw;
+  background-color: var(--hef-surface-card) !important;
+  border-radius: 24px !important;
+  border: 1px solid var(--hef-border-default) !important;
+  margin: 16px !important;
+  height: calc(100vh - 32px) !important;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08) !important;
+}
+
+.hef-sidebar-divider {
+  border: none;
+  border-top: 1px solid var(--hef-border-default);
+  opacity: 1;
+}
+
+.hef-mobile-nav {
+  gap: 2rem;         
+  padding-top: 0.5rem;
+}
+
+.hef-mobile-nav .nav-link {
+  font-family: 'Source Sans 3', system-ui, -apple-system, sans-serif;
+  font-size: 15px;
+  font-weight: 400;
+  color: var(--hef-text-primary) !important;
+  transition: color 0.2s ease-in-out;
+}
+
+.hef-mobile-nav .nav-link:hover {
+  color: var(--hef-brand-forest) !important;
+}
+
+.btn-hef-primary,
+.btn-hef-secondary {
+  display: inline-flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+  padding: 13px 24px;
+  height: 45px;
+  border-radius: 999px;
+  
+  /* Typography: Buttons/main */
+  font-family: 'Source Sans 3', sans-serif;
+  font-style: normal;
+  font-weight: 400;
+  font-size: 13px;
+  line-height: 19px;
+  text-decoration: none;
+  border: none;
+  transition: all 0.2s ease-in-out;
+}
+
+/* Primary Button Base Component */
+.btn-hef-primary {
+  background-color: #32694A;
+  color: #FFFFFF !important;
+}
+
+.btn-hef-primary:hover {
+  background-color: #27533A;
+  color: #FFFFFF !important;
+}
+
+/* Secondary Button Base Component */
+.btn-hef-secondary {
+  background-color: #DDEBD4;
+  color: #32694A !important;
+}
+
+.btn-hef-secondary:hover {
+  background-color: #C8DCBC;
+  color: #32694A !important;
+}
+
+/* ================================
+   MOBILE & RESPONSIVE BREAKPOINTS
+   ================================ */
+@media (max-width: 991.98px) {
+  body {
+    padding-top: 64px;
+  }
+}
