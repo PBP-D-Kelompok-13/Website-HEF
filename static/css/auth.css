@@ -1,0 +1,89 @@
+/* Shared styling for dedicated authentication pages and their form components. */
+.hef-auth-card {
+  background-color: var(--hef-surface-card);
+  border: none;
+  border-radius: 24px;
+  padding: 24px;
+}
+
+.auth-page-shell {
+  min-height: calc(100vh - 180px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding-top: 2rem;
+  padding-bottom: 2rem;
+}
+
+.hef-auth-title {
+  text-align: center;
+  color: var(--hef-brand-forest);
+  margin-bottom: 16px;
+}
+
+.hef-field { margin-bottom: 12px; }
+
+.hef-label {
+  display: block;
+  font-family: 'Space Grotesk', sans-serif;
+  font-weight: 700;
+  font-size: 18px;
+  line-height: 24px;
+  color: var(--hef-text-primary);
+  margin-bottom: 4px;
+}
+
+.hef-input {
+  width: 100%;
+  height: 40px;
+  padding: 0 16px;
+  border: 1px solid var(--hef-border-default);
+  border-radius: 999px;
+  background-color: var(--hef-surface-card);
+  font-family: 'Source Sans 3', sans-serif;
+  font-size: 13px;
+  color: var(--hef-text-primary);
+}
+
+.hef-input::placeholder { color: var(--hef-text-secondary); }
+
+.hef-input:focus {
+  outline: none;
+  border-color: var(--hef-brand-forest);
+  box-shadow: 0 0 0 3px rgba(50, 105, 74, 0.2);
+}
+
+.hef-error {
+  margin: 4px 0 0 16px;
+  font-size: 12px;
+  color: var(--hef-brand-watermelon);
+}
+
+.hef-field:has(.hef-error) .hef-input { border-color: var(--hef-brand-watermelon); }
+
+.hef-switch-link {
+  display: inline-block;
+  margin: 4px 0 16px;
+  font-family: 'Source Sans 3', sans-serif;
+  font-size: 12px;
+  color: var(--hef-brand-watermelon);
+  text-decoration: underline;
+}
+
+.hef-auth-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.hef-auth-actions button { width: 100%; }
+
+@media (min-width: 576px) {
+  .hef-auth-actions {
+    flex-direction: row;
+    justify-content: center;
+    gap: 16px;
+  }
+
+  .hef-auth-actions button { width: auto; min-width: 130px; }
+}
