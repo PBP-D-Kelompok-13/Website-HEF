@@ -92,5 +92,5 @@ Open http://localhost:8000 in your browser.
 - requests & urllib3: Facilitates external API communication.
 
 ## 📝 Tambahan File untuk Grading
-- [File terkait AI Documentation masing-masing anggota](docs\ai-documentation.md) 
-- [File terkait Git Extra Contributions masing-masing anggota](docs\extra-contributions.md) 
+- [File terkait AI Documentation masing-masing anggota](docs/ai-documentation.md) 
+- [File terkait Git Extra Contributions masing-masing anggota](docs/extra-contributions.md) 
