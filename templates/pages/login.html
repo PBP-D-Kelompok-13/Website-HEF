@@ -18,8 +18,8 @@
         <p class="hef-error">{{ error }}</p>
       {% endfor %}
 
-      {% include "pages/components/_field.html" with field=form.username %}
-      {% include "pages/components/_field.html" with field=form.password %}
+      {% include "components/_field.html" with field=form.username %}
+      {% include "components/_field.html" with field=form.password %}
 
       <a href="{% url 'main:register_account' %}" class="hef-switch-link">
         Don't have an account yet? Click here to register!

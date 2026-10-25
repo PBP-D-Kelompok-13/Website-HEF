@@ -21,7 +21,7 @@ def register_account(request):
         form.save()
         return redirect('main:login_account')
 
-    return render(request, 'pages/components/register.html', {'form': form})
+    return render(request, 'pages/register.html', {'form': form})
 
 def login_account(request):
     if request.user.is_authenticated:
@@ -35,4 +35,4 @@ def login_account(request):
         login(request, form.get_user())
         return redirect('main:show_landing_page')
 
-    return render(request, 'pages/components/login.html', {'form': form})
+    return render(request, 'pages/login.html', {'form': form})

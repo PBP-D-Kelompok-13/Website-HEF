@@ -141,7 +141,7 @@ class LoginPageTests(TestCase):
         response = self.client.get(self.url)
 
         self.assertEqual(response.status_code, 200)
-        self.assertTemplateUsed(response, "pages/components/login.html")
+        self.assertTemplateUsed(response, "pages/login.html")
         self.assertContains(response, 'id="login-form"')
         self.assertContains(response, 'href="/static/css/auth.css"')
         self.assertIsInstance(response.context["form"], CustomAuthenticationForm)
@@ -153,7 +153,7 @@ class LoginPageTests(TestCase):
         })
 
         self.assertEqual(response.status_code, 200)
-        self.assertTemplateUsed(response, "pages/components/login.html")
+        self.assertTemplateUsed(response, "pages/login.html")
         self.assertTrue(response.context["form"].non_field_errors())
         self.assertFalse(response.wsgi_request.user.is_authenticated)
 
@@ -195,7 +195,7 @@ class RegistrationPageTests(TestCase):
         response = self.client.get(self.url)
 
         self.assertEqual(response.status_code, 200)
-        self.assertTemplateUsed(response, "pages/components/register.html")
+        self.assertTemplateUsed(response, "pages/register.html")
         self.assertContains(response, 'id="register-form"')
         self.assertContains(response, 'href="/static/css/auth.css"')
         self.assertIsInstance(response.context["form"], CustomUserCreationForm)
@@ -207,7 +207,7 @@ class RegistrationPageTests(TestCase):
         })
 
         self.assertEqual(response.status_code, 200)
-        self.assertTemplateUsed(response, "pages/components/register.html")
+        self.assertTemplateUsed(response, "pages/register.html")
         self.assertIn("password2", response.context["form"].errors)
         self.assertEqual(User.objects.count(), 1)
 
