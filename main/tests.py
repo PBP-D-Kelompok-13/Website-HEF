@@ -118,7 +118,7 @@ class RegisterAndLoginHTMXTest(TestCase):
     # --- LOGIN TESTS ---
     def test_login_htmx_invalid_post_returns_422(self):
         response = self.client.post(
-            reverse('login'),
+            reverse('main:login_account'),
             {
                 'username': 'existinguser',
                 'password': 'WrongPassword',
