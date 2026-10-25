@@ -1,4 +1,6 @@
-/* Shared styling for dedicated authentication pages and their form components. */
+/* ====================
+   AUTHENTICATION PAGES
+   ==================== */
 .hef-auth-card {
   background-color: var(--hef-surface-card);
   border: none;
