@@ -2,6 +2,7 @@ from django.test import TestCase
 from django.urls import reverse
 from django.contrib.auth import get_user_model
 from datetime import date 
+from main.forms import CustomUserCreationForm
 
 # Uses the correct user model from AUTH_USER_MODEL
 User = get_user_model()
@@ -50,4 +51,11 @@ class CustomUserTests(TestCase):
     def test_user_string_representation(self):
         self.assertEqual(str(self.user), "testuser")
 
+class CustomUserCreationFormTest(TestCase):
+    def test_form_has_custom_fields(self):
+        form = CustomUserCreationForm()
+        expected_fields = ['username', 'email', 'date_of_birth']
+        
+        for field in expected_fields:
+            self.assertIn(field, form.fields)
     
