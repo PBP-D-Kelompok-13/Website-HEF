@@ -21,6 +21,7 @@
   /* Borders & Outlines */
   --hef-border-default: #D9E2D6;
   --hef-outline-black: #000000;
+  --hef-avatar-bg: #E3E5E1;
 
   /* Eco/Food Scores */
   --hef-score-a: #4FC67B;
@@ -76,7 +77,6 @@ h2, .h2 {
   font-size: 12px;
   line-height: 14px;
   color: var(--hef-text-secondary);
-  text-transform: uppercase;
 }
 
 /*  ==============================
@@ -90,7 +90,8 @@ h2, .h2 {
 }
 
 .hef-navbar .nav-link,
-.login-link {
+.login-link, 
+.hef-profile-link {
   font-family: 'Source Sans 3', system-ui, -apple-system, sans-serif;
   font-size: 13px;
   font-weight: 400;
@@ -99,8 +100,28 @@ h2, .h2 {
 }
 
 .hef-navbar .nav-link:hover,
-.login-link:hover {
+.login-link:hover, 
+.hef-profile-link:hover {
   color: var(--hef-brand-forest) !important;
+}
+
+.hef-avatar {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background-color: var(--hef-avatar-bg);
+  color: var(--hef-text-primary);
+  flex-shrink: 0;
+}
+
+.hef-navbar-username {
+  max-width: 160px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 /* Floating menu button for mobile */

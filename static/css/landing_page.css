@@ -18,6 +18,11 @@ html {
 /* ====================
    HERO BANNER SECTION 
    ==================== */
+
+.hef-welcome {
+  color: var(--hef-brand-watermelon);
+}
+
 .hef-hero-card {
   background-color: var(--hef-brand-mint);
   border-radius: 28px;

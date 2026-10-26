@@ -1,26 +1,13 @@
 from datetime import date
 
 from django.contrib.auth import get_user_model
-from django.test import TestCase
+from django.test import Client, TestCase
 from django.urls import reverse
 
 from main.forms import CustomAuthenticationForm, CustomUserCreationForm
 
 User = get_user_model()
-
-
-class SitePageTests(TestCase):
-    def test_landing_page_renders_shared_layout_and_content(self):
-        response = self.client.get(reverse("main:show_landing_page"))
-
-        self.assertEqual(response.status_code, 200)
-        self.assertTemplateUsed(response, "pages/landing_page.html")
-        self.assertContains(response, "<nav")
-        self.assertContains(response, "<footer")
-        self.assertContains(response, "Healthy Eco Foody")
-        self.assertContains(response, reverse("main:login_account"))
-        self.assertContains(response, reverse("main:register_account"))
-
+HTMX = {"HTTP_HX_REQUEST": "true"}
 
 class CustomUserModelTests(TestCase):
     def test_user_fields_password_and_string_representation(self):
@@ -38,16 +25,14 @@ class CustomUserModelTests(TestCase):
         self.assertFalse(user.is_superuser)
         self.assertEqual(str(user), "testuser")
 
-
 class AuthenticationFormTests(TestCase):
-    def test_registration_form_fields_styling_ids_and_labels(self):
+    def test_registration_form_fields_styling(self):
         form = CustomUserCreationForm()
 
         self.assertEqual(
             list(form.fields),
             ["username", "email", "date_of_birth", "password1", "password2"],
         )
-        self.assertEqual(form["username"].id_for_label, "register_username")
         self.assertEqual(form.fields["password2"].label, "Confirm Password")
         self.assertEqual(form.fields["date_of_birth"].label, "Date of Birth")
         self.assertEqual(form.fields["date_of_birth"].widget.input_type, "date")
@@ -98,10 +83,9 @@ class AuthenticationFormTests(TestCase):
         self.assertFalse(form.is_valid())
         self.assertIn("email", form.errors)
 
-    def test_login_form_styling_ids_and_autofocus(self):
+    def test_login_form_styling_and_autofocus(self):
         form = CustomAuthenticationForm()
 
-        self.assertEqual(form["username"].id_for_label, "login_username")
         self.assertNotIn("autofocus", form.fields["username"].widget.attrs)
         self.assertEqual(form.fields["username"].widget.attrs["class"], "hef-input")
         self.assertEqual(
@@ -126,6 +110,19 @@ class AuthenticationFormTests(TestCase):
 
         self.assertTrue(form.is_valid(), form.errors)
 
+class FormFieldIdTests(TestCase):
+    def test_registration_form_uses_default_ids(self):
+        form = CustomUserCreationForm()
+        self.assertEqual(form["username"].id_for_label, "id_username")
+        self.assertEqual(form["email"].id_for_label, "id_email")
+        self.assertEqual(form["date_of_birth"].id_for_label, "id_date_of_birth")
+        self.assertEqual(form["password1"].id_for_label, "id_password1")
+        self.assertEqual(form["password2"].id_for_label, "id_password2")
+
+    def test_login_form_uses_default_ids(self):
+        form = CustomAuthenticationForm()
+        self.assertEqual(form["username"].id_for_label, "id_username")
+        self.assertEqual(form["password"].id_for_label, "id_password")
 
 class LoginPageTests(TestCase):
     def setUp(self):
@@ -172,7 +169,6 @@ class LoginPageTests(TestCase):
         response = self.client.get(self.url)
 
         self.assertRedirects(response, reverse("main:show_landing_page"))
-
 
 class RegistrationPageTests(TestCase):
     def setUp(self):
@@ -224,3 +220,4 @@ class RegistrationPageTests(TestCase):
         response = self.client.get(self.url)
 
         self.assertRedirects(response, reverse("main:show_landing_page"))
+

@@ -135,6 +135,7 @@ AUTH_PASSWORD_VALIDATORS = [
 
 # Default User class for authentication
 AUTH_USER_MODEL = 'main.CustomUser'
+LOGIN_URL = "main:login_account"
 
 # Internationalization
 # https://docs.djangoproject.com/en/5.2/topics/i18n/

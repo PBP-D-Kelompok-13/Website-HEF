@@ -1,0 +1,40 @@
+<div class="hef-profile-name-row d-flex align-items-center justify-content-center justify-content-lg-start gap-2">
+    <h2 class="h1 hef-profile-username mb-0">{{ user.username }}</h2>
+    <button type="button" class="hef-edit-btn" hx-get="{% url 'main:edit_profile_details' %}" aria-label="Edit profile details">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M17 3a2.83 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"/>
+        </svg>
+    </button>
+</div>
+
+<div class="hef-profile-cards d-flex flex-column gap-3">
+    <div class="hef-profile-info-card">
+        <h3 class="hef-profile-info-title">Email</h3>
+        <p class="hef-profile-info-value mb-0">{{ user.email }}</p>
+    </div>
+
+    <div class="hef-profile-info-card">
+        <div class="d-flex justify-content-between align-items-center gap-3">
+            <div>
+                <h3 class="hef-profile-info-title">Password</h3>
+                <p class="hef-profile-info-value mb-0" aria-label="Password hidden">••••••••••••</p>
+            </div>
+            <button type="button" class="btn-hef-secondary"
+                    hx-get="{% url 'main:change_password' %}"
+                    aria-label="Change Password">
+                Change Password
+            </button>
+        </div>
+    </div>
+
+    <div class="hef-profile-info-card">
+        <h3 class="hef-profile-info-title">Date Of Birth</h3>
+        <p class="hef-profile-info-value mb-0">{{ user.date_of_birth|date:"d/m/Y" }}</p>
+    </div>
+</div>
+
+{% if updated %}
+{# Out-of-band swaps: HTMX replaces the navbar spans that have these IDs. #}
+<span id="navbar-name-desktop" class="hef-navbar-username" hx-swap-oob="true">{{ user.username }}</span>
+<span id="navbar-name-mobile" class="hef-navbar-username" hx-swap-oob="true">{{ user.username }}</span>
+{% endif %}

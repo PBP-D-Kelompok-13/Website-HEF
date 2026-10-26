@@ -1,0 +1,97 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Your Profile | Healthy Eco Foody{% endblock %}
+
+{% block head %}
+    <link rel="stylesheet" href="{% static 'css/profile_page.css' %}">
+{% endblock %}
+
+{% block content %}
+<main class="container my-3 my-md-4">
+    <h1 class="hef-profile-title text-center mb-3">Your Profile</h1>
+    <hr class="hef-profile-divider mb-4">
+
+    <div class="row g-4">
+
+        <!-- Left column: avatar, username, account details -->
+        <div class="col-12 col-lg-6">
+            <div class="hef-profile-left">
+                <img src="{% static avatar %}" alt="Your profile avatar" class="hef-profile-avatar">
+
+                <div id="profile-details" hx-target="#profile-details">
+                    {% include "partials/profile_details.html" %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Right column: placeholder cards for teammates to fill in -->
+        <div class="col-12 col-lg-6 d-flex flex-column gap-3">
+
+            <section class="hef-profile-section hef-profile-section--green">
+                <div class="d-flex justify-content-between align-items-baseline mb-3">
+                    <h2 class="hef-profile-section-title mb-0">Product Search History</h2>
+                    <a href="#" class="hef-profile-view-all text-label">View all →</a>
+                </div>
+                <div class="hef-profile-row hef-profile-row--head text-label"><span>Product</span><span>Searched at</span></div>
+                <div class="hef-profile-row"><span>Placeholder</span><span>Placeholder Date</span></div>
+            </section>
+
+            <section class="hef-profile-section hef-profile-section--yellow">
+                <div class="d-flex justify-content-between align-items-baseline mb-3">
+                    <h2 class="hef-profile-section-title mb-0">Your Pantry</h2>
+                    <a href="#" class="hef-profile-view-all text-label">View all →</a>
+                </div>
+                <div class="hef-profile-row hef-profile-row--head text-label"><span>Ingredient</span><span>Expiry date</span></div>
+                <div class="hef-profile-row"><span>Placeholder</span><span>Placeholder Date</span></div>
+            </section>
+
+            <section class="hef-profile-section hef-profile-section--pink">
+                <div class="d-flex justify-content-between align-items-baseline mb-3">
+                    <h2 class="hef-profile-section-title mb-0">Saved Recipes</h2>
+                    <a href="#" class="hef-profile-view-all text-label">View all →</a>
+                </div>
+                <div class="hef-profile-row hef-profile-row--head text-label"><span>Recipe</span><span>Date added</span></div>
+                <div class="hef-profile-row"><span>Placeholder</span><span>Placeholder Date</span></div>
+            </section>
+
+            <div class="hef-profile-actions">
+                <button type="button" class="btn-hef-danger" data-bs-toggle="modal" data-bs-target="#deleteAccountModal">
+                    Delete Account
+                </button>
+                
+                <form method="post" action="{% url 'main:logout_account' %}">
+                    {% csrf_token %}
+                    <button type="submit" class="btn-hef-secondary w-100">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                            <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+                            <polyline points="16 17 21 12 16 7"/>
+                            <line x1="21" y1="12" x2="9" y2="12"/>
+                        </svg>
+                        <span class="ms-2">Logout</span>
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</main>
+
+<!-- Delete Account confirmation modal -->
+<div class="modal fade" id="deleteAccountModal" tabindex="-1" aria-labelledby="deleteAccountModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content hef-modal-content">
+            <h2 class="h2 hef-modal-title text-center" id="deleteAccountModalLabel">
+                Are you sure you want to delete your account?
+            </h2>
+
+            <form method="post" action="{% url 'main:delete_account' %}">
+                {% csrf_token %}
+                <button type="submit" class="btn-hef-danger w-100">Yes, I am sure</button>
+            </form>
+
+            <button type="button" class="btn-hef-secondary w-100" data-bs-dismiss="modal">No, take me back!</button>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
