@@ -30,3 +30,18 @@ class CustomAuthenticationForm(AuthenticationForm):
         style(self.fields['password'], 'Enter your password')
         # Keep focus on the page heading until the user chooses a field.
         self.fields['username'].widget.attrs.pop('autofocus', None)
+
+class ProfileDetailsForm(forms.ModelForm):
+    class Meta:
+        model = CustomUser
+        fields = ("username", "email", "date_of_birth")
+        widgets = {
+            "date_of_birth": forms.DateInput(format="%Y-%m-%d", attrs={"type": "date"}),
+        }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        style(self.fields["username"], "Enter your Username")
+        style(self.fields["email"], "Enter your email")
+        style(self.fields["date_of_birth"], "DD/MM/YYYY")
+        self.fields["date_of_birth"].label = "Date of Birth"

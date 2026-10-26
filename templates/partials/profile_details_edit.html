@@ -1,0 +1,33 @@
+<form class="hef-profile-form" hx-post="{% url 'main:edit_profile_details' %}">
+    {% csrf_token %}
+
+    <div class="hef-profile-name-row hef-profile-field">
+        <label for="{{ form.username.id_for_label }}" class="hef-profile-info-title">Username</label>
+        {{ form.username }}
+        {% for error in form.username.errors %}<p class="hef-profile-error">{{ error }}</p>{% endfor %}
+    </div>
+
+    <div class="hef-profile-cards d-flex flex-column gap-3">
+        <div class="hef-profile-info-card hef-profile-field">
+            <label for="{{ form.email.id_for_label }}" class="hef-profile-info-title">Email</label>
+            {{ form.email }}
+            {% for error in form.email.errors %}<p class="hef-profile-error">{{ error }}</p>{% endfor %}
+        </div>
+
+        <div class="hef-profile-info-card">
+            <h3 class="hef-profile-info-title">Password</h3>
+            <p class="hef-profile-info-value mb-0" aria-label="Password hidden">••••••••••••</p>
+        </div>
+
+        <div class="hef-profile-info-card hef-profile-field">
+            <label for="{{ form.date_of_birth.id_for_label }}" class="hef-profile-info-title">Date Of Birth</label>
+            {{ form.date_of_birth }}
+            {% for error in form.date_of_birth.errors %}<p class="hef-profile-error">{{ error }}</p>{% endfor %}
+        </div>
+    </div>
+
+    <div class="hef-profile-form-actions d-flex flex-column flex-sm-row justify-content-sm-end gap-2">
+        <button type="submit" class="btn-hef-primary">Save</button>
+        <button type="button" class="btn-hef-secondary" hx-get="{% url 'main:show_profile_details' %}">Cancel</button>
+    </div>
+</form>
