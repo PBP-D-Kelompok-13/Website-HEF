@@ -1,11 +1,11 @@
 from django.shortcuts import render, redirect
 from django.contrib.auth import login
 from .forms import CustomUserCreationForm, CustomAuthenticationForm
+from django.contrib.auth.decorators import login_required
 
 ''' =============================== 
     Functions for Main Landing Page
     =============================== '''
-
 def show_landing_page(request):
     return render(request, "pages/landing_page.html")
 
@@ -36,3 +36,10 @@ def login_account(request):
         return redirect('main:show_landing_page')
 
     return render(request, 'pages/login.html', {'form': form})
+
+''' =============================== 
+    Functions for User Profile Page
+    =============================== '''
+@login_required
+def show_profile_page(request):
+    return render(request, "pages/profile_page.html")

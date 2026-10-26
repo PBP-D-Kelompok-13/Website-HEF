@@ -1,0 +1,75 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Your Profile | Healthy Eco Foody{% endblock %}
+
+{% block head %}
+    <link rel="stylesheet" href="{% static 'css/profile_page.css' %}">
+{% endblock %}
+
+{% block content %}
+<main class="container my-3 my-md-4">
+    <h1 class="hef-profile-title text-center mb-3">Your Profile</h1>
+    <hr class="hef-profile-divider mb-4">
+
+    <div class="row g-4">
+
+        <!-- Left column: avatar, username, account details -->
+        <div class="col-12 col-lg-6">
+            <div class="d-flex flex-column flex-lg-row align-items-center gap-3 mb-4">
+                <!-- Placeholder avatar: replaced by the random image in a later step -->
+                <div class="hef-profile-avatar flex-shrink-0"></div>
+                <h2 class="h1 hef-profile-username mb-0">{{ user.username }}</h2>
+            </div>
+
+            <div class="hef-profile-info-card mb-3">
+                <h3 class="hef-profile-info-title">Email</h3>
+                <p class="hef-profile-info-value mb-0">{{ user.email }}</p>
+            </div>
+
+            <div class="hef-profile-info-card mb-3">
+                <h3 class="hef-profile-info-title">Password</h3>
+                <!-- Decoration only: the real password is never available -->
+                <p class="hef-profile-info-value mb-0" aria-label="Password hidden">••••••••••••</p>
+            </div>
+
+            <div class="hef-profile-info-card mb-3">
+                <h3 class="hef-profile-info-title">Date Of Birth</h3>
+                <p class="hef-profile-info-value mb-0">{{ user.date_of_birth|date:"d/m/Y" }}</p>
+            </div>
+        </div>
+
+        <!-- Right column: placeholder cards for teammates to fill in -->
+        <div class="col-12 col-lg-6 d-flex flex-column gap-3">
+
+            <section class="hef-profile-section hef-profile-section--green">
+                <div class="d-flex justify-content-between align-items-baseline mb-3">
+                    <h2 class="hef-profile-section-title mb-0">Product Search History</h2>
+                    <a href="#" class="hef-profile-view-all text-label">View all →</a>
+                </div>
+                <div class="hef-profile-row hef-profile-row--head text-label"><span>Product</span><span>Searched at</span></div>
+                <div class="hef-profile-row"><span>Placeholder</span><span>Placeholder Date</span></div>
+            </section>
+
+            <section class="hef-profile-section hef-profile-section--yellow">
+                <div class="d-flex justify-content-between align-items-baseline mb-3">
+                    <h2 class="hef-profile-section-title mb-0">Your Pantry</h2>
+                    <a href="#" class="hef-profile-view-all text-label">View all →</a>
+                </div>
+                <div class="hef-profile-row hef-profile-row--head text-label"><span>Ingredient</span><span>Expiry date</span></div>
+                <div class="hef-profile-row"><span>Placeholder</span><span>Placeholder Date</span></div>
+            </section>
+
+            <section class="hef-profile-section hef-profile-section--pink">
+                <div class="d-flex justify-content-between align-items-baseline mb-3">
+                    <h2 class="hef-profile-section-title mb-0">Saved Recipes</h2>
+                    <a href="#" class="hef-profile-view-all text-label">View all →</a>
+                </div>
+                <div class="hef-profile-row hef-profile-row--head text-label"><span>Recipe</span><span>Date added</span></div>
+                <div class="hef-profile-row"><span>Placeholder</span><span>Placeholder Date</span></div>
+            </section>
+
+        </div>
+    </div>
+</main>
+{% endblock %}
