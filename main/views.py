@@ -2,6 +2,10 @@ from django.shortcuts import render, redirect
 from django.contrib.auth import login
 from .forms import CustomUserCreationForm, CustomAuthenticationForm
 from django.contrib.auth.decorators import login_required
+from django.contrib.auth import logout
+from django.shortcuts import redirect
+from django.views.decorators.http import require_POST
+import random
 
 ''' =============================== 
     Functions for Main Landing Page
@@ -37,9 +41,22 @@ def login_account(request):
 
     return render(request, 'pages/login.html', {'form': form})
 
+@require_POST
+def logout_account(request):
+    logout(request)
+    return redirect("main:show_landing_page")
+
 ''' =============================== 
     Functions for User Profile Page
     =============================== '''
+
+PROFILE_AVATARS = [
+    "img/avatar-1.png",
+    "img/avatar-2.png",
+    "img/avatar-3.png",
+]
+
 @login_required
 def show_profile_page(request):
-    return render(request, "pages/profile_page.html")
+    avatar = random.choice(PROFILE_AVATARS)
+    return render(request, "pages/profile_page.html", {"avatar": avatar})

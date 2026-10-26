@@ -14,12 +14,12 @@
       {% csrf_token %}
       <h1 class="hef-auth-title" id="login-page-title">Login</h1>
 
+      {% include "components/_field.html" with field=form.username %}
+      {% include "components/_field.html" with field=form.password %}
+
       {% for error in form.non_field_errors %}
         <p class="hef-error">{{ error }}</p>
       {% endfor %}
-
-      {% include "components/_field.html" with field=form.username %}
-      {% include "components/_field.html" with field=form.password %}
 
       <a href="{% url 'main:register_account' %}" class="hef-switch-link">
         Don't have an account yet? Click here to register!

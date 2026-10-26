@@ -365,3 +365,63 @@ class LogoutTests(TestCase):
         self.assertContains(response, f'action="{self.url}"')
         self.assertContains(response, "csrfmiddlewaretoken")
         self.assertContains(response, "Logout")
+
+class DeleteAccountTests(TestCase):
+    def setUp(self):
+        self.user = User.objects.create_user(
+            username="healthyuser",
+            email="healthy@example.com",
+            password="StrongPass123!",
+            date_of_birth=date(2000, 1, 1),
+        )
+        self.other_user = User.objects.create_user(
+            username="otheruser",
+            email="other@example.com",
+            password="StrongPass123!",
+            date_of_birth=date(1999, 5, 5),
+        )
+        self.url = reverse("main:delete_account")
+
+    def test_get_request_is_not_allowed(self):
+        self.client.force_login(self.user)
+        response = self.client.get(self.url)
+        self.assertEqual(response.status_code, 405)
+        self.assertTrue(User.objects.filter(pk=self.user.pk).exists())
+
+    def test_anonymous_post_is_redirected_to_login(self):
+        response = self.client.post(self.url)
+        self.assertRedirects(
+            response,
+            f"{reverse('main:login_account')}?next={self.url}",
+        )
+        self.assertTrue(User.objects.filter(pk=self.user.pk).exists())
+
+    def test_post_deletes_account_and_redirects_to_landing(self):
+        self.client.force_login(self.user)
+        response = self.client.post(self.url)
+        self.assertRedirects(response, reverse("main:show_landing_page"))
+        self.assertFalse(User.objects.filter(pk=self.user.pk).exists())
+        self.assertFalse(response.wsgi_request.user.is_authenticated)
+
+    def test_post_only_deletes_the_logged_in_user(self):
+        self.client.force_login(self.user)
+        self.client.post(self.url)
+        self.assertTrue(User.objects.filter(pk=self.other_user.pk).exists())
+
+    def test_post_without_csrf_token_is_rejected(self):
+        csrf_client = Client(enforce_csrf_checks=True)
+        csrf_client.force_login(self.user)
+        response = csrf_client.post(self.url)
+        self.assertEqual(response.status_code, 403)
+        self.assertTrue(User.objects.filter(pk=self.user.pk).exists())
+
+    def test_profile_page_has_delete_button_modal_and_form(self):
+        self.client.force_login(self.user)
+        response = self.client.get(reverse("main:show_profile_page"))
+        self.assertContains(response, "Delete Account")
+        self.assertContains(response, 'data-bs-target="#deleteAccountModal"')
+        self.assertContains(response, 'id="deleteAccountModal"', count=1)
+        self.assertContains(response, "Are you sure you want to delete your account?")
+        self.assertContains(response, "Yes, I am sure")
+        self.assertContains(response, "No, take me back!")
+        self.assertContains(response, f'action="{self.url}"')

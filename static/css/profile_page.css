@@ -14,8 +14,7 @@
 .hef-profile-avatar {
   width: 150px;
   height: 150px;
-  border-radius: 50%;
-  background-color: var(--hef-brand-mint);
+  object-fit: contain;
 }
 
 .hef-profile-username {
@@ -68,4 +67,21 @@
 
 .hef-profile-row--head {
   margin-bottom: 2px;
+}
+
+.hef-profile-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+@media (min-width: 576px) {
+  .hef-profile-actions {
+    flex-direction: row;
+    justify-content: flex-end;
+  }
+
+  .hef-profile-actions .btn-hef-secondary {
+    min-width: 160px;
+  }
 }
