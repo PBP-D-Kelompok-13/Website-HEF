@@ -103,6 +103,13 @@
   display: contents;
 }
 
+.hef-password-change-form {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  min-width: 0;
+}
+
 @media (min-width: 992px) {
   .hef-profile-left {
     grid-template-columns: auto 1fr;

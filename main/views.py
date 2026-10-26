@@ -1,8 +1,12 @@
 from django.shortcuts import render, redirect
-from django.contrib.auth import login
-from .forms import CustomUserCreationForm, CustomAuthenticationForm, ProfileDetailsForm
+from django.contrib.auth import login, logout, update_session_auth_hash
+from .forms import (
+    CustomUserCreationForm,
+    CustomAuthenticationForm,
+    ProfileDetailsForm,
+    CustomPasswordChangeForm,
+)
 from django.contrib.auth.decorators import login_required
-from django.contrib.auth import logout
 from django.shortcuts import redirect
 from django.views.decorators.http import require_POST
 from functools import wraps
@@ -98,3 +102,22 @@ def edit_profile_details(request):
     else:
         form = ProfileDetailsForm(instance=request.user)
     return render(request, "partials/profile_details_edit.html", {"form": form})
+
+@login_required
+@htmx_only("main:show_profile_page")
+def change_password(request):
+    if request.method == "POST":
+        form = CustomPasswordChangeForm(request.user, request.POST)
+
+        if form.is_valid():
+            user = form.save()
+            update_session_auth_hash(request, user)
+            return render(request, "partials/profile_details.html")
+    else:
+        form = CustomPasswordChangeForm(request.user)
+
+    return render(
+        request,
+        "partials/profile_change_password.html",
+        {"form": form},
+    )

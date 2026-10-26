@@ -12,4 +12,5 @@ urlpatterns = [
     path("profile/delete/", delete_account, name="delete_account"),
     path("profile/details/", show_profile_details, name="show_profile_details"),
     path("profile/edit/", edit_profile_details, name="edit_profile_details"),
+    path("profile/change-password/", change_password, name="change_password"),
 ]
