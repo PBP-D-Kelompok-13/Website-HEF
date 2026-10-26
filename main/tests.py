@@ -1,9 +1,8 @@
 from datetime import date
-from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.test import TestCase
 from django.urls import reverse
-from django.shortcuts import resolve_url
+from django.test import Client
 
 from main.forms import CustomAuthenticationForm, CustomUserCreationForm
 
@@ -331,3 +330,38 @@ class ProfilePageTests(TestCase):
         self.client.force_login(self.user)
         response = self.client.get(self.url)
         self.assertNotContains(response, self.user.password)
+
+class LogoutTests(TestCase):
+    def setUp(self):
+        self.user = User.objects.create_user(
+            username="healthyuser",
+            email="healthy@example.com",
+            password="StrongPass123!",
+            date_of_birth=date(2000, 1, 1),
+        )
+        self.url = reverse("main:logout_account")
+
+    def test_get_request_is_not_allowed(self):
+        self.client.force_login(self.user)
+        response = self.client.get(self.url)
+        self.assertEqual(response.status_code, 405)
+        self.assertTrue(response.wsgi_request.user.is_authenticated)
+
+    def test_post_logs_out_and_redirects_to_landing(self):
+        self.client.force_login(self.user)
+        response = self.client.post(self.url)
+        self.assertRedirects(response, reverse("main:show_landing_page"))
+        self.assertFalse(response.wsgi_request.user.is_authenticated)
+
+    def test_post_without_csrf_token_is_rejected(self):
+        csrf_client = Client(enforce_csrf_checks=True)
+        csrf_client.force_login(self.user)
+        response = csrf_client.post(self.url)
+        self.assertEqual(response.status_code, 403)
+
+    def test_profile_page_has_logout_form_with_csrf_token(self):
+        self.client.force_login(self.user)
+        response = self.client.get(reverse("main:show_profile_page"))
+        self.assertContains(response, f'action="{self.url}"')
+        self.assertContains(response, "csrfmiddlewaretoken")
+        self.assertContains(response, "Logout")
