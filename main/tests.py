@@ -1,8 +1,9 @@
 from datetime import date
-
+from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.test import TestCase
 from django.urls import reverse
+from django.shortcuts import resolve_url
 
 from main.forms import CustomAuthenticationForm, CustomUserCreationForm
 
@@ -224,3 +225,10 @@ class RegistrationPageTests(TestCase):
         response = self.client.get(self.url)
 
         self.assertRedirects(response, reverse("main:show_landing_page"))
+
+class LoginUrlSettingTests(TestCase):
+    def test_login_url_points_to_login_page(self):
+        self.assertEqual(
+            resolve_url(settings.LOGIN_URL),
+            reverse("main:login_account"),
+        )
