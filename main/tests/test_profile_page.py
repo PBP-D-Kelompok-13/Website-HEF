@@ -3,8 +3,7 @@ from datetime import date
 from django.contrib.auth import get_user_model
 from django.test import Client, TestCase
 from django.urls import reverse
-
-from main.forms import CustomAuthenticationForm, CustomUserCreationForm
+from django.contrib.auth.forms import PasswordChangeForm
 
 User = get_user_model()
 HTMX = {"HTTP_HX_REQUEST": "true"}
@@ -344,9 +343,111 @@ class ProfileEditHooksTests(TestCase):
         self.assertContains(response, f'hx-get="{edit_url}"')
         self.assertContains(response, 'hx-target="#profile-details"')
         self.assertContains(response, "htmx.org")
+        change_password_url = reverse("main:change_password")
+        self.assertContains(response, f'hx-get="{change_password_url}"')
+        self.assertContains(response, "Change Password")
 
     def test_navbar_username_spans_have_ids_for_updates(self):
         response = self.client.get(reverse("main:show_landing_page"))
         self.assertContains(response, 'id="navbar-name-desktop"', count=1)
         self.assertContains(response, 'id="navbar-name-mobile"', count=1)
 
+class PasswordChangeTests(TestCase):
+    def setUp(self):
+        self.user = User.objects.create_user(
+            username="healthyuser",
+            email="healthy@example.com",
+            password="StrongPass123!",
+            date_of_birth=date(2000, 1, 1),
+        )
+        self.url = reverse("main:change_password")
+        self.profile_url = reverse("main:show_profile_page")
+        self.valid_data = {
+            "old_password": "StrongPass123!",
+            "new_password1": "AnotherStrongPass456!",
+            "new_password2": "AnotherStrongPass456!",
+        }
+
+    def test_anonymous_get_is_redirected_to_login(self):
+        response = self.client.get(self.url, **HTMX)
+
+        self.assertRedirects(
+            response,
+            f"{reverse('main:login_account')}?next={self.url}",
+        )
+
+    def test_get_without_htmx_redirects_to_profile(self):
+        self.client.force_login(self.user)
+
+        response = self.client.get(self.url)
+
+        self.assertRedirects(response, self.profile_url)
+
+    def test_htmx_get_returns_password_change_form(self):
+        self.client.force_login(self.user)
+
+        response = self.client.get(self.url, **HTMX)
+
+        self.assertEqual(response.status_code, 200)
+        self.assertIsInstance(response.context["form"], PasswordChangeForm)
+        self.assertContains(response, 'name="old_password"')
+        self.assertContains(response, 'name="new_password1"')
+        self.assertContains(response, 'name="new_password2"')
+        self.assertContains(response, "csrfmiddlewaretoken")
+
+    def test_valid_post_changes_password_and_keeps_user_logged_in(self):
+        self.client.force_login(self.user)
+
+        response = self.client.post(self.url, self.valid_data, **HTMX)
+
+        self.assertEqual(response.status_code, 200)
+        self.user.refresh_from_db()
+        self.assertTrue(self.user.check_password("AnotherStrongPass456!"))
+        self.assertFalse(self.user.check_password("StrongPass123!"))
+        self.assertTrue(response.wsgi_request.user.is_authenticated)
+
+    def test_invalid_old_password_does_not_change_password(self):
+        self.client.force_login(self.user)
+        data = {**self.valid_data, "old_password": "WrongPassword123!"}
+
+        response = self.client.post(self.url, data, **HTMX)
+
+        self.assertEqual(response.status_code, 200)
+        self.assertIsInstance(response.context["form"], PasswordChangeForm)
+        self.assertIn("old_password", response.context["form"].errors)
+        self.user.refresh_from_db()
+        self.assertTrue(self.user.check_password("StrongPass123!"))
+
+    def test_mismatched_new_passwords_do_not_change_password(self):
+        self.client.force_login(self.user)
+        data = {
+            **self.valid_data,
+            "new_password2": "DifferentStrongPass789!",
+        }
+
+        response = self.client.post(self.url, data, **HTMX)
+
+        self.assertEqual(response.status_code, 200)
+        self.assertIsInstance(response.context["form"], PasswordChangeForm)
+        self.assertIn("new_password2", response.context["form"].errors)
+        self.user.refresh_from_db()
+        self.assertTrue(self.user.check_password("StrongPass123!"))
+
+    def test_post_without_htmx_header_does_not_change_password(self):
+        self.client.force_login(self.user)
+
+        response = self.client.post(self.url, self.valid_data)
+
+        self.assertRedirects(response, self.profile_url)
+        self.user.refresh_from_db()
+        self.assertTrue(self.user.check_password("StrongPass123!"))
+
+    def test_post_without_csrf_token_is_rejected(self):
+        csrf_client = Client(enforce_csrf_checks=True)
+        csrf_client.force_login(self.user)
+
+        response = csrf_client.post(self.url, self.valid_data, **HTMX)
+
+        self.assertEqual(response.status_code, 403)
+        self.user.refresh_from_db()
+        self.assertTrue(self.user.check_password("StrongPass123!"))
