@@ -75,13 +75,26 @@
   gap: 12px;
 }
 
+.hef-modal-content {
+  background-color: var(--hef-surface-card);
+  border: none;
+  border-radius: 24px;
+  padding: 28px 24px;
+  gap: 12px;
+}
+
+.hef-modal-title {
+  color: var(--hef-brand-forest);
+  margin-bottom: 8px;
+}
+
 @media (min-width: 576px) {
   .hef-profile-actions {
     flex-direction: row;
     justify-content: flex-end;
   }
 
-  .hef-profile-actions .btn-hef-secondary {
+  .hef-profile-actions > * {
     min-width: 160px;
   }
 }

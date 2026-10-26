@@ -69,6 +69,10 @@
             </section>
 
             <div class="hef-profile-actions">
+                <button type="button" class="btn-hef-danger" data-bs-toggle="modal" data-bs-target="#deleteAccountModal">
+                    Delete Account
+                </button>
+                
                 <form method="post" action="{% url 'main:logout_account' %}">
                     {% csrf_token %}
                     <button type="submit" class="btn-hef-secondary w-100">
@@ -81,8 +85,26 @@
                     </button>
                 </form>
             </div>
-
         </div>
     </div>
 </main>
+
+<!-- Delete Account confirmation modal -->
+<div class="modal fade" id="deleteAccountModal" tabindex="-1" aria-labelledby="deleteAccountModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content hef-modal-content">
+            <h2 class="h2 hef-modal-title text-center" id="deleteAccountModalLabel">
+                Are you sure you want to delete your account?
+            </h2>
+
+            <form method="post" action="{% url 'main:delete_account' %}">
+                {% csrf_token %}
+                <button type="submit" class="btn-hef-danger w-100">Yes, I am sure</button>
+            </form>
+
+            <button type="button" class="btn-hef-secondary w-100" data-bs-dismiss="modal">No, take me back!</button>
+        </div>
+    </div>
+</div>
+
 {% endblock %}

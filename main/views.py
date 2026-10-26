@@ -60,3 +60,11 @@ PROFILE_AVATARS = [
 def show_profile_page(request):
     avatar = random.choice(PROFILE_AVATARS)
     return render(request, "pages/profile_page.html", {"avatar": avatar})
+
+@login_required
+@require_POST
+def delete_account(request):
+    user = request.user
+    logout(request)
+    user.delete()
+    return redirect("main:show_landing_page")
