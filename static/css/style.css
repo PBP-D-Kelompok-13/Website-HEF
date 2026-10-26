@@ -161,7 +161,8 @@ h2, .h2 {
 }
 
 .btn-hef-primary,
-.btn-hef-secondary {
+.btn-hef-secondary,
+.btn-hef-danger {
   display: inline-flex;
   flex-direction: row;
   justify-content: center;
@@ -201,6 +202,15 @@ h2, .h2 {
 .btn-hef-secondary:hover {
   background-color: #C8DCBC;
   color: #32694A !important;
+}
+
+.btn-hef-danger {
+  background-color: var(--hef-brand-watermelon);
+  color: var(--hef-text-primary) !important;
+}
+
+.btn-hef-danger:hover {
+  background-color: #D9644F;  
 }
 
 /* ================================

@@ -128,6 +128,8 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
+# Default User class for authentication
+AUTH_USER_MODEL = 'main.CustomUser'
 
 # Internationalization
 # https://docs.djangoproject.com/en/5.2/topics/i18n/

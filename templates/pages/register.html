@@ -1,0 +1,37 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Register | Healthy Eco Foody{% endblock %}
+
+{% block head %}
+<link rel="stylesheet" href="{% static 'css/auth.css' %}">
+{% endblock %}
+
+{% block content %}
+<main class="container auth-page-shell">
+  <section class="hef-auth-card" aria-labelledby="register-page-title">
+    <form id="register-form" method="post" action="{% url 'main:register_account' %}">
+      {% csrf_token %}
+      <h1 class="hef-auth-title" id="register-page-title">Get started on your eco journey!</h1>
+
+      {% for error in form.non_field_errors %}
+        <p class="hef-error">{{ error }}</p>
+      {% endfor %}
+
+      {% include "components/_field.html" with field=form.username %}
+      {% include "components/_field.html" with field=form.email %}
+      {% include "components/_field.html" with field=form.password1 %}
+      {% include "components/_field.html" with field=form.password2 %}
+      {% include "components/_field.html" with field=form.date_of_birth %}
+
+      <a href="{% url 'main:login_account' %}" class="hef-switch-link">
+        Already have an account? Click here to login!
+      </a>
+
+      <div class="hef-auth-actions">
+        <button type="submit" class="btn-hef-secondary">Register</button>
+      </div>
+    </form>
+  </section>
+</main>
+{% endblock %}
