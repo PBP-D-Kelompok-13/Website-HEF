@@ -269,3 +269,59 @@ class NavbarTests(TestCase):
         self.client.force_login(self.user)
         response = self.client.get(self.url)
         self.assertNotContains(response, "login-link")
+
+class NavbarProfileLinkTests(TestCase):
+    def test_profile_link_points_to_profile_page_on_both_navbars(self):
+        user = get_user_model().objects.create_user(
+            username="healthyuser",
+            email="healthy@example.com",
+            password="StrongPass123!",
+            date_of_birth=date(2000, 1, 1),
+        )
+        self.client.force_login(user)
+        response = self.client.get(reverse("main:show_landing_page"))
+        profile_url = reverse("main:show_profile_page")
+        self.assertContains(response, f'href="{profile_url}"', count=2)
+
+class ProfilePageTests(TestCase):
+    def setUp(self):
+        self.user = get_user_model().objects.create_user(
+            username="healthyuser",
+            email="healthy@example.com",
+            password="StrongPass123!",
+            date_of_birth=date(2000, 1, 1),
+        )
+        self.url = reverse("main:show_profile_page")
+
+    def test_anonymous_user_is_redirected_to_login(self):
+        response = self.client.get(self.url)
+        self.assertRedirects(
+            response,
+            f"{reverse('main:login_account')}?next={self.url}",
+        )
+
+    def test_authenticated_user_can_open_profile_page(self):
+        self.client.force_login(self.user)
+        response = self.client.get(self.url)
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, "pages/profile_page.html")
+
+    def test_profile_page_shows_user_details(self):
+        self.client.force_login(self.user)
+        response = self.client.get(self.url)
+        self.assertContains(response, "Your Profile")
+        self.assertContains(response, "healthyuser")
+        self.assertContains(response, "healthy@example.com")
+        self.assertContains(response, "01/01/2000")
+
+    def test_profile_page_shows_placeholder_cards(self):
+        self.client.force_login(self.user)
+        response = self.client.get(self.url)
+        self.assertContains(response, "Product Search History")
+        self.assertContains(response, "Your Pantry")
+        self.assertContains(response, "Saved Recipes")
+
+    def test_profile_page_never_shows_password_hash(self):
+        self.client.force_login(self.user)
+        response = self.client.get(self.url)
+        self.assertNotContains(response, self.user.password)
