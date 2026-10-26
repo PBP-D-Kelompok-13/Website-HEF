@@ -33,6 +33,11 @@ DEBUG = True
 
 ALLOWED_HOSTS = ["localhost", "127.0.0.1", 'muhammad-raihananta-websitehef.pws.cs.ui.ac.id']
 
+CSRF_TRUSTED_ORIGINS = [
+    'https://muhammad-raihananta-websitehef.pws.cs.ui.ac.id',
+    'http://localhost:8000',
+]
+
 PRODUCTION = os.getenv('PRODUCTION', 'False').lower() == 'true'
 
 
