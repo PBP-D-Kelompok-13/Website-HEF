@@ -294,3 +294,36 @@ class IngredientFormTests(TestCase):
         form = IngredientForm(data=form_data)
         self.assertFalse(form.is_valid())
         self.assertIn("category", form.errors)
+        
+class IngredientCRUDViewTests(TestCase):
+    def setUp(self):
+        self.user = User.objects.create_user(
+            username="celine",
+            email="celine@example.com",
+            date_of_birth=date(2005, 1, 1),
+            password="P4ssword123!"
+        )
+        self.client.force_login(self.user)
+        self.ingredient = Ingredient.objects.create(
+            user=self.user,
+            name="Lettuce",
+            category="Vegetables",
+            quantity="1",
+            expiration_date=date(2026, 11, 1)
+        )
+
+    def test_edit_ingredient_success(self):
+        response = self.client.post(reverse("main:edit_ingredient", args=[self.ingredient.id]), {
+            "name": "Organic Lettuce",
+            "category": "Vegetables",
+            "quantity": "2",
+            "expiration_date": "2026-11-03"
+        })
+        self.assertRedirects(response, reverse("main:show_inventory"))
+        self.ingredient.refresh_from_db()
+        self.assertEqual(self.ingredient.name, "Organic Lettuce")
+
+    def test_delete_ingredient_success(self):
+        response = self.client.post(reverse("main:delete_ingredient", args=[self.ingredient.id]))
+        self.assertRedirects(response, reverse("main:show_inventory"))
+        self.assertFalse(Ingredient.objects.filter(id=self.ingredient.id).exists())
