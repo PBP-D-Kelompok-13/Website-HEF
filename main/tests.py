@@ -272,3 +272,25 @@ class IngredientModelTests(TestCase):
         self.assertEqual(ingredient.name, "Milk")
         self.assertEqual(ingredient.category, "Dairy & Eggs")
         self.assertEqual(str(ingredient), "Milk (celine)")
+        
+class IngredientFormTests(TestCase):
+    def test_ingredient_form_accepts_valid_category_choices(self):
+        form_data = {
+            "name": "Apples",
+            "category": "Fruits",
+            "quantity": "1 kg",
+            "expiration_date": "2026-11-10"
+        }
+        form = IngredientForm(data=form_data)
+        self.assertTrue(form.is_valid(), form.errors)
+
+    def test_ingredient_form_rejects_invalid_category(self):
+        form_data = {
+            "name": "Unknown Item",
+            "category": "InvalidCategory",
+            "quantity": "1",
+            "expiration_date": "2026-11-10"
+        }
+        form = IngredientForm(data=form_data)
+        self.assertFalse(form.is_valid())
+        self.assertIn("category", form.errors)
