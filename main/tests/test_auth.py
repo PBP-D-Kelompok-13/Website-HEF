@@ -367,3 +367,12 @@ class ReactivationPageTests(TestCase):
         self.assertEqual(response.status_code, 403)
         self.user.refresh_from_db()
         self.assertFalse(self.user.is_active)
+
+    def test_authenticated_user_is_redirected_from_reactivation_page(self):
+        self.user.is_active = True
+        self.user.save(update_fields=["is_active"])
+        self.client.force_login(self.user)
+
+        response = self.client.get(self.url)
+
+        self.assertRedirects(response, reverse("main:show_landing_page"))

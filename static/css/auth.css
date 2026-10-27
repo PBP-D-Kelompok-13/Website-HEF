@@ -62,8 +62,8 @@
 .hef-field:has(.hef-error) .hef-input { border-color: var(--hef-brand-watermelon); }
 
 .hef-switch-link {
-  display: inline-block;
-  margin: 4px 0 16px;
+  display: block;
+  margin: 4px 0 8px;
   font-family: 'Source Sans 3', sans-serif;
   font-size: 12px;
   color: var(--hef-brand-watermelon-text);

@@ -6,6 +6,7 @@ from .forms import (
     CustomAuthenticationForm,
     ProfileDetailsForm,
     CustomPasswordChangeForm,
+    ReactivationForm,
 )
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import redirect
@@ -59,6 +60,21 @@ def login_account(request):
         return redirect('main:show_landing_page')
 
     return render(request, 'pages/login.html', {'form': form})
+
+def reactivate_account(request):
+    if request.user.is_authenticated:
+        return redirect("main:show_landing_page")
+
+    form = ReactivationForm(request.POST if request.method == "POST" else None)
+
+    if request.method == "POST" and form.is_valid():
+        user = form.user
+        user.is_active = True
+        user.save(update_fields=["is_active"])
+        messages.success(request, "Your account has been reactivated. Please log in.")
+        return redirect("main:login_account")
+
+    return render(request, "pages/reactivate_account.html", {"form": form})
 
 @require_POST
 def logout_account(request):
@@ -134,3 +150,15 @@ def change_password(request):
         "partials/profile_change_password.html",
         {"form": form},
     )
+
+@login_required
+@require_POST
+def deactivate_account(request):
+    user = request.user
+    user.is_active = False
+    user.save(update_fields=["is_active"])
+
+    logout(request)
+    messages.success(request, "Your account has been deactivated.")
+
+    return redirect("main:show_landing_page")
