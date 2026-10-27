@@ -327,3 +327,31 @@ class IngredientCRUDViewTests(TestCase):
         response = self.client.post(reverse("main:delete_ingredient", args=[self.ingredient.id]))
         self.assertRedirects(response, reverse("main:show_inventory"))
         self.assertFalse(Ingredient.objects.filter(id=self.ingredient.id).exists())
+        
+class IngredientSearchAndFilterTests(TestCase):
+    def setUp(self):
+        self.user = User.objects.create_user(
+            username="celine",
+            email="celine@example.com",
+            date_of_birth=date(2005, 1, 1),
+            password="Password123!"
+        )
+        self.client.force_login(self.user)
+        Ingredient.objects.create(
+            user=self.user, name="Broccoli", category="Vegetables", quantity="1", expiration_date=date(2026, 11, 1)
+        )
+        Ingredient.objects.create(
+            user=self.user, name="Milk", category="Dairy & Eggs", quantity="2", expiration_date=date(2026, 11, 2)
+        )
+
+    def test_search_ingredient_returns_matching_items(self):
+        response = self.client.get(reverse("main:show_inventory"), {"q": "Brocc"})
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Broccoli")
+        self.assertNotContains(response, "Milk")
+
+    def test_category_filter_returns_correct_items(self):
+        response = self.client.get(reverse("main:show_inventory"), {"category": "Dairy & Eggs"})
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Milk")
+        self.assertNotContains(response, "Broccoli")
