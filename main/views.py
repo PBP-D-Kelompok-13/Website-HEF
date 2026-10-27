@@ -1,4 +1,5 @@
 from django.shortcuts import render, redirect
+from django.contrib import messages
 from django.contrib.auth import login, logout, update_session_auth_hash
 from .forms import (
     CustomUserCreationForm,
@@ -39,6 +40,7 @@ def register_account(request):
     form = CustomUserCreationForm(request.POST if request.method == 'POST' else None)
     if request.method == 'POST' and form.is_valid():
         form.save()
+        messages.success(request, "Account successfully registered. Please log in.")
         return redirect('main:login_account')
 
     return render(request, 'pages/register.html', {'form': form})
@@ -53,6 +55,7 @@ def login_account(request):
     )
     if request.method == 'POST' and form.is_valid():
         login(request, form.get_user())
+        messages.success(request, "Login successful.")
         return redirect('main:show_landing_page')
 
     return render(request, 'pages/login.html', {'form': form})
@@ -60,6 +63,7 @@ def login_account(request):
 @require_POST
 def logout_account(request):
     logout(request)
+    messages.success(request, "Logout successful.")
     return redirect("main:show_landing_page")
 
 ''' =============================== 
@@ -83,6 +87,7 @@ def delete_account(request):
     user = request.user
     logout(request)
     user.delete()
+    messages.success(request, "Account successfully deleted.")
     return redirect("main:show_landing_page")
 
 @login_required
@@ -98,7 +103,12 @@ def edit_profile_details(request):
         form = ProfileDetailsForm(request.POST, instance=request.user)
         if form.is_valid():
             form.save()
-            return render(request, "partials/profile_details.html", {"updated": True})
+            messages.success(request, "Account information successfully updated.")
+            return render(
+                request,
+                "partials/profile_details.html",
+                {"updated": True, "toast": True},
+            )
     else:
         form = ProfileDetailsForm(instance=request.user)
     return render(request, "partials/profile_details_edit.html", {"form": form})
@@ -112,7 +122,10 @@ def change_password(request):
         if form.is_valid():
             user = form.save()
             update_session_auth_hash(request, user)
-            return render(request, "partials/profile_details.html")
+            messages.success(request, "Password successfully changed.")
+            return render(
+                request, "partials/profile_details.html", {"toast": True}
+            )
     else:
         form = CustomPasswordChangeForm(request.user)
 

@@ -50,15 +50,13 @@
 .hef-input::placeholder { color: var(--hef-text-secondary); }
 
 .hef-input:focus {
-  outline: none;
-  border-color: var(--hef-brand-forest);
-  box-shadow: 0 0 0 3px rgba(50, 105, 74, 0.2);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--hef-brand-forest) 20%, transparent);
 }
 
 .hef-error {
   margin: 4px 0 0 16px;
   font-size: 12px;
-  color: var(--hef-brand-watermelon);
+  color: var(--hef-brand-watermelon-text);
 }
 
 .hef-field:has(.hef-error) .hef-input { border-color: var(--hef-brand-watermelon); }
@@ -68,7 +66,7 @@
   margin: 4px 0 16px;
   font-family: 'Source Sans 3', sans-serif;
   font-size: 12px;
-  color: var(--hef-brand-watermelon);
+  color: var(--hef-brand-watermelon-text);
   text-decoration: underline;
 }
 
