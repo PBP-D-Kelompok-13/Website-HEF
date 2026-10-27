@@ -17,8 +17,7 @@
     </header>
 
     <!-- Controls Bar -->
-    <div
-        class="hef-inventory-controls d-flex flex-column flex-xl-row align-items-stretch align-items-xl-center justify-content-between gap-3 mb-4">
+    <div class="hef-inventory-controls d-flex flex-column flex-xl-row align-items-stretch align-items-xl-center justify-content-between gap-3 mb-4">
 
         <!-- Search Field Form -->
         <form method="get" action="{% url 'main:show_inventory' %}" class="hef-search-wrapper m-0">
@@ -79,11 +78,21 @@
         </button>
     </div>
 
+    <!-- Expiration Reminder Banner (Appears if any items are <= 3 days) -->
+    {% if expiring_count > 0 %}
+    <div class="hef-expiry-banner text-center py-3 px-4 mb-4 rounded-4" style="background-color: #F7D579; font-weight: 600; color: #21352A;">
+        Expiration Reminder: {{ expiring_count }} ingredient 
+        {% if expiring_count == 1 %}is{% else %}are{% endif %} 
+        about to expire!
+    </div>
+    {% endif %}
+
     <!-- Inventory Cards Grid -->
     <div class="row g-4">
         {% for item in ingredients %}
         <div class="col-12 col-md-6 col-lg-4">
             <article class="hef-inventory-card d-flex align-items-center gap-3 p-4">
+                <!-- Image / Icon Placeholder wrapper -->
                 <div class="hef-card-img-wrapper flex-shrink-0 d-flex align-items-center justify-content-center">
                     <img src="https://placehold.co/122x122" alt="{{ item.name }}" class="img-fluid rounded-4">
                 </div>
@@ -93,20 +102,32 @@
                         <p class="hef-card-subtitle mb-0">{{ item.category }}</p>
                         <p class="hef-card-subtitle mb-0">Quantity: {{ item.quantity }}</p>
                     </div>
-                    <div class="hef-expiry-pill text-center">
-                        Expires: {{ item.expiration_date|date:"M d, Y" }}
+                    
+                    <!-- Dynamic Expiry Pill with Warning Condition (<= 3 days) -->
+                    <div class="hef-expiry-pill text-center {% if item.days_until_expiry is not None and item.days_until_expiry < 0 %}expired{% elif item.days_until_expiry is not None and item.days_until_expiry <= 3 %}warning{% endif %}">
+                        {% if item.days_until_expiry is not None and item.days_until_expiry < 0 %}
+                            Expired
+                        {% elif item.days_until_expiry == 0 %}
+                            Expires: Today
+                        {% elif item.days_until_expiry == 1 %}
+                            Expires: Tomorrow
+                        {% else %}
+                            Expires: in {{ item.days_until_expiry }} days
+                        {% endif %}
                     </div>
+
                     <div class="d-flex gap-2">
-                        <!-- Edit Button triggers modal & passes data -->
                         <button class="btn-hef-secondary btn-sm flex-fill py-2 edit-btn" type="button"
-                            data-bs-toggle="modal" data-bs-target="#editIngredientModal" data-id="{{ item.id }}"
-                            data-name="{{ item.name }}" data-category="{{ item.category }}"
-                            data-quantity="{{ item.quantity }}" data-expiry="{{ item.expiration_date|date:'Y-m-d' }}">
+                                data-bs-toggle="modal" 
+                                data-bs-target="#editIngredientModal"
+                                data-id="{{ item.id }}"
+                                data-name="{{ item.name }}"
+                                data-category="{{ item.category }}"
+                                data-quantity="{{ item.quantity }}"
+                                data-expiry="{{ item.expiration_date|date:'Y-m-d' }}">
                             Edit
                         </button>
-                        <!-- Delete Form -->
-                        <form action="{% url 'main:delete_ingredient' item.id %}" method="post"
-                            class="flex-fill d-flex">
+                        <form action="{% url 'main:delete_ingredient' item.id %}" method="post" class="flex-fill d-flex">
                             {% csrf_token %}
                             <button class="btn-hef-danger btn-sm w-100 py-2 border-0" type="submit">Delete</button>
                         </form>
@@ -116,7 +137,7 @@
         </div>
         {% empty %}
         <div class="col-12 text-center py-5">
-            <p class="text-muted">Your inventory is currently empty. Add an ingredient to get started!</p>
+            <p class="text-muted">Your pantry is currently empty. Add an ingredient to get started!</p>
         </div>
         {% endfor %}
     </div>

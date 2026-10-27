@@ -1,6 +1,7 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import login
 from django.contrib.auth.decorators import login_required
+from datetime import date, timedelta
 from .forms import *
 from .models import *
 
@@ -46,15 +47,21 @@ def login_account(request):
 def show_inventory(request):
     ingredients = Ingredient.objects.filter(user=request.user)
     
-    # Search filter
     search_query = request.GET.get('q', '')
     if search_query:
         ingredients = ingredients.filter(name__icontains=search_query)
         
-    # Category filter
     category_filter = request.GET.get('category', '')
     if category_filter and category_filter != 'All':
         ingredients = ingredients.filter(category=category_filter)
+
+    # Calculate ingredients about to expire (<= 3 days from today)
+    today = date.today()
+    warning_threshold = today + timedelta(days=3)
+    expiring_count = sum(
+        1 for item in ingredients 
+        if item.expiration_date and item.expiration_date <= warning_threshold
+    )
 
     form = IngredientForm()
     context = {
@@ -62,6 +69,7 @@ def show_inventory(request):
         'form': form,
         'search_query': search_query,
         'current_category': category_filter or 'All',
+        'expiring_count': expiring_count,
     }
     return render(request, 'pages/inventory.html', context)
 
