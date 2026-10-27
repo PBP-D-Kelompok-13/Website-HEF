@@ -110,7 +110,7 @@ class IngredientCRUDViewTests(TestCase):
         
 class IngredientSearchAndFilterTests(TestCase):
     def setUp(self):
-        self.user = User.objects.create_user(
+        self.user = CustomUser.objects.create_user(
             username="celine",
             email="celine@example.com",
             date_of_birth=date(2005, 1, 1),

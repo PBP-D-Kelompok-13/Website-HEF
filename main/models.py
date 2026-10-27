@@ -1,5 +1,6 @@
 from django.db import models
 from django.contrib.auth.models import AbstractUser
+from datetime import date
 
 class CustomUser(AbstractUser):
     email = models.EmailField(unique = True)
@@ -31,3 +32,9 @@ class Ingredient(models.Model):
     
     def __str__(self):
         return f"{self.name} ({self.user.username})"
+    
+    @property
+    def days_until_expiry(self):
+        if not self.expiration_date:
+            return None
+        return (self.expiration_date - date.today()).days

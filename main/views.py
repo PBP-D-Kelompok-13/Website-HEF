@@ -14,6 +14,7 @@ from django.contrib.auth.decorators import login_required
 from django.shortcuts import redirect
 from django.views.decorators.http import require_POST
 from functools import wraps
+from datetime import date, timedelta
 import random
 
 # Custom wrapper that only allows HTMX requests
@@ -172,15 +173,21 @@ def deactivate_account(request):
 def show_inventory(request):
     ingredients = Ingredient.objects.filter(user=request.user)
     
-    # Search filter
     search_query = request.GET.get('q', '')
     if search_query:
         ingredients = ingredients.filter(name__icontains=search_query)
         
-    # Category filter
     category_filter = request.GET.get('category', '')
     if category_filter and category_filter != 'All':
         ingredients = ingredients.filter(category=category_filter)
+
+    # Calculate ingredients about to expire (<= 3 days from today)
+    today = date.today()
+    warning_threshold = today + timedelta(days=3)
+    expiring_count = sum(
+        1 for item in ingredients 
+        if item.expiration_date and item.expiration_date <= warning_threshold
+    )
 
     form = IngredientForm()
     context = {
@@ -188,6 +195,7 @@ def show_inventory(request):
         'form': form,
         'search_query': search_query,
         'current_category': category_filter or 'All',
+        'expiring_count': expiring_count,
     }
     return render(request, 'pages/inventory.html', context)
 

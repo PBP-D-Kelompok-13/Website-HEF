@@ -69,6 +69,19 @@
     color: var(--hef-brand-forest, #32694A);
 }
 
+/* Expiry Warning */
+.hef-expiry-pill.warning {
+    background-color: #F7D579 !important;
+    color: #21352A !important;
+    font-weight: 600;
+}
+
+.hef-expiry-pill.expired {
+    background-color: #E96D62 !important;
+    color: #FFFFFF !important;
+    font-weight: 600;
+}
+
 /* Inventory Cards */
 .hef-inventory-card {
     background: var(--hef-surface-card, #FFFFFF);
