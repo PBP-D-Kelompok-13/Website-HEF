@@ -234,11 +234,56 @@ h2, .h2 {
   background-color: #D9644F;  
 }
 
+/* ====================
+   TOAST MESSAGES
+   ==================== */
+.hef-toast-stack {
+  bottom: 0;
+  right: 0;
+  z-index: 1100;
+}
+
+.hef-toast-item {
+  --bs-toast-max-width: 440px;
+  --hef-toast-accent: var(--hef-brand-forest);
+  font-size: 16px;
+  line-height: 22px;
+  color: var(--hef-text-primary);
+  background-color: var(--hef-surface-card);
+  border: 1px solid var(--hef-border-default);
+  border-radius: 16px;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.08);
+}
+
+.hef-toast-item .toast-body {
+  padding: 16px 20px;
+}
+
+.hef-toast-icon {
+  flex-shrink: 0;
+  color: var(--hef-toast-accent);
+}
+
+.hef-toast-item--success { --hef-toast-accent: var(--hef-brand-forest); }
+.hef-toast-item--error   { --hef-toast-accent: var(--hef-brand-watermelon); }
+.hef-toast-item--warning { --hef-toast-accent: var(--hef-brand-citrus); }
+.hef-toast-item--info    { --hef-toast-accent: var(--hef-text-secondary); }
+
+
 /* ================================
    MOBILE & RESPONSIVE BREAKPOINTS
    ================================ */
 @media (max-width: 991.98px) {
   body {
     padding-top: 64px;
+  }
+
+  .hef-toast-stack {
+    left: 0;
+  }
+
+  .hef-toast-item {
+    width: 100%;
+    max-width: none;
   }
 }

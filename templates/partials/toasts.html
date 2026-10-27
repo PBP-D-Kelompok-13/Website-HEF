@@ -1,0 +1,23 @@
+{% for message in messages %}
+  <div class="toast hef-toast-item hef-toast-item--{{ message.level_tag }}"
+       role="alert" aria-live="assertive" aria-atomic="true" data-bs-delay="4000">
+    <div class="toast-body d-flex align-items-center gap-3">
+      {% if message.level_tag == "success" %}
+        <svg class="hef-toast-icon" width="28" height="28" viewBox="0 0 24 24" fill="none"
+             stroke="currentColor" stroke-width="1.75" stroke-linecap="round"
+             stroke-linejoin="round" aria-hidden="true">
+          <circle cx="12" cy="12" r="10"/>
+          <path d="M8 12.5l2.7 2.7L16 9.8"/>
+        </svg>
+      {% else %}
+        <svg class="hef-toast-icon" width="28" height="28" viewBox="0 0 24 24" fill="none"
+             stroke="currentColor" stroke-width="1.75" stroke-linecap="round"
+             stroke-linejoin="round" aria-hidden="true">
+          <circle cx="12" cy="12" r="10"/>
+          <path d="M12 7.5v5.5M12 16.5h.01"/>
+        </svg>
+      {% endif %}
+      <span>{{ message }}</span>
+    </div>
+  </div>
+{% endfor %}

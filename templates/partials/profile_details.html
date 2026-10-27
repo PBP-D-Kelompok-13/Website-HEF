@@ -38,3 +38,7 @@
 <span id="navbar-name-desktop" class="hef-navbar-username" hx-swap-oob="true">{{ user.username }}</span>
 <span id="navbar-name-mobile" class="hef-navbar-username" hx-swap-oob="true">{{ user.username }}</span>
 {% endif %}
+
+{% if toast %}
+{% include "partials/toasts_oob.html" %}
+{% endif %}
