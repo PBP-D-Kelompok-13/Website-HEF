@@ -14,6 +14,7 @@ from django.contrib.auth.decorators import login_required
 from django.shortcuts import redirect
 from django.views.decorators.http import require_POST
 from functools import wraps
+from django.contrib import messages
 from datetime import date, timedelta
 import random
 
@@ -207,6 +208,9 @@ def add_ingredient(request):
             ingredient = form.save(commit=False)
             ingredient.user = request.user
             ingredient.save()
+            messages.success(request, "Ingredient successfully added.")
+        else:
+            messages.error(request, "Failed to add ingredient. Please check your input.")
     return redirect('main:show_inventory')
 
 @login_required(login_url='main:login_account')
@@ -216,6 +220,9 @@ def edit_ingredient(request, pk):
         form = IngredientForm(request.POST, instance=ingredient)
         if form.is_valid():
             form.save()
+            messages.success(request, "Ingredient successfully editted.")
+        else:
+            messages.error(request, "Failed to edit ingredient. Please check your input.")
     return redirect('main:show_inventory')
 
 @login_required(login_url='main:login_account')
