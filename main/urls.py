@@ -15,8 +15,8 @@ urlpatterns = [
     path("profile/change-password/", change_password, name="change_password"),
     path("reactivate/", reactivate_account, name="reactivate_account"),
     path("profile/deactivate/", deactivate_account, name="deactivate_account"),
-    path('inventory/', show_inventory, name='show_inventory'),
-    path('inventory/add/', add_ingredient, name='add_ingredient'),
-    path('inventory/edit/<int:pk>/', edit_ingredient, name='edit_ingredient'),
-    path('inventory/delete/<int:pk>/', delete_ingredient, name='delete_ingredient'),
+    path('pantry/', show_inventory, name='show_inventory'),
+    path('pantry/add/', add_ingredient, name='add_ingredient'),
+    path('pantry/edit/<int:pk>/', edit_ingredient, name='edit_ingredient'),
+    path('pantry/delete/<int:pk>/', delete_ingredient, name='delete_ingredient'),
 ]
