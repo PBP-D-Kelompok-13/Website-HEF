@@ -4,7 +4,7 @@ from django.contrib.auth import get_user_model
 from django.test import Client, TestCase
 from django.urls import reverse
 
-from main.forms import CustomAuthenticationForm, CustomUserCreationForm
+from main.forms import CustomAuthenticationForm, CustomUserCreationForm, ReactivationForm
 
 User = get_user_model()
 HTMX = {"HTTP_HX_REQUEST": "true"}
@@ -221,3 +221,149 @@ class RegistrationPageTests(TestCase):
 
         self.assertRedirects(response, reverse("main:show_landing_page"))
 
+class ReactivationFormTests(TestCase):
+    def setUp(self):
+        self.user = User.objects.create_user(
+            username="inactiveuser",
+            email="inactive@example.com",
+            password="StrongPass123!",
+            date_of_birth=date(2000, 1, 1),
+            is_active=False,
+        )
+
+    def test_form_fields_are_styled(self):
+        form = ReactivationForm()
+
+        self.assertEqual(list(form.fields), ["email", "password"])
+        for field in form.fields.values():
+            self.assertEqual(field.widget.attrs["class"], "hef-input")
+
+    def test_valid_credentials_for_inactive_account_are_accepted(self):
+        form = ReactivationForm(data={
+            "email": "inactive@example.com",
+            "password": "StrongPass123!",
+        })
+
+        self.assertTrue(form.is_valid(), form.errors)
+        self.assertEqual(form.user.pk, self.user.pk)
+
+    def test_unknown_email_and_wrong_password_get_the_same_generic_error(self):
+        wrong_password_form = ReactivationForm(data={
+            "email": "inactive@example.com",
+            "password": "WrongPassword123!",
+        })
+        unknown_email_form = ReactivationForm(data={
+            "email": "unknown@example.com",
+            "password": "StrongPass123!",
+        })
+
+        self.assertFalse(wrong_password_form.is_valid())
+        self.assertFalse(unknown_email_form.is_valid())
+
+        wrong_password_error = str(wrong_password_form.non_field_errors()[0])
+        unknown_email_error = str(unknown_email_form.non_field_errors()[0])
+        self.assertEqual(wrong_password_error, unknown_email_error)
+
+    def test_active_account_cannot_be_reactivated(self):
+        self.user.is_active = True
+        self.user.save()
+
+        form = ReactivationForm(data={
+            "email": "inactive@example.com",
+            "password": "StrongPass123!",
+        })
+
+        self.assertFalse(form.is_valid())
+        self.assertTrue(form.non_field_errors())
+
+
+class ReactivationPageTests(TestCase):
+    def setUp(self):
+        self.url = reverse("main:reactivate_account")
+        self.user = User.objects.create_user(
+            username="inactiveuser",
+            email="inactive@example.com",
+            password="StrongPass123!",
+            date_of_birth=date(2000, 1, 1),
+            is_active=False,
+        )
+        self.valid_data = {
+            "email": "inactive@example.com",
+            "password": "StrongPass123!",
+        }
+
+    def test_registration_page_links_to_reactivation(self):
+        response = self.client.get(reverse("main:register_account"))
+
+        self.assertContains(response, self.url)
+        self.assertContains(response, "Reactivate your account")
+
+    def test_get_renders_reactivation_form_and_csrf_token(self):
+        response = self.client.get(self.url)
+
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, "pages/reactivate_account.html")
+        self.assertContains(response, 'name="email"')
+        self.assertContains(response, 'name="password"')
+        self.assertContains(response, "csrfmiddlewaretoken")
+
+    def test_valid_post_reactivates_existing_account_and_redirects_to_login(self):
+        original_user_id = self.user.pk
+
+        response = self.client.post(self.url, self.valid_data)
+
+        self.assertRedirects(response, reverse("main:login_account"))
+        self.user.refresh_from_db()
+        self.assertTrue(self.user.is_active)
+        self.assertEqual(self.user.pk, original_user_id)
+        self.assertEqual(self.user.username, "inactiveuser")
+        self.assertEqual(User.objects.count(), 1)
+        self.assertFalse(response.wsgi_request.user.is_authenticated)
+
+    def test_wrong_password_does_not_reactivate_account(self):
+        response = self.client.post(
+            self.url,
+            {**self.valid_data, "password": "WrongPassword123!"},
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, "pages/reactivate_account.html")
+        self.assertContains(response, "Email or password is incorrect")
+        self.user.refresh_from_db()
+        self.assertFalse(self.user.is_active)
+
+    def test_unknown_email_does_not_create_or_reactivate_an_account(self):
+        response = self.client.post(
+            self.url,
+            {
+                "email": "unknown@example.com",
+                "password": "StrongPass123!",
+            },
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Email or password is incorrect")
+        self.user.refresh_from_db()
+        self.assertFalse(self.user.is_active)
+        self.assertEqual(User.objects.count(), 1)
+
+    def test_active_account_is_not_reactivated(self):
+        self.user.is_active = True
+        self.user.save()
+
+        response = self.client.post(self.url, self.valid_data)
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Email or password is incorrect")
+        self.user.refresh_from_db()
+        self.assertTrue(self.user.is_active)
+        self.assertEqual(User.objects.count(), 1)
+
+    def test_post_without_csrf_token_is_rejected(self):
+        csrf_client = Client(enforce_csrf_checks=True)
+
+        response = csrf_client.post(self.url, self.valid_data)
+
+        self.assertEqual(response.status_code, 403)
+        self.user.refresh_from_db()
+        self.assertFalse(self.user.is_active)
