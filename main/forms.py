@@ -1,6 +1,6 @@
 from django import forms
 from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
-from .models import CustomUser
+from .models import *
 
 def style(field, placeholder):
     field.widget.attrs.update({'class': 'hef-input', 'placeholder': placeholder})
@@ -32,3 +32,19 @@ class CustomAuthenticationForm(AuthenticationForm):
         style(self.fields['password'], 'Enter your password')
         # Keep focus on the page heading until the user chooses a field.
         self.fields['username'].widget.attrs.pop('autofocus', None)
+
+class IngredientForm(forms.ModelForm):
+    class Meta:
+        model = Ingredient
+        fields = ['name', 'category', 'quantity', 'expiration_date']
+        widgets = {
+            'expiration_date': forms.DateInput(attrs={'type': 'date'}),
+        }
+        
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        style(self.fields['name'], 'e.g., Spinach')
+        style(self.fields['quantity'], 'e.g., 2pcs, 500g')
+        style(self.fields['category'], 'Select Category')
+        
+        self.fields['category'].widget.attrs.update({'class': 'hef-input'})
