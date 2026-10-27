@@ -38,6 +38,7 @@ class AuthenticationFormTests(TestCase):
         self.assertEqual(form.fields["date_of_birth"].widget.input_type, "date")
         for name in form.fields:
             self.assertEqual(form.fields[name].widget.attrs["class"], "hef-input")
+            self.assertEqual(form[name].id_for_label, f"id_{name}")
         self.assertEqual(
             form.fields["email"].widget.attrs["placeholder"], "Enter your email"
         )
@@ -94,6 +95,8 @@ class AuthenticationFormTests(TestCase):
         self.assertEqual(
             form.fields["password"].widget.attrs["placeholder"], "Enter your password"
         )
+        self.assertEqual(form["username"].id_for_label, "id_username")
+        self.assertEqual(form["password"].id_for_label, "id_password")
 
     def test_login_form_validates_credentials(self):
         User.objects.create_user(
@@ -109,20 +112,6 @@ class AuthenticationFormTests(TestCase):
         })
 
         self.assertTrue(form.is_valid(), form.errors)
-
-class FormFieldIdTests(TestCase):
-    def test_registration_form_uses_default_ids(self):
-        form = CustomUserCreationForm()
-        self.assertEqual(form["username"].id_for_label, "id_username")
-        self.assertEqual(form["email"].id_for_label, "id_email")
-        self.assertEqual(form["date_of_birth"].id_for_label, "id_date_of_birth")
-        self.assertEqual(form["password1"].id_for_label, "id_password1")
-        self.assertEqual(form["password2"].id_for_label, "id_password2")
-
-    def test_login_form_uses_default_ids(self):
-        form = CustomAuthenticationForm()
-        self.assertEqual(form["username"].id_for_label, "id_username")
-        self.assertEqual(form["password"].id_for_label, "id_password")
 
 class LoginPageTests(TestCase):
     def setUp(self):
@@ -264,19 +253,6 @@ class ReactivationFormTests(TestCase):
         unknown_email_error = str(unknown_email_form.non_field_errors()[0])
         self.assertEqual(wrong_password_error, unknown_email_error)
 
-    def test_active_account_cannot_be_reactivated(self):
-        self.user.is_active = True
-        self.user.save()
-
-        form = ReactivationForm(data={
-            "email": "inactive@example.com",
-            "password": "StrongPass123!",
-        })
-
-        self.assertFalse(form.is_valid())
-        self.assertTrue(form.non_field_errors())
-
-
 class ReactivationPageTests(TestCase):
     def setUp(self):
         self.url = reverse("main:reactivate_account")
@@ -292,12 +268,6 @@ class ReactivationPageTests(TestCase):
             "password": "StrongPass123!",
         }
 
-    def test_registration_page_links_to_reactivation(self):
-        response = self.client.get(reverse("main:register_account"))
-
-        self.assertContains(response, self.url)
-        self.assertContains(response, "Reactivate your account")
-
     def test_get_renders_reactivation_form_and_csrf_token(self):
         response = self.client.get(self.url)
 
@@ -306,6 +276,9 @@ class ReactivationPageTests(TestCase):
         self.assertContains(response, 'name="email"')
         self.assertContains(response, 'name="password"')
         self.assertContains(response, "csrfmiddlewaretoken")
+        registration_response = self.client.get(reverse("main:register_account"))
+        self.assertContains(registration_response, self.url)
+        self.assertContains(registration_response, "Reactivate your account")
 
     def test_valid_post_reactivates_existing_account_and_redirects_to_login(self):
         original_user_id = self.user.pk

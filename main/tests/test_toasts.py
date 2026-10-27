@@ -32,13 +32,6 @@ class RedirectToastTests(ToastTestBase):
         )
         self.assertContains(response, "Login successful.", count=1)
         self.assertContains(response, "hef-toast-item")
-
-    def test_success_toast_has_check_icon(self):
-        response = self.client.post(
-            reverse("main:login_account"),
-            {"username": "healthyuser", "password": "StrongPass123!"},
-            follow=True,
-        )
         self.assertContains(response, "hef-toast-icon", count=1)
 
     def test_failed_login_shows_no_toast(self):
