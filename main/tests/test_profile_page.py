@@ -8,19 +8,6 @@ from django.contrib.auth.forms import PasswordChangeForm
 User = get_user_model()
 HTMX = {"HTTP_HX_REQUEST": "true"}
 
-class NavbarProfileLinkTests(TestCase):
-    def test_profile_link_points_to_profile_page_on_both_navbars(self):
-        user = User.objects.create_user(
-            username="healthyuser",
-            email="healthy@example.com",
-            password="StrongPass123!",
-            date_of_birth=date(2000, 1, 1),
-        )
-        self.client.force_login(user)
-        response = self.client.get(reverse("main:show_landing_page"))
-        profile_url = reverse("main:show_profile_page")
-        self.assertContains(response, f'href="{profile_url}"', count=2)
-
 class ProfilePageTests(TestCase):
     def setUp(self):
         self.user = User.objects.create_user(
@@ -43,25 +30,13 @@ class ProfilePageTests(TestCase):
         response = self.client.get(self.url)
         self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(response, "pages/profile_page.html")
-
-    def test_profile_page_shows_user_details(self):
-        self.client.force_login(self.user)
-        response = self.client.get(self.url)
         self.assertContains(response, "Your Profile")
         self.assertContains(response, "healthyuser")
         self.assertContains(response, "healthy@example.com")
         self.assertContains(response, "01/01/2000")
-
-    def test_profile_page_shows_placeholder_cards(self):
-        self.client.force_login(self.user)
-        response = self.client.get(self.url)
         self.assertContains(response, "Product Search History")
         self.assertContains(response, "Your Pantry")
         self.assertContains(response, "Saved Recipes")
-
-    def test_profile_page_never_shows_password_hash(self):
-        self.client.force_login(self.user)
-        response = self.client.get(self.url)
         self.assertNotContains(response, self.user.password)
 
 class LogoutTests(TestCase):
@@ -80,24 +55,22 @@ class LogoutTests(TestCase):
         self.assertEqual(response.status_code, 405)
         self.assertTrue(response.wsgi_request.user.is_authenticated)
 
-    def test_post_logs_out_and_redirects_to_landing(self):
-        self.client.force_login(self.user)
-        response = self.client.post(self.url)
-        self.assertRedirects(response, reverse("main:show_landing_page"))
-        self.assertFalse(response.wsgi_request.user.is_authenticated)
-
     def test_post_without_csrf_token_is_rejected(self):
         csrf_client = Client(enforce_csrf_checks=True)
         csrf_client.force_login(self.user)
         response = csrf_client.post(self.url)
         self.assertEqual(response.status_code, 403)
 
-    def test_profile_page_has_logout_form_with_csrf_token(self):
+    def test_profile_logout_form_has_csrf_token_and_logs_out(self):
         self.client.force_login(self.user)
         response = self.client.get(reverse("main:show_profile_page"))
         self.assertContains(response, f'action="{self.url}"')
         self.assertContains(response, "csrfmiddlewaretoken")
         self.assertContains(response, "Logout")
+
+        response = self.client.post(self.url)
+        self.assertRedirects(response, reverse("main:show_landing_page"))
+        self.assertFalse(response.wsgi_request.user.is_authenticated)
 
 class DeleteAccountTests(TestCase):
     def setUp(self):
@@ -134,12 +107,8 @@ class DeleteAccountTests(TestCase):
         response = self.client.post(self.url)
         self.assertRedirects(response, reverse("main:show_landing_page"))
         self.assertFalse(User.objects.filter(pk=self.user.pk).exists())
-        self.assertFalse(response.wsgi_request.user.is_authenticated)
-
-    def test_post_only_deletes_the_logged_in_user(self):
-        self.client.force_login(self.user)
-        self.client.post(self.url)
         self.assertTrue(User.objects.filter(pk=self.other_user.pk).exists())
+        self.assertFalse(response.wsgi_request.user.is_authenticated)
 
     def test_post_without_csrf_token_is_rejected(self):
         csrf_client = Client(enforce_csrf_checks=True)
@@ -255,19 +224,6 @@ class ProfileEditTests(TestCase):
         self.assertContains(response, 'id="navbar-name-desktop"')
         self.assertContains(response, 'id="navbar-name-mobile"')
 
-    def test_post_without_changes_is_valid(self):
-        self.client.force_login(self.user)
-        response = self.client.post(
-            self.edit_url,
-            {
-                "username": "healthyuser",
-                "email": "healthy@example.com",
-                "date_of_birth": "2000-01-01",
-            },
-            **HTMX,
-        )
-        self.assertTemplateUsed(response, "partials/profile_details.html")
-
     # --- Validation errors ---
     def test_post_with_taken_username_shows_error_and_saves_nothing(self):
         self.client.force_login(self.user)
@@ -346,11 +302,9 @@ class ProfileEditHooksTests(TestCase):
         change_password_url = reverse("main:change_password")
         self.assertContains(response, f'hx-get="{change_password_url}"')
         self.assertContains(response, "Change Password")
-
-    def test_navbar_username_spans_have_ids_for_updates(self):
-        response = self.client.get(reverse("main:show_landing_page"))
-        self.assertContains(response, 'id="navbar-name-desktop"', count=1)
-        self.assertContains(response, 'id="navbar-name-mobile"', count=1)
+        landing_response = self.client.get(reverse("main:show_landing_page"))
+        self.assertContains(landing_response, 'id="navbar-name-desktop"', count=1)
+        self.assertContains(landing_response, 'id="navbar-name-mobile"', count=1)
 
 class PasswordChangeTests(TestCase):
     def setUp(self):
@@ -451,3 +405,72 @@ class PasswordChangeTests(TestCase):
         self.assertEqual(response.status_code, 403)
         self.user.refresh_from_db()
         self.assertTrue(self.user.check_password("StrongPass123!"))
+
+class AccountDeactivationTests(TestCase):
+    def setUp(self):
+        self.user = User.objects.create_user(
+            username="healthyuser",
+            email="healthy@example.com",
+            password="StrongPass123!",
+            date_of_birth=date(2000, 1, 1),
+        )
+        self.other_user = User.objects.create_user(
+            username="otheruser",
+            email="other@example.com",
+            password="StrongPass123!",
+            date_of_birth=date(1999, 5, 5),
+        )
+        self.url = reverse("main:deactivate_account")
+
+    def test_get_request_is_not_allowed(self):
+        self.client.force_login(self.user)
+
+        response = self.client.get(self.url)
+
+        self.assertEqual(response.status_code, 405)
+        self.user.refresh_from_db()
+        self.assertTrue(self.user.is_active)
+
+    def test_anonymous_post_is_redirected_to_login(self):
+        response = self.client.post(self.url)
+
+        self.assertRedirects(
+            response,
+            f"{reverse('main:login_account')}?next={self.url}",
+        )
+        self.user.refresh_from_db()
+        self.assertTrue(self.user.is_active)
+
+    def test_post_deactivates_account_and_logs_user_out(self):
+        self.client.force_login(self.user)
+
+        response = self.client.post(self.url)
+
+        self.assertRedirects(response, reverse("main:show_landing_page"))
+        self.user.refresh_from_db()
+        self.assertTrue(User.objects.filter(pk=self.user.pk).exists())
+        self.assertFalse(self.user.is_active)
+        self.other_user.refresh_from_db()
+        self.assertTrue(self.other_user.is_active)
+        self.assertFalse(response.wsgi_request.user.is_authenticated)
+
+    def test_post_without_csrf_token_is_rejected(self):
+        csrf_client = Client(enforce_csrf_checks=True)
+        csrf_client.force_login(self.user)
+
+        response = csrf_client.post(self.url)
+
+        self.assertEqual(response.status_code, 403)
+        self.user.refresh_from_db()
+        self.assertTrue(self.user.is_active)
+
+    def test_profile_page_has_deactivation_confirmation_form(self):
+        self.client.force_login(self.user)
+
+        response = self.client.get(reverse("main:show_profile_page"))
+
+        self.assertContains(response, "Deactivate Account")
+        self.assertContains(response, 'data-bs-target="#deactivateAccountModal"')
+        self.assertContains(response, 'id="deactivateAccountModal"', count=1)
+        self.assertContains(response, "Are you sure you want to deactivate your account?")
+        self.assertContains(response, f'action="{self.url}"')

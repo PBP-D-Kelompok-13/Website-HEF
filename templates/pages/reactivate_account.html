@@ -1,0 +1,34 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Reactivate Account | Healthy Eco Foody{% endblock %}
+
+{% block head %}
+<link rel="stylesheet" href="{% static 'css/auth.css' %}">
+{% endblock %}
+
+{% block content %}
+<main class="container auth-page-shell">
+  <section class="hef-auth-card" aria-labelledby="reactivate-page-title">
+    <form method="post" action="{% url 'main:reactivate_account' %}">
+      {% csrf_token %}
+      <h1 class="hef-auth-title" id="reactivate-page-title">Reactivate your account</h1>
+
+      {% include "components/_field.html" with field=form.email %}
+      {% include "components/_field.html" with field=form.password %}
+
+      {% for error in form.non_field_errors %}
+        <p class="hef-error">{{ error }}</p>
+      {% endfor %}
+
+      <a href="{% url 'main:register_account' %}" class="hef-switch-link">
+        Need a new account? Register here
+      </a>
+
+      <div class="hef-auth-actions">
+        <button type="submit" class="btn-hef-secondary">Reactivate Account</button>
+      </div>
+    </form>
+  </section>
+</main>
+{% endblock %}

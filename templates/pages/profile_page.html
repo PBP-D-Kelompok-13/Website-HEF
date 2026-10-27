@@ -59,6 +59,10 @@
                 <button type="button" class="btn-hef-danger" data-bs-toggle="modal" data-bs-target="#deleteAccountModal">
                     Delete Account
                 </button>
+
+                <button type="button" class="btn-hef-danger" data-bs-toggle="modal" data-bs-target="#deactivateAccountModal">
+                    Deactivate Account
+                </button>
                 
                 <form method="post" action="{% url 'main:logout_account' %}">
                     {% csrf_token %}
@@ -90,6 +94,32 @@
             </form>
 
             <button type="button" class="btn-hef-secondary w-100" data-bs-dismiss="modal">No, take me back!</button>
+        </div>
+    </div>
+</div>
+
+<!-- Deactivate Account confirmation modal -->
+<div class="modal fade" id="deactivateAccountModal" tabindex="-1" aria-labelledby="deactivateAccountModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content hef-modal-content">
+            <h2 class="h2 hef-modal-title text-center" id="deactivateAccountModalLabel">
+                Are you sure you want to deactivate your account?
+            </h2>
+
+            <p class="text-center">
+                Your account and its data will be kept. You can reactivate it later.
+            </p>
+
+            <form method="post" action="{% url 'main:deactivate_account' %}">
+                {% csrf_token %}
+                <button type="submit" class="btn-hef-danger w-100">
+                    Yes, deactivate my account
+                </button>
+            </form>
+
+            <button type="button" class="btn-hef-secondary w-100" data-bs-dismiss="modal">
+                No, keep my account
+            </button>
         </div>
     </div>
 </div>
