@@ -16,4 +16,5 @@ urlpatterns = [
     path("reactivate/", reactivate_account, name="reactivate_account"),
     path("profile/deactivate/", deactivate_account, name="deactivate_account"),
     path("discover/", discover, name="discover"),
+    path("products/<str:barcode>/", discover, name="product_detail"),
 ]
