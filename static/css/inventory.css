@@ -128,6 +128,17 @@
     color: var(--hef-text-primary, #21352A);
 }
 
+.btn-hef-primary.btn-fill-white {
+    background-color: var(--hef-surface-card, #FFFFFF);
+    color: var(--hef-brand-forest, #32694A) !important;
+    border: 1px solid var(--hef-border-default, #D9E2D6);
+}
+
+.btn-hef-primary.btn-fill-white:hover {
+    background-color: var(--hef-surface-paper, #F7F7F0);
+    color: var(--hef-brand-forest, #32694A) !important;
+}
+
 /* Responsive Overrides */
 @media (max-width: 991.98px) {
     .hef-search-wrapper {
