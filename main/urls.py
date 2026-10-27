@@ -15,4 +15,5 @@ urlpatterns = [
     path("profile/change-password/", change_password, name="change_password"),
     path("reactivate/", reactivate_account, name="reactivate_account"),
     path("profile/deactivate/", deactivate_account, name="deactivate_account"),
+    path("discover/", discover, name="discover"),
 ]

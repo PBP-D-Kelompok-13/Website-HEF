@@ -1,6 +1,6 @@
 {% load static %}
 
-<!DOCTYPE html> 
+<!DOCTYPE html>
 <html>
     <head>
         <meta charset="utf-8">
@@ -26,136 +26,11 @@
     </head>
 
     <body>
-        <header>
-            <!-- 1. Desktop Navbar (Visible on Large Screens) -->
-            <div class="container mt-4 d-none d-lg-block">
-                <nav class="hef-navbar d-flex align-items-center justify-content-between px-4 py-2 shadow-sm">
-                    <!-- Left Group: Logo and Nav Links -->
-                    <div class="d-flex align-items-center gap-5">
-                        <a href="{% url 'main:show_landing_page' %}" class="navbar-brand d-flex align-items-center gap-2 text-decoration-none">
-                            <img src="{% static 'img/HEF Main Brand.png' %}" alt="HEF Logo" height="40">
-                        </a>
-                        <ul class="nav gap-4">
-                            <li class="nav-item"><a href="#" class="nav-link p-0">Discover</a></li>
-                            <li class="nav-item"><a href="#" class="nav-link p-0">Compare</a></li>
-                            <li class="nav-item"><a href="#" class="nav-link p-0">Recipes</a></li>
-                            <li class="nav-item"><a href="#" class="nav-link p-0">Pantry</a></li>
-                        </ul>
-                    </div>
-
-                    <!-- Right Group: Login Link Or Profile Link -->
-                    <div class="d-flex align-items-center gap-4">
-                        {% include "components/_theme_toggle.html" %}
-                        {% if user.is_authenticated %}
-                            <a href="{% url 'main:show_profile_page' %}" class="hef-profile-link text-decoration-none d-flex align-items-center gap-2">
-                                <span id="navbar-name-desktop" class="hef-navbar-username">{{ user.username }}</span>
-                                <span class="hef-avatar">
-                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                        <circle cx="12" cy="8" r="3.5"/>
-                                        <path d="M5 20c0-3.5 3-5.5 7-5.5s7 2 7 5.5z"/>
-                                    </svg>
-                                </span>
-                            </a>
-                        {% else %}
-                            <a href="{% url 'main:login_account' %}" class="login-link text-decoration-none d-flex align-items-center gap-2">
-                                <span>Login</span>
-                                <svg width="22" height="20" viewBox="0 0 33 30" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                    <path d="M16 4H27V26H16M6 15H20M15 20L20 15L15 10" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                                </svg>
-                            </a>
-                        {% endif %}
-                    </div>
-                </nav>
-            </div>
-
-            <!-- 2. Mobile Sticky Toggle Button  -->
-            <div class="hef-mobile-toggle-wrapper d-lg-none">
-                <button class="btn hef-mobile-toggle rounded-circle d-flex align-items-center justify-content-center"
-                            type="button"
-                            data-bs-toggle="offcanvas"
-                            data-bs-target="#hefMobileSidebar"
-                            aria-controls="hefMobileSidebar">
-                        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
-                            <line x1="3" y1="6" x2="21" y2="6"/>
-                            <line x1="3" y1="12" x2="21" y2="12"/>
-                            <line x1="3" y1="18" x2="21" y2="18"/>
-                        </svg>
-                    </button>
-            </div>
-
-            <!-- 3. Mobile Sidebar  -->
-            <div class="offcanvas offcanvas-start hef-mobile-offcanvas" tabindex="-1" id="hefMobileSidebar" aria-labelledby="hefMobileSidebarLabel">
-                
-                <!-- Sidebar Header: Logo & Close Button -->
-                <div class="d-flex align-items-center justify-content-between p-4 pb-0">
-                    <a href="{% url 'main:show_landing_page' %}" class="text-decoration-none">
-                        <img src="{% static 'img/HEF Main Brand.png' %}" alt="HEF Logo" height="34">
-                    </a>
-                    <button type="button hef-sidebar-close" class="btn p-0 border-0" data-bs-dismiss="offcanvas" aria-label="Close">
-                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
-                            <line x1="18" y1="6" x2="6" y2="18"></line>
-                            <line x1="6" y1="6" x2="18" y2="18"></line>
-                        </svg>
-                    </button>
-                </div>
-
-                <hr class="hef-sidebar-divider mx-4 my-3">
-
-                <!-- Sidebar Body: Vertical Navigation Links -->
-                <div class="offcanvas-body d-flex flex-column justify-content-between px-4 pt-0 pb-4">
-                    <ul class="nav flex-column hef-mobile-nav">
-                        <li class="nav-item">
-                            <a href="#" class="nav-link p-0">Discover</a>
-                        </li>
-                        <li class="nav-item">
-                            <a href="#" class="nav-link p-0">Compare</a>
-                        </li>
-                        <li class="nav-item">
-                            <a href="#" class="nav-link p-0">Recipes</a>
-                        </li>
-                        <li class="nav-item">
-                            <a href="#" class="nav-link p-0">Pantry</a>
-                        </li>
-                    </ul>
-
-                    <!-- Sidebar Footer: Login Or User Profile Button -->
-                    <div>
-                        <hr class="hef-sidebar-divider mb-3">
-                        {% if user.is_authenticated %}
-                            <a href="{% url 'main:show_profile_page' %}" class="hef-profile-link text-decoration-none d-flex align-items-center justify-content-between py-1">
-                                <span id="navbar-name-mobile" class="hef-navbar-username">{{ user.username }}</span>
-                                <span class="hef-avatar">
-                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                        <circle cx="12" cy="8" r="3.5"/>
-                                        <path d="M5 20c0-3.5 3-5.5 7-5.5s7 2 7 5.5z"/>
-                                    </svg>
-                                </span>
-                            </a>
-                        {% else %}
-                            <a href="{% url 'main:login_account' %}" class="login-link text-decoration-none d-flex align-items-center justify-content-between py-1">
-                                <span>Login</span>
-                                <svg width="24" height="22" viewBox="0 0 33 30" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                    <path d="M16 4H27V26H16M6 15H20M15 20L20 15L15 10" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                                </svg>
-                            </a>
-                        {% endif %}
-
-                        <div class="d-flex justify-content-center mt-3">
-                            {% include "components/_theme_toggle.html" %}
-                        </div>
-                    </div>
-                </div>
-
-            </div>
-        </header>
+        {% include "components/header.html" %}
 
         {% block content %}{% endblock content %}
 
-        <footer class="container my-5">
-            <div class="d-flex justify-content-end">
-                <span class="text-label">© HEF 2026</span>
-            </div>
-        </footer>
+        {% include "components/footer.html" %}
 
         <div id="toast-container" class="toast-container position-fixed p-3 hef-toast-stack">
             {% include "partials/toasts.html" %}

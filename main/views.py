@@ -162,3 +162,9 @@ def deactivate_account(request):
     messages.success(request, "Your account has been deactivated.")
 
     return redirect("main:show_landing_page")
+
+
+from django.http import HttpResponse
+
+def discover(request):
+    return HttpResponse("ok")
