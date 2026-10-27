@@ -141,7 +141,7 @@
 }
 
 .hef-edit-btn:hover {
-  background-color: #C8DCBC;
+  background-color: var(--hef-brand-mint-hover);
 }
 
 .hef-profile-field {
@@ -162,16 +162,14 @@
 }
 
 .hef-profile-form .hef-input:focus {
-  outline: none;
-  border-color: var(--hef-brand-forest);
-  box-shadow: 0 0 0 3px rgba(50, 105, 74, 0.15);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--hef-brand-forest) 15%, transparent);
 }
 
 .hef-profile-error {
   margin: 0;
   font-size: 12px;
   line-height: 18px;
-  color: var(--hef-brand-watermelon);
+  color: var(--hef-brand-watermelon-text);
 }
 
 .hef-profile-form-actions .btn-hef-primary,

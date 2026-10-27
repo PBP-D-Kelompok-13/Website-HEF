@@ -20,7 +20,7 @@ html {
    ==================== */
 
 .hef-welcome {
-  color: var(--hef-brand-watermelon);
+  color: var(--hef-brand-watermelon-text);
 }
 
 .hef-hero-card {
@@ -57,13 +57,12 @@ html {
 }
 
 .btn-hef-primary.btn-fill-white {
-  background-color: #FFFFFF;
-  color: #32694A !important;
+  background-color: var(--hef-surface-card);
+  color: var(--hef-brand-forest) !important;
 }
-
 .btn-hef-primary.btn-fill-white:hover {
-  background-color: #F4F4F4;
-  color: #32694A !important;
+  background-color: var(--hef-surface-paper);
+  color: var(--hef-brand-forest) !important;
 }
 
 .hef-plate-img {
@@ -96,7 +95,7 @@ html {
   column-gap: 20px;
   row-gap: 8px;
   align-items: center;
-  border: 1px solid var(--hef-outline-black);
+  border: 1px solid #000000;
   border-radius: 28px;
 }
 
@@ -110,7 +109,7 @@ html {
   grid-row: 1 / span 3;
   width: 120px;
   height: 120px;
-  background-color: #FFFFFF;
+  background-color: var(--hef-surface-card);
   border-radius: 50%;
   padding: 14px;
   align-self: center;

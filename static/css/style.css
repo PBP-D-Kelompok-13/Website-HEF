@@ -3,6 +3,8 @@
     ====================== */
 
 :root {
+  color-scheme: light;
+  
   /* Brand Palette */
   --hef-brand-forest: #32694A;
   --hef-brand-leaf: #477A52;
@@ -36,6 +38,12 @@
   --hef-accent-green: #AAEB8C;
   --hef-accent-yellow: #FFD681;
 
+  --hef-on-primary: #FFFFFF;              
+  --hef-brand-forest-hover: #27533A;
+  --hef-brand-mint-hover: #C8DCBC;
+  --hef-brand-watermelon-hover: #D9644F;
+  --hef-brand-watermelon-text: #E97560;    
+
   /* Bootstrap Variable Overrides */
   --bs-primary: var(--hef-brand-forest);
   --bs-secondary: var(--hef-brand-leaf);
@@ -43,6 +51,43 @@
   --bs-body-color: var(--hef-text-primary);
   --bs-border-color: var(--hef-border-default);
   --bs-card-bg: var(--hef-surface-card);
+}
+
+:root[data-theme="dark"] {
+  color-scheme: dark;  
+
+  --hef-brand-forest: #4AAB72;
+  --hef-brand-leaf: #73CD97;
+  --hef-brand-mint: #31553F;
+  --hef-brand-citrus: #8C6C2A;
+  --hef-brand-watermelon: #7D3324;
+
+  --hef-surface-paper: #0F1A14;
+  --hef-surface-card: #17251D;
+
+  --hef-text-primary: #EAF0EB;
+  --hef-text-secondary: #A0ABA3;
+
+  --hef-border-default: #1B3226;
+  --hef-outline-black: #EAF0EB;
+  --hef-avatar-bg: #2A3A31;
+
+  --hef-score-a: #21673D;
+  --hef-score-b: #367016;
+  --hef-score-c: #74611D;
+  --hef-score-d: #844D23;
+  --hef-score-e: #742018;
+
+  --hef-accent-pink: #462535;
+  --hef-accent-blue: #203D41;
+  --hef-accent-green: #263C1B;
+  --hef-accent-yellow: #3A2F19;
+
+  --hef-on-primary: #0F1A14;
+  --hef-brand-forest-hover: #3C9363;
+  --hef-brand-mint-hover: #3A6649;
+  --hef-brand-watermelon-hover: #8F3B2B;
+  --hef-brand-watermelon-text: #EE8A76;
 }
 
 /* Global Body & Typography */
@@ -141,9 +186,16 @@ h2, .h2 {
   transition: all 0.2s ease-in-out;
 }
 
+.hef-mobile-toggle,
+.hef-sidebar-close {
+  --bs-btn-color: var(--hef-brand-forest);
+  --bs-btn-hover-color: var(--hef-brand-forest);
+  --bs-btn-active-color: var(--hef-brand-forest);
+}
+
 .hef-mobile-toggle:hover,
 .hef-mobile-toggle:focus {
-  background-color: #FFFFFF;
+  background-color: var(--hef-surface-card); 
   border-color: var(--hef-brand-forest);
 }
 
@@ -192,7 +244,6 @@ h2, .h2 {
   height: 45px;
   border-radius: 999px;
   
-  /* Typography: Buttons/main */
   font-family: 'Source Sans 3', sans-serif;
   font-style: normal;
   font-weight: 400;
@@ -205,24 +256,24 @@ h2, .h2 {
 
 /* Primary Button Base Component */
 .btn-hef-primary {
-  background-color: #32694A;
-  color: #FFFFFF !important;
+  background-color: var(--hef-brand-forest);
+  color: var(--hef-on-primary) !important;
 }
 
 .btn-hef-primary:hover {
-  background-color: #27533A;
-  color: #FFFFFF !important;
+  background-color: var(--hef-brand-forest-hover);
+  color: var(--hef-on-primary) !important;
 }
 
 /* Secondary Button Base Component */
 .btn-hef-secondary {
-  background-color: #DDEBD4;
-  color: #32694A !important;
+  background-color: var(--hef-brand-mint); 
+  color: var(--hef-brand-forest) !important;
 }
 
 .btn-hef-secondary:hover {
-  background-color: #C8DCBC;
-  color: #32694A !important;
+  background-color: var(--hef-brand-mint-hover);
+  color: var(--hef-brand-forest) !important;
 }
 
 .btn-hef-danger {
@@ -231,8 +282,49 @@ h2, .h2 {
 }
 
 .btn-hef-danger:hover {
-  background-color: #D9644F;  
+  background-color: var(--hef-brand-watermelon-hover);
 }
+
+/* ====================
+   THEME TOGGLE
+   ==================== */
+.hef-theme-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  padding: 3px;
+  background-color: var(--hef-surface-paper);
+  border: 1px solid var(--hef-border-default);
+  border-radius: 999px;
+}
+
+.hef-theme-option {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 14px;
+  border: none;
+  border-radius: 999px;
+  background: transparent;
+  color: var(--hef-text-secondary);
+  font-family: 'Source Sans 3', system-ui, -apple-system, sans-serif;
+  font-size: 12px;
+  line-height: 16px;
+  transition: background-color 0.2s ease-in-out, color 0.2s ease-in-out;
+}
+
+/* Active segment is derived from the <html> attribute: no JS class toggling */
+:root[data-theme="light"] .hef-theme-option[data-theme-value="light"],
+:root[data-theme="dark"] .hef-theme-option[data-theme-value="dark"] {
+  background-color: var(--hef-brand-forest);
+  color: var(--hef-on-primary);
+}
+
+.hef-theme-option:focus-visible {
+  outline: 2px solid var(--hef-brand-forest);
+  outline-offset: 2px;
+}
+
 
 /* ====================
    TOAST MESSAGES
@@ -265,7 +357,7 @@ h2, .h2 {
 }
 
 .hef-toast-item--success { --hef-toast-accent: var(--hef-brand-forest); }
-.hef-toast-item--error   { --hef-toast-accent: var(--hef-brand-watermelon); }
+.hef-toast-item--error   { --hef-toast-accent: var(--hef-brand-watermelon-text); }
 .hef-toast-item--warning { --hef-toast-accent: var(--hef-brand-citrus); }
 .hef-toast-item--info    { --hef-toast-accent: var(--hef-text-secondary); }
 
