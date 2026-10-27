@@ -20,23 +20,55 @@
     <div
         class="hef-inventory-controls d-flex flex-column flex-xl-row align-items-stretch align-items-xl-center justify-content-between gap-3 mb-4">
 
-        <!-- Search Field -->
-        <div class="hef-search-wrapper">
-            <input type="text" class="hef-search-input" placeholder="Search food ingredients...">
-        </div>
+        <!-- Search Field Form -->
+        <form method="get" action="{% url 'main:show_inventory' %}" class="hef-search-wrapper m-0">
+            <!-- Retain current category if searching -->
+            {% if request.GET.category %}
+            <input type="hidden" name="category" value="{{ request.GET.category }}">
+            {% endif %}
+            <input type="text" name="q" value="{{ search_query }}" class="hef-search-input"
+                placeholder="Search food ingredients...">
+        </form>
 
         <!-- Category Filter Pills -->
         <div class="hef-category-pills-wrapper flex-grow-1">
-            <div class="hef-category-pills d-flex align-items-center gap-2">
-                <button class="hef-pill-btn active" type="button">All</button>
-                <button class="hef-pill-btn" type="button">Vegetables</button>
-                <button class="hef-pill-btn" type="button">Fruits</button>
-                <button class="hef-pill-btn" type="button">Dairy & Eggs</button>
-                <button class="hef-pill-btn" type="button">Protein</button>
-                <button class="hef-pill-btn" type="button">Carbohydrates</button>
-                <button class="hef-pill-btn" type="button">Drinks</button>
-                <button class="hef-pill-btn" type="button">Condiments</button>
-                <button class="hef-pill-btn" type="button">Snacks</button>
+            <div class="hef-category-pills d-flex align-items-center gap-2 overflow-auto pb-2 pb-xl-0">
+                <a href="{% url 'main:show_inventory' %}{% if search_query %}?q={{ search_query }}{% endif %}"
+                    class="hef-pill-btn text-decoration-none text-center {% if current_category == 'All' %}active{% endif %}">
+                    All
+                </a>
+                <a href="?category=Vegetables{% if search_query %}&q={{ search_query }}{% endif %}"
+                    class="hef-pill-btn text-decoration-none text-center {% if current_category == 'Vegetables' %}active{% endif %}">
+                    Vegetables
+                </a>
+                <a href="?category=Fruits{% if search_query %}&q={{ search_query }}{% endif %}"
+                    class="hef-pill-btn text-decoration-none text-center {% if current_category == 'Fruits' %}active{% endif %}">
+                    Fruits
+                </a>
+                <a href="?category=Dairy+%26+Eggs{% if search_query %}&q={{ search_query }}{% endif %}"
+                    class="hef-pill-btn text-decoration-none text-center {% if current_category == 'Dairy & Eggs' %}active{% endif %}">
+                    Dairy & Eggs
+                </a>
+                <a href="?category=Protein{% if search_query %}&q={{ search_query }}{% endif %}"
+                    class="hef-pill-btn text-decoration-none text-center {% if current_category == 'Protein' %}active{% endif %}">
+                    Protein
+                </a>
+                <a href="?category=Carbohydrates{% if search_query %}&q={{ search_query }}{% endif %}"
+                    class="hef-pill-btn text-decoration-none text-center {% if current_category == 'Carbohydrates' %}active{% endif %}">
+                    Carbohydrates
+                </a>
+                <a href="?category=Drinks{% if search_query %}&q={{ search_query }}{% endif %}"
+                    class="hef-pill-btn text-decoration-none text-center {% if current_category == 'Drinks' %}active{% endif %}">
+                    Drinks
+                </a>
+                <a href="?category=Condiments{% if search_query %}&q={{ search_query }}{% endif %}"
+                    class="hef-pill-btn text-decoration-none text-center {% if current_category == 'Condiments' %}active{% endif %}">
+                    Condiments
+                </a>
+                <a href="?category=Snacks{% if search_query %}&q={{ search_query }}{% endif %}"
+                    class="hef-pill-btn text-decoration-none text-center {% if current_category == 'Snacks' %}active{% endif %}">
+                    Snacks
+                </a>
             </div>
         </div>
 

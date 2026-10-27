@@ -171,10 +171,23 @@ def deactivate_account(request):
 @login_required(login_url='main:login_account')
 def show_inventory(request):
     ingredients = Ingredient.objects.filter(user=request.user)
+    
+    # Search filter
+    search_query = request.GET.get('q', '')
+    if search_query:
+        ingredients = ingredients.filter(name__icontains=search_query)
+        
+    # Category filter
+    category_filter = request.GET.get('category', '')
+    if category_filter and category_filter != 'All':
+        ingredients = ingredients.filter(category=category_filter)
+
     form = IngredientForm()
     context = {
         'ingredients': ingredients,
         'form': form,
+        'search_query': search_query,
+        'current_category': category_filter or 'All',
     }
     return render(request, 'pages/inventory.html', context)
 
