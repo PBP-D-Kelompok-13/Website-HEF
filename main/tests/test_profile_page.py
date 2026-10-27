@@ -451,3 +451,78 @@ class PasswordChangeTests(TestCase):
         self.assertEqual(response.status_code, 403)
         self.user.refresh_from_db()
         self.assertTrue(self.user.check_password("StrongPass123!"))
+
+class AccountDeactivationTests(TestCase):
+    def setUp(self):
+        self.user = User.objects.create_user(
+            username="healthyuser",
+            email="healthy@example.com",
+            password="StrongPass123!",
+            date_of_birth=date(2000, 1, 1),
+        )
+        self.other_user = User.objects.create_user(
+            username="otheruser",
+            email="other@example.com",
+            password="StrongPass123!",
+            date_of_birth=date(1999, 5, 5),
+        )
+        self.url = reverse("main:deactivate_account")
+
+    def test_get_request_is_not_allowed(self):
+        self.client.force_login(self.user)
+
+        response = self.client.get(self.url)
+
+        self.assertEqual(response.status_code, 405)
+        self.user.refresh_from_db()
+        self.assertTrue(self.user.is_active)
+
+    def test_anonymous_post_is_redirected_to_login(self):
+        response = self.client.post(self.url)
+
+        self.assertRedirects(
+            response,
+            f"{reverse('main:login_account')}?next={self.url}",
+        )
+        self.user.refresh_from_db()
+        self.assertTrue(self.user.is_active)
+
+    def test_post_deactivates_account_and_logs_user_out(self):
+        self.client.force_login(self.user)
+
+        response = self.client.post(self.url)
+
+        self.assertRedirects(response, reverse("main:show_landing_page"))
+        self.user.refresh_from_db()
+        self.assertTrue(User.objects.filter(pk=self.user.pk).exists())
+        self.assertFalse(self.user.is_active)
+        self.assertFalse(response.wsgi_request.user.is_authenticated)
+
+    def test_post_only_deactivates_the_logged_in_user(self):
+        self.client.force_login(self.user)
+
+        self.client.post(self.url)
+
+        self.other_user.refresh_from_db()
+        self.assertTrue(self.other_user.is_active)
+
+    def test_post_without_csrf_token_is_rejected(self):
+        csrf_client = Client(enforce_csrf_checks=True)
+        csrf_client.force_login(self.user)
+
+        response = csrf_client.post(self.url)
+
+        self.assertEqual(response.status_code, 403)
+        self.user.refresh_from_db()
+        self.assertTrue(self.user.is_active)
+
+    def test_profile_page_has_deactivation_confirmation_form(self):
+        self.client.force_login(self.user)
+
+        response = self.client.get(reverse("main:show_profile_page"))
+
+        self.assertContains(response, "Deactivate Account")
+        self.assertContains(response, 'data-bs-target="#deactivateAccountModal"')
+        self.assertContains(response, 'id="deactivateAccountModal"', count=1)
+        self.assertContains(response, "Are you sure you want to deactivate your account?")
+        self.assertContains(response, f'action="{self.url}"')
