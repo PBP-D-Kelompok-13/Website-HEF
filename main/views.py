@@ -166,6 +166,7 @@ def deactivate_account(request):
 
 from django.core.paginator import Paginator
 from django.http import HttpResponse
+from django.shortcuts import get_object_or_404
 from django.views.decorators.vary import vary_on_headers
 from .models import Bookmark, Product
 from .services import fetch_and_save_product
@@ -246,11 +247,40 @@ def discover(request):
     return render(request, "pages/discover.html", context)
 
 
+def _can_manage(user, product):
+    return user.is_authenticated and (user.is_staff or product.created_by_id == user.id)
+
+
 def product_detail(request, barcode):
-    return render(request, "base.html")
+    product = get_object_or_404(
+        Product.objects.with_saved_flag(request.user), barcode=barcode
+    )
+    nutrients = [
+        ("Sugars", product.sugars_100g, "g", product.sugars_level),
+        ("Salt", product.salt_100g, "g", product.salt_level),
+        ("Fat", product.fat_100g, "g", product.fat_level),
+    ]
+    return render(
+        request,
+        "pages/product_detail.html",
+        {
+            "product": product,
+            "grades": Product.GRADES,
+            "nutrients": nutrients,
+            "can_manage": _can_manage(request.user, product),
+        },
+    )
 
 
 def product_create(request):
+    return HttpResponse("ok")
+
+
+def product_edit(request, barcode):
+    return HttpResponse("ok")
+
+
+def product_delete(request, barcode):
     return HttpResponse("ok")
 
 

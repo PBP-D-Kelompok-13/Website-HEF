@@ -19,5 +19,7 @@ urlpatterns = [
     path("discover/new/", product_create, name="product_create"),
     path("products/lookup/<str:barcode>/", lookup_product, name="lookup_product"),
     path("products/<str:barcode>/", product_detail, name="product_detail"),
+    path("products/<str:barcode>/edit/", product_edit, name="product_edit"),
+    path("products/<str:barcode>/delete/", product_delete, name="product_delete"),
     path("products/<str:barcode>/bookmark/", toggle_bookmark, name="toggle_bookmark"),
 ]
