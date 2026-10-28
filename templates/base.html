@@ -38,8 +38,8 @@
                         <ul class="nav gap-4">
                             <li class="nav-item"><a href="#" class="nav-link p-0">Discover</a></li>
                             <li class="nav-item"><a href="#" class="nav-link p-0">Compare</a></li>
-                            <li class="nav-item"><a href="#" class="nav-link p-0">Recipes</a></li>
-                            <li class="nav-item"><a href="#" class="nav-link p-0">Pantry</a></li>
+                            <li class="nav-item"><a href="#" class="nav-link p-0">Recipe</a></li>
+                            <li class="nav-item"><a href="{% url 'main:show_inventory' %}" class="nav-link p-0">Pantry</a></li>
                         </ul>
                     </div>
 
@@ -114,7 +114,7 @@
                             <a href="#" class="nav-link p-0">Recipes</a>
                         </li>
                         <li class="nav-item">
-                            <a href="#" class="nav-link p-0">Pantry</a>
+                            <a href="{% url 'main:show_inventory' %}" class="nav-link p-0">Pantry</a>
                         </li>
                     </ul>
 
