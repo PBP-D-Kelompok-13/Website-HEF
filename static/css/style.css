@@ -90,6 +90,56 @@
   --hef-brand-watermelon-text: #EE8A76;
 }
 
+/* Bootstrap 5.2 form controls use fixed light colors by default. */
+.form-control,
+.form-select {
+  color: var(--hef-text-primary);
+  background-color: var(--hef-surface-card);
+  border-color: var(--hef-border-default);
+}
+
+:root[data-theme="dark"] .form-control,
+:root[data-theme="dark"] .form-select,
+:root[data-theme="dark"] .form-control:focus,
+:root[data-theme="dark"] .form-select:focus {
+  color: var(--hef-text-primary);
+  background-color: var(--hef-surface-card);
+  border-color: var(--hef-border-default);
+}
+
+.form-control::placeholder {
+  color: var(--hef-text-secondary);
+  opacity: 1;
+}
+
+.form-control:focus,
+.form-select:focus {
+  color: var(--hef-text-primary);
+  background-color: var(--hef-surface-card);
+  border-color: var(--hef-brand-forest);
+}
+
+:root[data-theme="dark"] .form-control:focus,
+:root[data-theme="dark"] .form-select:focus {
+  border-color: var(--hef-brand-forest);
+}
+
+.form-control:disabled,
+.form-control[readonly],
+.form-select:disabled {
+  color: var(--hef-text-secondary);
+  background-color: var(--hef-surface-paper);
+}
+
+.form-control::file-selector-button {
+  color: var(--hef-text-primary);
+  background-color: var(--hef-surface-paper);
+}
+
+:root[data-theme="dark"] .form-select {
+  background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%23EAF0EB' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='m2 5 6 6 6-6'/%3e%3c/svg%3e");
+}
+
 /* Global Body & Typography */
 body {
   font-family: 'Space Grotesk', system-ui, -apple-system, sans-serif;
