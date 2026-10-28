@@ -69,15 +69,15 @@
     color: var(--hef-brand-forest, #32694A);
 }
 
-/* Expiry Warning */
+/* Expiry Warning & Expired States (Using Design Tokens) */
 .hef-expiry-pill.warning {
-    background-color: #F7D579 !important;
-    color: #21352A !important;
+    background-color: var(--hef-brand-citrus, #E6B95C) !important;
+    color: var(--hef-text-primary, #21352A) !important;
     font-weight: 600;
 }
 
 .hef-expiry-pill.expired {
-    background-color: #E96D62 !important;
+    background-color: var(--hef-brand-watermelon, #E97560) !important;
     color: #FFFFFF !important;
     font-weight: 600;
 }
@@ -100,7 +100,7 @@
 .hef-card-img-wrapper {
     width: 140px;
     height: 140px;
-    background: #FFFFFF;
+    background: var(--hef-surface-paper, #F7F7F0);
     border-radius: 999px;
 }
 
