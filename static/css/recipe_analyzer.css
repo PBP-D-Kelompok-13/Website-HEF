@@ -1,0 +1,115 @@
+.hef-recipe-tabs .nav-link {
+    color: var(--hef-text-secondary);
+    padding: .55rem 1rem;
+    border-bottom: 2px solid transparent
+}
+
+.hef-recipe-tabs .nav-link.active {
+    color: var(--hef-brand-forest);
+    font-weight: 700;
+    border-color: var(--hef-brand-forest)
+}
+
+.hef-recipe-card,
+.hef-recipe-panel,
+.hef-recipe-row {
+    background: var(--hef-surface-card);
+    border: 1px solid var(--hef-border-default);
+    border-radius: 14px;
+    color: var(--hef-text-primary)
+}
+
+.hef-recipe-photo {
+    height: 180px;
+    object-fit: cover;
+    background: var(--hef-brand-mint);
+    border-radius: 10px
+}
+
+.hef-recipe-chip,
+.hef-diet-chip {
+    background: var(--hef-surface-paper);
+    border: 1px solid var(--hef-border-default);
+    border-radius: 999px;
+    padding: .3rem .7rem;
+    font-size: .75rem
+}
+
+.hef-macro-track {
+    display: flex;
+    overflow: hidden;
+    border-radius: 999px;
+    height: 10px;
+    background: var(--hef-brand-mint)
+}
+
+.hef-recipe-help {
+    background: var(--hef-brand-mint);
+    border-radius: 14px;
+    padding: 20px
+}
+
+.hef-ingredient-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 125px 42px;
+    gap: 10px;
+    align-items: center
+}
+
+.hef-step-area textarea {
+    min-height: 170px;
+    border-radius: 18px
+}
+
+.hef-photo-drop {
+    border: 1px dashed var(--hef-border-default);
+    border-radius: 14px;
+    padding: 18px
+}
+
+.hef-recipe-thumb {
+    width: 46px;
+    height: 46px;
+    object-fit: cover;
+    border-radius: 8px;
+    background: var(--hef-brand-mint)
+}
+
+.hef-recipe-photo-detail {
+    height: 250px;
+    object-fit: cover;
+    border-radius: 12px;
+    background: var(--hef-brand-mint)
+}
+
+.hef-score-track {
+    height: 10px;
+    border-radius: 999px;
+    background: var(--hef-brand-mint);
+    overflow: hidden
+}
+
+.hef-score-track>span {
+    display: block;
+    height: 100%;
+    background: var(--hef-brand-forest);
+    border-radius: 999px
+}
+
+.hef-nutrient-tile {
+    background: var(--hef-surface-paper);
+    border: 1px solid var(--hef-border-default);
+    border-radius: 10px;
+    padding: 14px
+}
+
+@media(max-width:575.98px) {
+    .hef-ingredient-grid {
+        grid-template-columns: minmax(0, 1fr) 92px 36px;
+        gap: 6px
+    }
+
+    .hef-recipe-photo {
+        height: 200px
+    }
+}
