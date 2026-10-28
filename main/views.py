@@ -165,10 +165,11 @@ def deactivate_account(request):
 
 
 from django.core.paginator import Paginator
-from django.http import HttpResponse
+from django.http import HttpResponse, HttpResponseForbidden
 from django.shortcuts import get_object_or_404
 from django.urls import reverse
 from django.views.decorators.vary import vary_on_headers
+from .forms import ProductForm
 from .models import Bookmark, Product
 from .services import fetch_and_save_product
 
@@ -273,16 +274,48 @@ def product_detail(request, barcode):
     )
 
 
+@login_required
 def product_create(request):
-    return HttpResponse("ok")
+    form = ProductForm(request.POST or None)
+    if request.method == "POST" and form.is_valid():
+        product = form.save(commit=False)
+        product.created_by = request.user
+        product.save()
+        messages.success(request, "Product successfully added.")
+        return redirect("main:product_detail", barcode=product.barcode)
+    return render(
+        request,
+        "pages/product_form.html",
+        {"form": form, "is_edit": False},
+    )
 
 
+@login_required
 def product_edit(request, barcode):
-    return HttpResponse("ok")
+    product = get_object_or_404(Product, barcode=barcode)
+    if not _can_manage(request.user, product):
+        return HttpResponseForbidden("You cannot edit this product.")
+    form = ProductForm(request.POST or None, instance=product)
+    if request.method == "POST" and form.is_valid():
+        form.save()
+        messages.success(request, "Product successfully updated.")
+        return redirect("main:product_detail", barcode=product.barcode)
+    return render(
+        request,
+        "pages/product_form.html",
+        {"form": form, "product": product, "is_edit": True},
+    )
 
 
+@login_required
+@require_POST
 def product_delete(request, barcode):
-    return HttpResponse("ok")
+    product = get_object_or_404(Product, barcode=barcode)
+    if not _can_manage(request.user, product):
+        return HttpResponseForbidden("You cannot delete this product.")
+    product.delete()
+    messages.success(request, "Product successfully deleted.")
+    return redirect("main:discover")
 
 
 def lookup_product(request, barcode):
