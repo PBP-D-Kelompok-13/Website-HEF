@@ -3,17 +3,133 @@
 {% block title %}Recipe Analyzer | Create{% endblock %}
 {% block head %}<link rel="stylesheet" href="{% static 'css/recipe_analyzer.css' %}">{% endblock %}
 {% block content %}
-<section class="container my-4 my-md-5"><div class="mb-4"><h1 class="mb-2">Recipe Analyzer</h1><p class="text-secondary">Create your recipe, then ask Spoonacular to estimate nutrition, health score, and dietary labels.</p></div>
-{% include "pages/recipes/_tabs.html" with active_tab="create" %}
-<form method="post" enctype="multipart/form-data" class="row g-3">{% csrf_token %}{{ ingredient_formset.management_form }}
-  <div class="col-12 col-xl-7"><section class="hef-recipe-panel p-3 p-md-4 mb-3"><h2 class="h4 mb-3">Recipe details</h2><div class="row g-3"><div class="col-md-9"><label class="form-label" for="{{ form.title.id_for_label }}">Recipe title</label>{{ form.title }}{% for error in form.title.errors %}<div class="invalid-feedback d-block">{{ error }}</div>{% endfor %}</div><div class="col-md-3"><label class="form-label" for="{{ form.servings.id_for_label }}">Servings</label>{{ form.servings }}{% for error in form.servings.errors %}<div class="invalid-feedback d-block">{{ error }}</div>{% endfor %}</div><div class="col-md-6"><label class="form-label" for="{{ form.photo.id_for_label }}">Recipe photo</label><div class="hef-photo-drop"><p class="mb-2 fw-semibold">Upload a photo</p><small class="text-secondary d-block mb-2">Optional · JPG or PNG, up to 10 MB</small>{{ form.photo }}{% for error in form.photo.errors %}<div class="invalid-feedback d-block">{{ error }}</div>{% endfor %}</div></div><div class="col-md-6"><label class="form-label" for="{{ form.description.id_for_label }}">Description</label>{{ form.description }}{% for error in form.description.errors %}<div class="invalid-feedback d-block">{{ error }}</div>{% endfor %}</div></div></section>
-  <section class="hef-recipe-panel p-3 p-md-4"><div class="d-flex justify-content-between align-items-start gap-2 mb-3"><h2 class="h4 mb-0">Ingredients</h2><small class="text-secondary">Use raw weight in grams</small></div><div class="hef-ingredient-grid small text-secondary mb-2"><span>Ingredient</span><span>Amount (g)</span><span></span></div><div id="ingredient-rows">{% for row in ingredient_formset %}<div class="hef-ingredient-grid mb-2 ingredient-row">{{ row.name }}{{ row.amount_g }}<button class="btn btn-outline-secondary rounded-circle remove-ingredient" type="button" aria-label="Remove ingredient row">×</button>{{ row.DELETE }}</div>{% for error in row.non_field_errors %}<div class="text-danger small">{{ error }}</div>{% endfor %}{% endfor %}</div>{% for error in ingredient_formset.non_form_errors %}<div class="text-danger small mb-2">{{ error }}</div>{% endfor %}<button class="btn-hef-secondary mt-2" type="button" id="add-ingredient">+ Add ingredient</button></section></div>
-  <aside class="col-12 col-xl-5"><section class="hef-recipe-help mb-3"><h2 class="h4 mb-3">How it works</h2><p>• Add ingredients and amounts. Spoonacular estimates nutrition per serving from these details.</p><p>• Analysis can return a health score (0–100) and dietary labels when available.</p><p>• Health score describes nutrition, not environmental impact or carbon footprint.</p><p class="mb-0">• Your analyzed recipe is saved under “My recipes”, separate from Spoonacular recipes.</p></section><section class="hef-recipe-panel p-3 p-md-4 mb-3"><div class="d-flex justify-content-between gap-2 mb-3"><h2 class="h4 mb-0">Instructions</h2><small class="text-secondary">Optional · your own notes</small></div><div class="hef-step-area"><label class="visually-hidden" for="{{ form.instructions.id_for_label }}">Instructions</label>{{ form.instructions }}</div>{% for error in form.instructions.errors %}<div class="invalid-feedback d-block">{{ error }}</div>{% endfor %}<div class="d-flex gap-3 mt-2"><button class="btn-hef-secondary" type="button" id="add-step">+ Add step</button><button class="btn btn-link text-secondary px-0" type="button" id="remove-step">Remove step</button></div><small class="text-secondary d-block mt-2">Instructions are saved with your recipe. Nutrition and health results use the ingredients you list.</small></section><section class="hef-recipe-panel p-3 d-grid gap-2"><button class="btn-hef-primary w-100" type="submit" name="action" value="analyze">Analyze recipe</button><button class="btn-hef-secondary w-100" type="submit" name="action" value="draft">Save as draft</button><button class="btn-hef-secondary w-100" type="reset">Clear form</button></section></aside>
-</form>
-<template id="empty-ingredient-row"><div class="hef-ingredient-grid mb-2 ingredient-row">{{ ingredient_formset.empty_form.name }}{{ ingredient_formset.empty_form.amount_g }}<button class="btn btn-outline-secondary rounded-circle remove-ingredient" type="button" aria-label="Remove ingredient row">×</button>{{ ingredient_formset.empty_form.DELETE }}</div></template>
+<section class="container my-4 my-md-5">
+  <div class="mb-4">
+    <h1 class="mb-2">Recipe Analyzer</h1>
+    <p class="text-secondary">Create your recipe, then ask Spoonacular to estimate nutrition, health score, and dietary labels.</p>
+  </div>
+  {% include "pages/recipes/_tabs.html" with active_tab="create" %}
+
+  <form method="post" enctype="multipart/form-data" class="mt-3">
+    {% csrf_token %}
+    {{ ingredient_formset.management_form }}
+
+    <div class="row g-3 align-items-stretch mb-3">
+      <div class="col-12 col-xl-7">
+        <section class="hef-recipe-panel p-3 p-md-4 h-100">
+          <h2 class="h4 mb-3">Recipe details</h2>
+          <div class="row g-3">
+            <div class="col-md-9">
+              <label class="form-label" for="{{ form.title.id_for_label }}">Recipe title</label>
+              {{ form.title }}
+              {% for error in form.title.errors %}<div class="invalid-feedback d-block">{{ error }}</div>{% endfor %}
+            </div>
+            <div class="col-md-3">
+              <label class="form-label" for="{{ form.servings.id_for_label }}">Servings</label>
+              {{ form.servings }}
+              {% for error in form.servings.errors %}<div class="invalid-feedback d-block">{{ error }}</div>{% endfor %}
+            </div>
+            <div class="col-md-6">
+              <label class="form-label" for="{{ form.photo.id_for_label }}">Recipe photo</label>
+              <div class="hef-photo-drop">
+                <p class="mb-2 fw-semibold">Upload a photo</p>
+                <small class="text-secondary d-block mb-2">Optional · JPG or PNG, up to 10 MB</small>
+                {{ form.photo }}
+                {% for error in form.photo.errors %}<div class="invalid-feedback d-block">{{ error }}</div>{% endfor %}
+              </div>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label" for="{{ form.description.id_for_label }}">Description</label>
+              {{ form.description }}
+              {% for error in form.description.errors %}<div class="invalid-feedback d-block">{{ error }}</div>{% endfor %}
+            </div>
+          </div>
+        </section>
+      </div>
+
+      <div class="col-12 col-xl-5">
+        <aside class="hef-recipe-help h-100">
+          <h2 class="h4 mb-3">How it works</h2>
+          <p>• Add ingredients and amounts. Spoonacular estimates nutrition per serving from these details.</p>
+          <p>• Analysis can return a health score (0–100) and dietary labels when available.</p>
+          <p>• Health score describes nutrition, not environmental impact or carbon footprint.</p>
+          <p class="mb-0">• Your analyzed recipe is saved under “My recipes”, separate from Spoonacular recipes.</p>
+        </aside>
+      </div>
+    </div>
+
+    <div class="row g-3 align-items-stretch">
+      <div class="col-12 col-xl-7">
+        <section class="hef-recipe-panel p-3 p-md-4 h-100">
+          <div class="d-flex justify-content-between align-items-start gap-2 mb-3">
+            <h2 class="h4 mb-0">Ingredients</h2>
+            <small class="text-secondary text-end">Use raw weight in grams</small>
+          </div>
+          <p class="small text-secondary">Start typing to choose a Spoonacular ingredient suggestion.</p>
+          <div class="hef-ingredient-grid small text-secondary mb-2">
+            <span>Ingredient</span><span>Amount (g)</span><span></span>
+          </div>
+          <div id="ingredient-rows">
+            {% for row in ingredient_formset %}
+              <div class="hef-ingredient-grid mb-2 ingredient-row">
+                {{ row.name }}
+                <datalist id="{{ row.name.id_for_label }}-suggestions"></datalist>
+                {{ row.amount_g }}
+                <button class="btn btn-outline-secondary rounded-circle remove-ingredient" type="button" aria-label="Remove ingredient row">×</button>
+                {{ row.DELETE }}
+              </div>
+              {% for error in row.non_field_errors %}<div class="text-danger small">{{ error }}</div>{% endfor %}
+            {% endfor %}
+          </div>
+          {% for error in ingredient_formset.non_form_errors %}<div class="text-danger small mb-2">{{ error }}</div>{% endfor %}
+          <button class="btn-hef-secondary mt-2" type="button" id="add-ingredient">+ Add ingredient</button>
+        </section>
+      </div>
+
+      <div class="col-12 col-xl-5">
+        <section class="hef-recipe-panel p-3 p-md-4 h-100">
+          <div class="d-flex justify-content-between gap-2 mb-3">
+            <h2 class="h4 mb-0">Instructions</h2>
+            <small class="text-secondary text-end">Optional · your own notes</small>
+          </div>
+          <div class="hef-step-area">
+            <label class="visually-hidden" for="{{ form.instructions.id_for_label }}">Instructions</label>
+            {{ form.instructions }}
+          </div>
+          {% for error in form.instructions.errors %}<div class="invalid-feedback d-block">{{ error }}</div>{% endfor %}
+          <div class="d-flex gap-3 mt-2">
+            <button class="btn-hef-secondary" type="button" id="add-step">+ Add step</button>
+            <button class="btn btn-link text-secondary px-0" type="button" id="remove-step">Remove step</button>
+          </div>
+          <small class="text-secondary d-block mt-2">Instructions are saved with your recipe. Nutrition and health results use the ingredients you list.</small>
+        </section>
+      </div>
+    </div>
+
+    <div class="row mt-3">
+      <div id="recipe-actions" class="col-12 col-xl-7 d-flex justify-content-end">
+        <div class="d-flex flex-wrap justify-content-end gap-2">
+          <button class="btn-hef-primary" type="submit" name="action" value="analyze">Analyze recipe</button>
+          <button class="btn-hef-secondary" type="submit" name="action" value="draft">Save as draft</button>
+          <button class="btn-hef-secondary" type="reset">Clear form</button>
+        </div>
+      </div>
+    </div>
+  </form>
+
+  <template id="empty-ingredient-row">
+    <div class="hef-ingredient-grid mb-2 ingredient-row">
+      {{ ingredient_formset.empty_form.name }}
+      <datalist id="{{ ingredient_formset.empty_form.name.id_for_label }}-suggestions"></datalist>
+      {{ ingredient_formset.empty_form.amount_g }}
+      <button class="btn btn-outline-secondary rounded-circle remove-ingredient" type="button" aria-label="Remove ingredient row">×</button>
+      {{ ingredient_formset.empty_form.DELETE }}
+    </div>
+  </template>
 </section>
 {% endblock %}
-{% block script %}<script>
+{% block script %}
+<script>
 (() => {
   const container = document.getElementById("ingredient-rows");
   const total = document.getElementById("id_ingredient-TOTAL_FORMS");
@@ -31,7 +147,13 @@
     if (deletion) { deletion.checked = true; row.classList.add("d-none"); }
   });
   const instructions = document.getElementById("{{ form.instructions.id_for_label }}");
-  document.getElementById("add-step").addEventListener("click", () => { instructions.value += (instructions.value ? "\n" : "") + ""; instructions.focus(); });
-  document.getElementById("remove-step").addEventListener("click", () => { instructions.value = instructions.value.split("\n").slice(0, -1).join("\n"); });
+  document.getElementById("add-step").addEventListener("click", () => {
+    instructions.value += (instructions.value ? "\n" : "");
+    instructions.focus();
+  });
+  document.getElementById("remove-step").addEventListener("click", () => {
+    instructions.value = instructions.value.split("\n").slice(0, -1).join("\n");
+  });
 })();
-</script>{% endblock %}
+</script>
+{% endblock %}

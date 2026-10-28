@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+{% load static %}
+{% block title %}Recipe Analyzer | Discover{% endblock %}
+{% block head %}<link rel="stylesheet" href="{% static 'css/recipe_analyzer.css' %}">{% endblock %}
+{% block content %}
+<section class="container my-4 my-md-5">
+  <div class="mb-4"><h1 class="mb-2">Recipe Analyzer</h1><p class="text-secondary mb-0">Discover recipes from Spoonacular, or create your own and analyze its nutrition.</p></div>
+  {% include "pages/recipes/_tabs.html" with active_tab="discover" %}
+  <form class="row g-2 align-items-center mb-4" method="get" action="{% url 'main:recipe_discover' %}" hx-get="{% url 'main:recipe_discover' %}" hx-target="#recipe-results" hx-swap="innerHTML">
+    <div class="col-12 col-lg-5"><label class="visually-hidden" for="recipe-query">Search recipes</label><input id="recipe-query" name="query" class="form-control rounded-pill" value="{{ query }}" placeholder="Search recipes, e.g. pasta, tofu, salad"></div>
+    <div class="col-6 col-lg-auto"><select name="diet" class="form-select rounded-pill" aria-label="Filter by diet"><option value="">All</option><option value="vegetarian" {% if diet == 'vegetarian' %}selected{% endif %}>Vegetarian</option><option value="vegan" {% if diet == 'vegan' %}selected{% endif %}>Vegan</option><option value="gluten free" {% if diet == 'gluten free' %}selected{% endif %}>Gluten free</option></select></div>
+    <div class="col-6 col-lg-auto"><label class="visually-hidden" for="recipe-time">Maximum preparation time</label><select id="recipe-time" name="maxReadyTime" class="form-select rounded-pill"><option value="">Any time</option><option value="30" {% if max_ready_time == 30 %}selected{% endif %}>Under 30 min</option></select></div>
+    <div class="col-12 col-lg-auto"><button class="btn-hef-primary" type="submit">Search</button></div>
+  </form>
+  <div id="recipe-results">{% include "pages/recipes/_discover_results.html" %}</div>
+</section>
+{% endblock %}
