@@ -164,7 +164,95 @@ def deactivate_account(request):
     return redirect("main:show_landing_page")
 
 
+from django.core.paginator import Paginator
 from django.http import HttpResponse
+from django.views.decorators.vary import vary_on_headers
+from .models import Bookmark, Product
 
+
+''' =============================== 
+    Functions for Discover & Products
+    =============================== '''
+
+PAGE_SIZE = 6
+
+
+def _is_htmx(request):
+    return (
+        request.headers.get("HX-Request") == "true"
+        and request.headers.get("HX-History-Restore-Request") != "true"
+    )
+
+
+def _filtered_products(request):
+    params = request.GET
+    query = params.get("q", "").strip()
+    category = params.get("category", "all").strip()
+    eco = params.get("eco", "").strip().lower()
+    nutri = params.get("nutri", "").strip().lower()
+    saved_only = params.get("saved") == "1" and request.user.is_authenticated
+    sort = params.get("sort", "eco").strip()
+    if sort not in {"eco", "name", "newest"}:
+        sort = "eco"
+
+    qs = (
+        Product.objects.search(query)
+        .filter_by(
+            category=category,
+            eco=eco,
+            nutri=nutri,
+            saved_by=request.user if saved_only else None,
+            sort=sort,
+        )
+        .with_saved_flag(request.user)
+    )
+    filters = {
+        "q": query,
+        "category": category or "all",
+        "eco": eco,
+        "nutri": nutri,
+        "saved": "1" if saved_only else "",
+        "sort": sort,
+    }
+    return qs, filters
+
+
+@vary_on_headers("HX-Request")
 def discover(request):
+    qs, filters = _filtered_products(request)
+    paginator = Paginator(qs, PAGE_SIZE)
+    page_obj = paginator.get_page(request.GET.get("page", 1))
+
+    params = request.GET.copy()
+    params.pop("page", None)
+    query = filters["q"]
+
+    context = {
+        "page_obj": page_obj,
+        "total_count": paginator.count,
+        "shown_count": page_obj.end_index() if paginator.count else 0,
+        "filters": filters,
+        "filter_querystring": params.urlencode(),
+        "categories": [c[0] for c in Product.CATEGORIES],
+        "grades": Product.GRADES,
+        "can_lookup_barcode": query.isdigit() and 8 <= len(query) <= 14,
+    }
+
+    if _is_htmx(request):
+        if request.GET.get("page"):
+            return render(request, "partials/discover_more.html", context)
+        return render(request, "partials/discover_results.html", context)
+    return render(request, "pages/discover.html", context)
+
+
+def product_create(request):
     return HttpResponse("ok")
+
+
+def lookup_product(request, barcode):
+    return HttpResponse("ok")
+
+
+def toggle_bookmark(request, barcode):
+    return HttpResponse("ok")
+
