@@ -95,3 +95,37 @@ class RecipeAnalyzerFlowTests(TestCase):
         self.client.logout()
         url = reverse("main:recipe_discover")
         self.assertRedirects(self.client.get(url), f"{reverse('main:login_account')}?next={url}")
+
+    @patch("main.views.search_spoonacular_ingredients")
+    def test_ingredient_suggestions_return_known_ingredients(self, search):
+        search.return_value = [{"name": "quinoa"}, {"name": "quinoa flakes"}]
+        response = self.client.get(reverse("main:recipe_ingredient_suggestions"), {"q": "quin"})
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, '<option value="quinoa">', html=True)
+        self.assertContains(response, '<option value="quinoa flakes">', html=True)
+        search.assert_called_once_with("quin")
+
+    @patch("main.views.search_spoonacular_ingredients")
+    def test_ingredient_suggestions_ignore_short_queries(self, search):
+        response = self.client.get(reverse("main:recipe_ingredient_suggestions"), {"q": "q"})
+
+        self.assertEqual(response.status_code, 200)
+        self.assertNotContains(response, "<option")
+        search.assert_not_called()
+
+    def test_create_form_aligns_recipe_details_with_help_and_ingredients_with_instructions(self):
+        response = self.client.get(reverse("main:recipe_create"))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'class="row g-3 align-items-stretch"')
+        self.assertContains(response, 'class="hef-recipe-panel p-3 p-md-4 h-100"')
+        self.assertContains(response, 'class="hef-recipe-help h-100"')
+        self.assertContains(response, 'type="hidden" name="ingredient-0-DELETE"')
+
+    def test_create_form_limits_initial_ingredient_rows_and_aligns_clear_action(self):
+        response = self.client.get(reverse("main:recipe_create"))
+
+        self.assertEqual(response.context["ingredient_formset"].total_form_count(), 4)
+        self.assertContains(response, 'id="recipe-actions" class="col-12 col-xl-7 d-flex justify-content-end"')
+        self.assertLess(response.content.index(b"Save as draft"), response.content.index(b"Clear form"))
