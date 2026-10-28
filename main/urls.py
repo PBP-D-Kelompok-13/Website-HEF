@@ -18,6 +18,6 @@ urlpatterns = [
     path("discover/", discover, name="discover"),
     path("discover/new/", product_create, name="product_create"),
     path("products/lookup/<str:barcode>/", lookup_product, name="lookup_product"),
-    path("products/<str:barcode>/", discover, name="product_detail"),
+    path("products/<str:barcode>/", product_detail, name="product_detail"),
     path("products/<str:barcode>/bookmark/", toggle_bookmark, name="toggle_bookmark"),
 ]

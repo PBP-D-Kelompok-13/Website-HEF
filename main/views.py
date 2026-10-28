@@ -168,6 +168,7 @@ from django.core.paginator import Paginator
 from django.http import HttpResponse
 from django.views.decorators.vary import vary_on_headers
 from .models import Bookmark, Product
+from .services import fetch_and_save_product
 
 
 ''' =============================== 
@@ -245,12 +246,32 @@ def discover(request):
     return render(request, "pages/discover.html", context)
 
 
+def product_detail(request, barcode):
+    return render(request, "base.html")
+
+
 def product_create(request):
     return HttpResponse("ok")
 
 
 def lookup_product(request, barcode):
-    return HttpResponse("ok")
+    barcode = (barcode or "").strip()
+    if not barcode.isdigit() or not (8 <= len(barcode) <= 14):
+        messages.error(request, "Please enter a valid barcode (8-14 digits).")
+        return redirect("main:discover")
+
+    product = Product.objects.filter(barcode=barcode).first()
+    if not product:
+        if not request.user.is_authenticated:
+            messages.error(request, "Please log in to import new products.")
+            return redirect("main:login_account")
+        product = fetch_and_save_product(barcode, user=request.user)
+        if product:
+            messages.success(request, f"{product.name} added to Discover.")
+    if not product:
+        messages.error(request, f"Barcode {barcode} was not found on Open Food Facts.")
+        return redirect("main:discover")
+    return redirect("main:product_detail", barcode=product.barcode)
 
 
 def toggle_bookmark(request, barcode):
