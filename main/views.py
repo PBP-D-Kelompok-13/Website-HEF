@@ -216,6 +216,55 @@ def _display_analysis(nutrition):
     return {"calories": round(float(calories)), "macros": macros, "nutrition_tiles": nutrition_tiles}
 
 
+def _instruction_steps(value):
+    if isinstance(value, list):
+        steps = []
+        for group in value:
+            for item in group.get("steps", []):
+                steps.append(item.get("step", ""))
+        return [step for step in steps if step]
+    return [line.strip() for line in (value or "").splitlines() if line.strip()]
+
+
+def _detail_context(recipe, *, spoonacular=False):
+    if spoonacular:
+        nutrition = recipe.get("nutrition", {})
+        ingredients = recipe.get("extendedIngredients", [])
+        return {
+            "recipe": recipe,
+            "recipe_description": strip_tags(recipe.get("summary", "")),
+            "nutrition_view": _display_analysis(nutrition),
+            "ingredients_view": ingredients,
+            "steps": _instruction_steps(recipe.get("analyzedInstructions", [])) or _instruction_steps(recipe.get("instructions", "")),
+            "is_spoonacular": True,
+            "source_url": recipe.get("sourceUrl", ""),
+            "ready_time": recipe.get("readyInMinutes"),
+            "health_score": recipe.get("healthScore"),
+            "image_url": recipe.get("image", ""),
+        }
+    nutrition = recipe.nutrition or {}
+    if recipe.source == SavedRecipe.Source.SPOONACULAR:
+        ingredients = recipe.ingredient_items
+        steps = _instruction_steps(nutrition.get("analyzedInstructions", [])) or _instruction_steps(recipe.instructions)
+        nutrition = nutrition.get("nutrition", nutrition)
+    else:
+        ingredients = recipe.ingredient_items or [{"name": line, "amount_g": ""} for line in recipe.ingredients.splitlines() if line]
+        steps = _instruction_steps(recipe.instructions)
+    return {
+        "recipe": recipe,
+        "recipe_description": recipe.description,
+        "nutrition_view": _display_analysis(nutrition),
+        "ingredients_view": ingredients,
+        "steps": steps,
+        "is_spoonacular": recipe.source == SavedRecipe.Source.SPOONACULAR,
+        "saved_recipe": recipe if recipe.source == SavedRecipe.Source.SPOONACULAR else None,
+        "ready_time": recipe.ready_in_minutes,
+        "health_score": recipe.health_score,
+        "image_url": recipe.image_url or (recipe.photo.url if recipe.photo else ""),
+        "source_url": recipe.source_url,
+    }
+
+
 @login_required
 def recipe_discover(request):
     query = request.GET.get("query", "").strip()[:120]
@@ -267,6 +316,24 @@ def recipe_discover(request):
     else:
         template = "pages/recipes/discover.html"
     return render(request, template, context)
+
+
+@login_required
+def recipe_list(request):
+    saved = SavedRecipe.objects.filter(user=request.user)
+    query = request.GET.get("query", "").strip()[:120]
+    if query:
+        saved = saved.filter(title__icontains=query)
+    sort = request.GET.get("sort", "newest")
+    sort_fields = {"newest": "-created_at", "oldest": "created_at", "title": "title"}
+    saved = saved.order_by(sort_fields.get(sort, "-created_at"))
+    spoonacular_recipes = saved.filter(source=SavedRecipe.Source.SPOONACULAR)
+    own_recipes = saved.filter(source=SavedRecipe.Source.OWN)
+    return render(request, "pages/recipes/saved.html", {
+        "spoonacular_recipes": [{"recipe": item, "analysis": _display_analysis(item.nutrition), "is_draft": item.is_draft} for item in spoonacular_recipes],
+        "own_recipes": [{"recipe": item, "analysis": _display_analysis(item.nutrition), "is_draft": item.is_draft} for item in own_recipes],
+        "query": query, "sort": sort if sort in sort_fields else "newest",
+    })
 
 
 def _ingredient_formset(request, instance=None):
@@ -356,6 +423,12 @@ def recipe_create(request):
 
 
 @login_required
+def recipe_detail(request, pk):
+    recipe = _owned_recipe(request, pk)
+    return render(request, "pages/recipes/detail.html", _detail_context(recipe))
+
+
+@login_required
 def recipe_update(request, pk):
     recipe = _owned_recipe(request, pk)
     form = RecipeAuthorForm(request.POST or None, request.FILES or None, instance=recipe)
@@ -385,6 +458,54 @@ def recipe_update(request, pk):
         messages.success(request, "Recipe updated and analyzed.")
         return redirect("main:recipe_detail", pk=updated.pk)
     return render(request, "pages/recipes/form.html", {"form": form, "ingredient_formset": ingredient_formset, "recipe": recipe, "editing": True})
+
+
+@login_required
+def recipe_spoonacular_detail(request, spoonacular_id):
+    try:
+        data = get_spoonacular_recipe(spoonacular_id)
+    except (ImproperlyConfigured, requests.RequestException, ValueError):
+        _spoonacular_error(request)
+        return redirect("main:recipe_discover")
+    saved = SavedRecipe.objects.filter(user=request.user, spoonacular_id=spoonacular_id, source=SavedRecipe.Source.SPOONACULAR).first()
+    context = _detail_context(data, spoonacular=True)
+    context.update({"saved_recipe": saved, "back_query": request.GET.get("query", "")})
+    return render(request, "pages/recipes/detail.html", context)
+
+
+@login_required
+@require_POST
+def recipe_save_spoonacular(request, spoonacular_id):
+    try:
+        data = get_spoonacular_recipe(spoonacular_id)
+    except (ImproperlyConfigured, requests.RequestException, ValueError):
+        _spoonacular_error(request)
+        return redirect("main:recipe_discover")
+    items = [{
+        "name": item.get("name", ""), "amount": item.get("amount", ""),
+        "unit": item.get("unit", ""), "original": item.get("original", ""),
+    } for item in data.get("extendedIngredients", [])]
+    saved, created = SavedRecipe.objects.get_or_create(
+        user=request.user, source=SavedRecipe.Source.SPOONACULAR, spoonacular_id=spoonacular_id,
+        defaults={
+            "title": data.get("title", "Saved recipe")[:120],
+            "description": strip_tags(data.get("summary", ""))[:4000],
+            "ingredients": "\n".join(item.get("original", "") for item in items),
+            "ingredient_items": items,
+            "instructions": data.get("instructions", "") or "",
+            "servings": data.get("servings") or 1,
+            "ready_in_minutes": data.get("readyInMinutes"),
+            "health_score": data.get("healthScore"),
+            "diets": data.get("diets", []),
+            "nutrition": data.get("nutrition", {}),
+            "image_url": data.get("image", ""),
+            "source_url": data.get("sourceUrl", ""),
+        },
+    )
+    messages.success(request, "Recipe saved." if created else "Recipe is already in My recipes.")
+    if request.headers.get("HX-Request") == "true":
+        return HttpResponse(headers={"HX-Redirect": reverse("main:recipe_saved_list")})
+    return redirect("main:recipe_saved_list")
 
 
 @login_required
