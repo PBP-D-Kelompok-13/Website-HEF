@@ -138,3 +138,73 @@ class ProductDetailTests(TestCase):
         self.client.force_login(owner)
         self.assertContains(self.client.get(url), reverse("main:product_edit", args=[p.barcode]))
         self.assertContains(self.client.get(url), "deleteProductModal")
+
+
+
+class BookmarkToggleTests(TestCase):
+    def setUp(self):
+        self.user = make_user()
+        self.product = make_product(name="Oat Milk Zed")
+        self.url = reverse("main:toggle_bookmark", args=[self.product.barcode])
+
+    def test_get_is_not_allowed(self):
+        self.client.force_login(self.user)
+        self.assertEqual(self.client.get(self.url, **HTMX).status_code, 405)
+
+    def test_non_htmx_post_redirects_to_discover(self):
+        self.client.force_login(self.user)
+        self.assertRedirects(
+            self.client.post(self.url),
+            reverse("main:discover"),
+            fetch_redirect_response=False,
+        )
+        self.assertEqual(Bookmark.objects.count(), 0)
+
+    def test_anonymous_htmx_is_sent_to_login_without_saving(self):
+        r = self.client.post(self.url, **HTMX)
+        self.assertEqual(r["HX-Redirect"], reverse("main:login_account"))
+        self.assertEqual(Bookmark.objects.count(), 0)
+
+    def test_anonymous_gets_error_toast_on_login_page(self):
+        self.client.post(self.url, **HTMX)
+        r = self.client.get(reverse("main:login_account"))
+        self.assertContains(r, "Please log in to save products.", count=1)
+
+    def test_first_post_saves_and_returns_button_with_oob_toast(self):
+        self.client.force_login(self.user)
+        r = self.client.post(self.url, **HTMX)
+        self.assertTrue(Bookmark.objects.filter(user=self.user, product=self.product).exists())
+        self.assertTemplateUsed(r, "partials/bookmark_toggle.html")
+        self.assertContains(r, "is-saved")
+        self.assertContains(r, 'aria-pressed="true"')
+        self.assertContains(r, OOB_TOAST, count=1)
+        self.assertContains(r, "Saved Oat Milk Zed.", count=1)
+
+    def test_second_post_removes_and_returns_unsaved_button(self):
+        Bookmark.objects.create(user=self.user, product=self.product)
+        self.client.force_login(self.user)
+        r = self.client.post(self.url, **HTMX)
+        self.assertEqual(Bookmark.objects.count(), 0)
+        self.assertNotContains(r, "is-saved")
+        self.assertContains(r, 'aria-pressed="false"')
+        self.assertContains(r, "Removed Oat Milk Zed from saved.", count=1)
+
+    def test_toast_does_not_leak_to_next_page(self):
+        self.client.force_login(self.user)
+        self.client.post(self.url, **HTMX)
+        self.assertNotContains(self.client.get(reverse("main:discover")), "Saved Oat Milk Zed.")
+
+    def test_unknown_product_is_404(self):
+        self.client.force_login(self.user)
+        self.assertEqual(
+            self.client.post(reverse("main:toggle_bookmark", args=["nope"]), **HTMX).status_code,
+            404,
+        )
+
+    def test_cards_render_saved_state_for_the_current_user_only(self):
+        other = make_user("other")
+        Bookmark.objects.create(user=other, product=self.product)
+        self.client.force_login(self.user)
+        self.assertNotContains(self.client.get(reverse("main:discover")), "is-saved")
+        self.client.force_login(other)
+        self.assertContains(self.client.get(reverse("main:discover")), "is-saved")
