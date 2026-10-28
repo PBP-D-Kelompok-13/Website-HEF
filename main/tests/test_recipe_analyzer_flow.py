@@ -28,6 +28,12 @@ class RecipeAnalyzerFlowTests(TestCase):
         self.assertTemplateUsed(response, "pages/recipes/discover.html")
         self.assertContains(response, "Discover")
         self.assertContains(response, "Tofu Bowl")
+        self.assertContains(response, 'class="hef-bookmark-icon"')
+        self.assertNotContains(response, "▮")
+        self.assertContains(response, 'data-bs-target="#saveRecipeModal-123"')
+        self.assertContains(response, 'id="saveRecipeModal-123"')
+        self.assertContains(response, "Are you sure you want to save this recipe?")
+        self.assertContains(response, "Yes, save recipe")
         search.assert_called_once_with(query="tofu", diet="vegan", max_ready_time=30, offset=0)
 
     @patch("main.views.analyze_with_spoonacular")
@@ -90,6 +96,10 @@ class RecipeAnalyzerFlowTests(TestCase):
         self.assertContains(response, "My recipes")
         self.assertContains(response, "Saved Tofu")
         self.assertContains(response, "My Soup")
+        self.assertContains(response, 'class="hef-trash-icon"')
+        self.assertContains(response, 'data-bs-target="#removeSavedRecipeModal-')
+        self.assertContains(response, "Are you sure you want to remove this recipe?")
+        self.assertNotContains(response, "▮")
 
     def test_anonymous_user_cannot_access_discover(self):
         self.client.logout()
