@@ -144,3 +144,25 @@ class DiscoverHtmxTests(TestCase):
         r = self.client.get(self.url, **HTMX)
         self.assertContains(r, OOB_TOAST, count=1)
         self.assertContains(r, "Login successful.", count=1)
+
+
+
+class ProductJsonTests(TestCase):
+    def test_list_returns_filtered_results(self):
+        make_product(name="Alpha", category="Snacks")
+        make_product(name="Beta", category="Beverages")
+        r = self.client.get(reverse("main:products_json"), {"category": "Snacks"})
+        self.assertEqual(r["Content-Type"], "application/json")
+        self.assertEqual(r.json()["count"], 1)
+        self.assertEqual(r.json()["results"][0]["name"], "Alpha")
+
+    def test_detail_returns_product_or_404(self):
+        p = make_product(name="Alpha")
+        self.assertEqual(
+            self.client.get(reverse("main:product_json", args=[p.barcode])).json()["name"],
+            "Alpha",
+        )
+        self.assertEqual(
+            self.client.get(reverse("main:product_json", args=["000"])).status_code,
+            404,
+        )
