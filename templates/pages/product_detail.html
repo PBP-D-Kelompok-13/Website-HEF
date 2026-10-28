@@ -1,0 +1,257 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}{{ product.name }} — Healthy Eco Foody{% endblock %}
+
+{% block head %}
+<link rel="stylesheet" href="{% static 'css/discover.css' %}">
+{% endblock %}
+
+{% block content %}
+<main class="container my-4">
+    <div class="d-flex flex-column flex-sm-row justify-content-between align-items-start align-items-sm-center gap-2 mb-4">
+        <a href="{% url 'main:discover' %}" class="btn-hef-outline">← Back to Discover</a>
+        <div class="d-flex flex-wrap align-items-center gap-2">
+            <span class="text-label">Open Food Facts · Barcode {{ product.barcode }}</span>
+            {% include "partials/bookmark_button.html" with product=product saved=product.is_saved %}
+            {% if can_manage %}
+                <a href="{% url 'main:product_edit' product.barcode %}" class="btn-hef-outline">Edit</a>
+                <button type="button" class="btn-hef-danger" data-bs-toggle="modal" data-bs-target="#deleteProductModal">
+                    Delete
+                </button>
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="row g-4 mb-5">
+        <div class="col-lg-5">
+            <div class="hef-detail-img">
+                {% if product.image_url %}
+                    <img src="{{ product.image_url }}" alt="{{ product.name }}">
+                {% else %}
+                    <div class="hef-img-placeholder">🥗</div>
+                {% endif %}
+                <div class="hef-detail-pills d-flex flex-wrap gap-2">
+                    <span class="hef-card-tag position-static">{{ product.category }}</span>
+                    {% for label in product.label_list %}
+                        <span class="hef-card-tag position-static">{{ label }}</span>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-7">
+            <p class="hef-eyebrow mb-1">{{ product.brand|default:"Unbranded" }}</p>
+            <h1 class="hef-detail-title mb-1">{{ product.name }}</h1>
+            <p class="hef-barcode mb-2">
+                Barcode {{ product.barcode }} · {{ product.quantity|default:"Quantity not specified" }}
+            </p>
+            {% if product.description %}
+            <p class="text-label mb-3">{{ product.description }}</p>
+            {% endif %}
+
+            <div class="hef-glance-box p-3 p-md-4 mb-3">
+                <div class="d-flex flex-column flex-sm-row justify-content-between align-items-start align-items-sm-center gap-1 mb-3">
+                    <span class="fw-bold">At a glance</span>
+                    <span class="text-label">Graded A (best) to E (lowest)</span>
+                </div>
+
+                <div class="hef-score-banner hef-score-{{ product.eco_grade|default:'na' }} p-3 mb-2 d-flex justify-content-between align-items-center gap-2">
+                    <div class="d-flex align-items-center gap-3">
+                        <span class="hef-score-letter">{{ product.eco_grade|default:"N/A"|upper }}</span>
+                        <div>
+                            <div class="fw-bold">Eco-Score {{ product.eco_grade|default:"N/A"|upper }}</div>
+                            <div class="small">{{ product.eco_summary }}</div>
+                        </div>
+                    </div>
+                    <div class="hef-scale-pill d-none d-sm-flex gap-1 p-1">
+                        {% for key, label in grades %}
+                        <span class="hef-scale-item hef-score-{{ key }} {% if product.eco_grade == key %}selected{% endif %}">{{ label }}</span>
+                        {% endfor %}
+                    </div>
+                </div>
+
+                <div class="hef-score-banner hef-score-{{ product.nutri_grade|default:'na' }} p-3 d-flex justify-content-between align-items-center gap-2">
+                    <div class="d-flex align-items-center gap-3">
+                        <span class="hef-score-letter">{{ product.nutri_grade|default:"N/A"|upper }}</span>
+                        <div>
+                            <div class="fw-bold">Nutri-Score {{ product.nutri_grade|default:"N/A"|upper }}</div>
+                            <div class="small">{{ product.nutri_summary }}</div>
+                        </div>
+                    </div>
+                    <div class="hef-scale-pill d-none d-sm-flex gap-1 p-1">
+                        {% for key, label in grades %}
+                        <span class="hef-scale-item hef-score-{{ key }} {% if product.nutri_grade == key %}selected{% endif %}">{{ label }}</span>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+
+            <div class="hef-detail-card p-3 d-flex align-items-center gap-3">
+                <span class="hef-nova-chip">{{ product.nova_group|default:"?" }}</span>
+                <div>
+                    <div class="text-label">NOVA food processing</div>
+                    <div class="fw-bold">{{ product.get_nova_group_display|default:"Not classified" }}</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-end mb-3">
+        <div>
+            <p class="hef-eyebrow mb-1">OPEN FOOD FACTS BREAKDOWN</p>
+            <h2 class="h3 fw-bold mb-0">Beyond the label</h2>
+        </div>
+        <span class="text-label">Nutrition · Planet · Ingredients</span>
+    </div>
+
+    {% if user.is_authenticated %}
+        <div class="row g-4">
+            <div class="col-lg-4">
+                <section class="hef-detail-card h-100 p-4 d-flex flex-column">
+                    <div class="d-flex justify-content-between mb-3">
+                        <h3 class="h6 fw-bold mb-0">🥗 Nutrition per 100g</h3>
+                        <span class="text-label">100g / 100ml</span>
+                    </div>
+
+                    {% for label, value, unit, level in nutrients %}
+                    <div class="hef-nutr-row p-3 mb-2 d-flex justify-content-between align-items-center">
+                        <span class="fw-semibold">{{ label }}</span>
+                        <div class="d-flex align-items-center gap-2">
+                            <span class="text-label">{% if value is not None %}{{ value }} {{ unit }}{% else %}—{% endif %}</span>
+                            {% if level %}
+                            <span class="hef-level-badge hef-level-{{ level }}">{{ level }}</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                    {% endfor %}
+
+                    <div class="hef-energy-box p-3 mt-auto d-flex justify-content-between align-items-center">
+                        <div>
+                            <div class="text-label">ENERGY</div>
+                            <div class="h4 fw-bold mb-0">
+                                {% if product.calories_100g is not None %}{{ product.calories_100g|floatformat:0 }} kcal{% else %}—{% endif %}
+                            </div>
+                            <div class="text-label">
+                                {% if product.kj_100g is not None %}{{ product.kj_100g|floatformat:0 }} kJ per 100g{% endif %}
+                            </div>
+                        </div>
+                        <div class="text-end">
+                            <div class="text-label">FIBER</div>
+                            <div class="h5 fw-bold mb-0">
+                                {% if product.fiber_100g is not None %}{{ product.fiber_100g }} g{% else %}—{% endif %}
+                            </div>
+                            <div class="text-label">per 100g</div>
+                        </div>
+                    </div>
+                </section>
+            </div>
+
+            <div class="col-lg-4">
+                <section class="hef-detail-card h-100 p-4 d-flex flex-column">
+                    <div class="d-flex justify-content-between mb-3">
+                        <h3 class="h6 fw-bold mb-0">🌍 Environmental footprint</h3>
+                        <span class="text-label">Agribalyse LCA</span>
+                    </div>
+
+                    <div class="hef-co2-box p-3 mb-3">
+                        <div class="text-label">CARBON FOOTPRINT</div>
+                        <div class="h4 fw-bold mb-0">
+                            {% if product.co2_kg %}{{ product.co2_kg }} kg CO₂e{% else %}Not reported{% endif %}
+                        </div>
+                        <div class="text-label">per kg of product · {{ product.eco_summary }}</div>
+                    </div>
+
+                    {% for part in product.co2_parts %}
+                    <div class="mb-2">
+                        <div class="d-flex justify-content-between small fw-semibold mb-1">
+                            <span>{{ part.label }}</span>
+                            <span>{{ part.value }} kg · {{ part.pct }}%</span>
+                        </div>
+                        <div class="hef-co2-track">
+                            <div class="hef-co2-fill hef-co2-{{ part.tone }}" style="width: {{ part.pct }}%"></div>
+                        </div>
+                    </div>
+                    {% empty %}
+                    <p class="text-label">Lifecycle stage breakdown is not available for this product.</p>
+                    {% endfor %}
+
+                    <div class="mt-auto pt-3 border-top">
+                        <div class="d-flex justify-content-between small py-1">
+                            <span class="text-label">Origin</span>
+                            <span class="fw-semibold text-end">{{ product.origin|default:"Location not specified" }}</span>
+                        </div>
+                        <div class="d-flex justify-content-between small py-1">
+                            <span class="text-label">Packaging</span>
+                            <span class="fw-semibold text-end">{{ product.packaging|default:"Not specified" }}</span>
+                        </div>
+                    </div>
+                </section>
+            </div>
+
+            <div class="col-lg-4">
+                <section class="hef-detail-card h-100 p-4 d-flex flex-column">
+                    <div class="d-flex justify-content-between mb-3">
+                        <h3 class="h6 fw-bold mb-0">🧾 Ingredients &amp; allergens</h3>
+                        <span class="text-label">Declared on pack</span>
+                    </div>
+
+                    <div class="text-label mb-1">INGREDIENTS</div>
+                    <div class="hef-ingr-box p-3 mb-3 small">
+                        {{ product.ingredients|default:"Ingredients list not available." }}
+                    </div>
+
+                    <div class="text-label mb-1">ALLERGENS</div>
+                    <div class="hef-allergen-box p-3 mb-3 small fw-semibold">
+                        ⚠️ {{ product.allergens|default:"None reported." }}
+                    </div>
+
+                    <div class="mt-auto">
+                        <div class="text-label mb-2">CERTIFICATIONS &amp; LABELS</div>
+                        <div class="d-flex flex-wrap gap-2">
+                            {% for label in product.label_list %}
+                                <span class="hef-count-pill">{{ label }}</span>
+                            {% empty %}
+                                <span class="text-label">No certifications listed.</span>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </section>
+            </div>
+        </div>
+    {% else %}
+        <div class="hef-empty-card text-center p-5">
+            <h3 class="h5 fw-bold mb-2">Log in to see the full breakdown</h3>
+            <p class="text-label mb-3">
+                Sign in to unlock per-100g nutrient levels, Agribalyse carbon lifecycle stages, and declared allergens.
+            </p>
+            <a href="{% url 'main:login_account' %}?next={{ request.path }}" class="btn-hef-forest">
+                Log in to continue →
+            </a>
+        </div>
+    {% endif %}
+</main>
+
+{% if can_manage %}
+<div class="modal fade" id="deleteProductModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content hef-modal-card p-3">
+            <div class="modal-header border-0">
+                <h2 class="h5 fw-bold mb-0">Delete {{ product.name }}?</h2>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p class="text-label mb-0">This removes the product from the Healthy Eco Foody shelf.</p>
+            </div>
+            <div class="modal-footer border-0">
+                <button type="button" class="btn-hef-outline" data-bs-dismiss="modal">Cancel</button>
+                <form method="post" action="{% url 'main:product_delete' product.barcode %}">
+                    {% csrf_token %}
+                    <button type="submit" class="btn-hef-danger">Yes, delete</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+{% endblock %}
