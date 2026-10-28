@@ -1,3 +1,4 @@
+from django.contrib.auth.decorators import login_required
 from django.shortcuts import render, redirect
 from django.contrib import messages
 from django.contrib.auth import login, logout, update_session_auth_hash
@@ -162,3 +163,7 @@ def deactivate_account(request):
     messages.success(request, "Your account has been deactivated.")
 
     return redirect("main:show_landing_page")
+
+@login_required
+def show_compare(request):
+    return render(request, "pages/compare.html")
