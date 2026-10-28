@@ -91,9 +91,18 @@
         {% for item in ingredients %}
         <div class="col-12 col-md-6 col-lg-4">
             <article class="hef-inventory-card d-flex align-items-center gap-3 p-4">
-                <!-- Image / Icon Placeholder wrapper -->
-                <div class="hef-card-img-wrapper flex-shrink-0 d-flex align-items-center justify-content-center">
-                    <img src="https://placehold.co/122x122" alt="{{ item.name }}" class="img-fluid rounded-4">
+                <!-- Image wrapper -->
+                <div class="hef-card-img-wrapper d-flex align-items-center justify-content-center overflow-hidden">
+                    {% if item.image %}
+                        <img src="{{ item.image.url }}" alt="{{ item.name }}" class="w-100 h-100 object-fit-cover">
+                    {% else %}
+                        <!-- Default placeholder icon if no image uploaded -->
+                        <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                            <polyline points="17 8 12 3 7 8"/>
+                            <line x1="12" y1="3" x2="12" y2="15"/>
+                        </svg>
+                    {% endif %}
                 </div>
                 <div class="hef-card-content flex-grow-1 d-flex flex-column justify-content-between gap-3">
                     <div>
@@ -151,7 +160,7 @@
             <div class="text-center mb-3">
                 <h2 class="hef-auth-title" style="font-size: 32px;">Add Ingredient</h2>
             </div>
-            <form method="post" action="{% url 'main:add_ingredient' %}">
+            <form method="post" action="{% url 'main:add_ingredient' %}" enctype="multipart/form-data">
                 {% csrf_token %}
 
                 {% for field in form %}
@@ -180,7 +189,7 @@
             <div class="text-center mb-3">
                 <h2 class="hef-auth-title" style="font-size: 32px;">Edit Ingredient</h2>
             </div>
-            <form id="editForm" method="post" action="">
+            <form id="editForm" method="post" action="" enctype="multipart/form-data">
                 {% csrf_token %}
 
                 <div class="hef-field mb-3">

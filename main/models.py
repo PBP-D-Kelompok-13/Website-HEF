@@ -29,6 +29,7 @@ class Ingredient(models.Model):
     category = models.CharField(max_length=50, choices=CATEGORY_CHOICES)
     quantity = models.CharField(max_length=50)
     expiration_date = models.DateField()
+    image = models.ImageField(upload_to='ingredients/', blank=True, null=True)
     
     def __str__(self):
         return f"{self.name} ({self.user.username})"

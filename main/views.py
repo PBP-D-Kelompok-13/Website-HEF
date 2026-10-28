@@ -203,26 +203,30 @@ def show_inventory(request):
 @login_required(login_url='main:login_account')
 def add_ingredient(request):
     if request.method == 'POST':
-        form = IngredientForm(request.POST)
+        form = IngredientForm(request.POST, request.FILES)
         if form.is_valid():
             ingredient = form.save(commit=False)
             ingredient.user = request.user
             ingredient.save()
             messages.success(request, "Ingredient successfully added.")
+            return redirect('main:show_inventory')
         else:
-            messages.error(request, "Failed to add ingredient. Please check your input.")
+            messages.error(request, "Failed to add ingredient.")
+    else:
+        form = IngredientForm()
     return redirect('main:show_inventory')
 
 @login_required(login_url='main:login_account')
 def edit_ingredient(request, pk):
     ingredient = get_object_or_404(Ingredient, pk=pk, user=request.user)
     if request.method == 'POST':
-        form = IngredientForm(request.POST, instance=ingredient)
+        form = IngredientForm(request.POST, request.FILES, instance=ingredient)
         if form.is_valid():
             form.save()
             messages.success(request, "Ingredient successfully editted.")
+            return redirect('main:show_inventory')
         else:
-            messages.error(request, "Failed to edit ingredient. Please check your input.")
+            messages.error(request, "Failed to edit ingredient.")
     return redirect('main:show_inventory')
 
 @login_required(login_url='main:login_account')

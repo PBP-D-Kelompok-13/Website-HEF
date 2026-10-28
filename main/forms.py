@@ -83,13 +83,15 @@ class ReactivationForm(forms.Form):
             self.user = user
 
         return cleaned_data
+    
 class IngredientForm(forms.ModelForm):
     class Meta:
         model = Ingredient
-        fields = ['name', 'category', 'quantity', 'expiration_date']
+        fields = ['name', 'category', 'quantity', 'expiration_date', 'image']
         widgets = {
-            'expiration_date': forms.DateInput(attrs={'type': 'date', 'class': 'hef-input'}),
             'category': forms.Select(attrs={'class': 'hef-input'}),
+            'expiration_date': forms.DateInput(attrs={'class': 'hef-input', 'type': 'date'}),
+            'image': forms.ClearableFileInput(attrs={'class': 'hef-input'}),
         }
 
     def __init__(self, *args, **kwargs):
