@@ -176,6 +176,9 @@ def deactivate_account(request):
 
     return redirect("main:show_landing_page")
 
+''' =============================== 
+    Recipe
+    =============================== '''
 # Recipe Analyzer views keep saved data scoped to the signed-in owner.
 
 RECIPE_PAGE_SIZE = 6
