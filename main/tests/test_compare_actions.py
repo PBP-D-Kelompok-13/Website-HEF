@@ -109,3 +109,76 @@ class CompareAddTests(TestCase):
             csrf_client.session.get("comparison_barcodes", []),
             [],
         )
+        
+class CompareRemoveTests(TestCase):
+    @classmethod
+    def setUpTestData(cls):
+        cls.user = get_user_model().objects.create_user(
+            username="compare_remove",
+            email="compare-remove@example.com",
+            password="TestPassword123!",
+            date_of_birth=date(2000, 1, 1),
+        )
+
+    def setUp(self):
+        self.client.force_login(self.user)
+        self.url = reverse("main:compare_remove")
+
+        session = self.client.session
+        session["comparison_barcodes"] = ["001", "002"]
+        session.save()
+
+    def selection(self):
+        return self.client.session.get("comparison_barcodes", [])
+
+    def test_remove_selected_product(self):
+        response = self.client.post(self.url, {"barcode": "001"})
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(self.selection(), ["002"])
+        self.assertFalse(response.json()["can_compare"])
+
+    def test_unknown_product_leaves_selection_unchanged(self):
+        response = self.client.post(self.url, {"barcode": "999"})
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(self.selection(), ["001", "002"])
+
+    def test_missing_barcode_is_rejected(self):
+        response = self.client.post(self.url, {})
+
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(self.selection(), ["001", "002"])
+
+    def test_get_does_not_remove_product(self):
+        response = self.client.get(self.url, {"barcode": "001"})
+
+        self.assertEqual(response.status_code, 405)
+        self.assertEqual(self.selection(), ["001", "002"])
+
+    def test_guest_cannot_remove_product(self):
+        self.client.logout()
+
+        response = self.client.post(self.url, {"barcode": "001"})
+
+        self.assertRedirects(
+            response,
+            f"{reverse('main:login_account')}?next={self.url}",
+            fetch_redirect_response=False,
+        )
+
+    def test_post_without_csrf_does_not_remove_product(self):
+        csrf_client = Client(enforce_csrf_checks=True)
+        csrf_client.force_login(self.user)
+
+        session = csrf_client.session
+        session["comparison_barcodes"] = ["001", "002"]
+        session.save()
+
+        response = csrf_client.post(self.url, {"barcode": "001"})
+
+        self.assertEqual(response.status_code, 403)
+        self.assertEqual(
+            csrf_client.session["comparison_barcodes"],
+            ["001", "002"],
+        )
