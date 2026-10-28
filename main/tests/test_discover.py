@@ -96,3 +96,51 @@ class DiscoverFilterTests(TestCase):
         self.assertEqual(sorted(self.names(anonymous)), ["Other Item", "Saved Item"])
         self.client.force_login(user)
         self.assertEqual(self.names(self.client.get(self.url, {"saved": "1"})), ["Saved Item"])
+
+
+
+class DiscoverHtmxTests(TestCase):
+    url = reverse("main:discover")
+
+    def setUp(self):
+        for _ in range(8):
+            make_product()
+
+    def test_filter_request_returns_results_partial_only(self):
+        r = self.client.get(self.url, {"eco": "a"}, **HTMX)
+        self.assertTemplateUsed(r, "partials/discover_results.html")
+        self.assertTemplateNotUsed(r, "base.html")
+
+    def test_load_more_returns_remaining_cards_only(self):
+        r = self.client.get(self.url, {"page": 2}, **HTMX)
+        self.assertTemplateUsed(r, "partials/discover_more.html")
+        self.assertTemplateNotUsed(r, "base.html")
+        self.assertEqual(len(r.context["page_obj"]), 2)
+        self.assertContains(r, "You've explored 8 of 8 products")
+        self.assertNotContains(r, "Load more products")
+
+    def test_first_page_load_more_button_targets_page_two_and_keeps_filters(self):
+        r = self.client.get(self.url, {"eco": "a"}, **HTMX)
+        self.assertContains(r, "eco=a&amp;page=2")
+        self.assertContains(r, 'hx-target="#load-more"')
+        self.assertContains(r, 'hx-push-url="false"')
+
+    def test_history_restore_gets_the_full_page(self):
+        r = self.client.get(self.url, **HTMX, HTTP_HX_HISTORY_RESTORE_REQUEST="true")
+        self.assertTemplateUsed(r, "pages/discover.html")
+
+    def test_response_varies_on_hx_request(self):
+        self.assertIn("HX-Request", self.client.get(self.url)["Vary"])
+
+    def test_no_toast_container_when_there_is_no_message(self):
+        self.assertNotContains(self.client.get(self.url, **HTMX), "toast-container")
+
+    def test_pending_message_is_flushed_as_oob_toast(self):
+        make_user()
+        self.client.post(
+            reverse("main:login_account"),
+            {"username": "healthyuser", "password": "StrongPass123!"},
+        )
+        r = self.client.get(self.url, **HTMX)
+        self.assertContains(r, OOB_TOAST, count=1)
+        self.assertContains(r, "Login successful.", count=1)
