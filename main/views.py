@@ -6,7 +6,6 @@ from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
 from django.utils.html import strip_tags
 from .forms import (
-    RecipeForm,
     CustomUserCreationForm,
     CustomAuthenticationForm,
     ProfileDetailsForm,
@@ -23,7 +22,10 @@ import requests
 from .models import SavedRecipe
 from .recipe_forms import RecipeAuthorForm, RecipeIngredientFormSet
 from .services.recipe_analyzer import (
-    analyze_with_spoonacular, get_spoonacular_recipe, search_spoonacular_recipes,
+    RECIPE_PAGE_SIZE,
+    analyze_with_spoonacular,
+    get_spoonacular_recipe,
+    search_spoonacular_recipes,
     search_spoonacular_ingredients,
 )
 
@@ -181,7 +183,6 @@ def deactivate_account(request):
     =============================== '''
 # Recipe Analyzer views keep saved data scoped to the signed-in owner.
 
-RECIPE_PAGE_SIZE = 6
 ALLOWED_DIETS = {"vegetarian", "vegan", "gluten free"}
 
 
@@ -226,7 +227,12 @@ def _nutrients(nutrition):
 def _display_analysis(nutrition):
     nutrients = _nutrients(nutrition)
     wanted = {"Protein", "Carbohydrates", "Fat", "Fiber", "Sugar", "Sodium", "Calories"}
-    values = {item.get("name", "").lower(): item for item in nutrients if item.get("name", "").lower() in {name.lower() for name in wanted}}
+    wanted_names = {name.lower() for name in wanted}
+    values = {
+        item.get("name", "").lower(): item
+        for item in nutrients
+        if item.get("name", "").lower() in wanted_names
+    }
     calories = values.get("calories", {}).get("amount", 0) or 0
     macros = []
     for name in ("Carbohydrates", "Protein", "Fat"):
@@ -315,10 +321,13 @@ def recipe_discover(request):
     except (ImproperlyConfigured, requests.RequestException, ValueError):
         api_error = True
         _spoonacular_error(request)
-    saved_map = dict(SavedRecipe.objects.filter(
-        user=request.user, source=SavedRecipe.Source.SPOONACULAR,
-        spoonacular_id__in=[item.get("id") for item in results.get("results", [])],
-    ).values_list("spoonacular_id", "pk"))
+    saved_map = dict(
+        SavedRecipe.objects.filter(
+            user=request.user,
+            source=SavedRecipe.Source.SPOONACULAR,
+            spoonacular_id__in=[item.get("id") for item in results.get("results", [])],
+        ).values_list("spoonacular_id", "pk")
+    )
     search_cards = []
     for item in results.get("results", []):
         search_cards.append({
@@ -329,10 +338,10 @@ def recipe_discover(request):
             "saved_pk": saved_map.get(item.get("id")),
         })
     context = {
-        "results": results.get("results", []), "search_cards": search_cards,
-        "total_results": results.get("totalResults", 0), "saved_ids": set(saved_map),
+        "search_cards": search_cards,
+        "total_results": results.get("totalResults", 0),
         "query": query, "diet": diet, "max_ready_time": max_ready_time or "",
-        "offset": offset, "next_offset": offset + RECIPE_PAGE_SIZE,
+        "next_offset": offset + RECIPE_PAGE_SIZE,
         "more_available": results.get("totalResults", 0) > offset + RECIPE_PAGE_SIZE,
         "api_error": api_error,
     }
@@ -355,8 +364,14 @@ def recipe_list(request):
     spoonacular_recipes = saved.filter(source=SavedRecipe.Source.SPOONACULAR)
     own_recipes = saved.filter(source=SavedRecipe.Source.OWN)
     return render(request, "pages/recipes/saved.html", {
-        "spoonacular_recipes": [{"recipe": item, "analysis": _display_analysis(item.nutrition), "is_draft": item.is_draft} for item in spoonacular_recipes],
-        "own_recipes": [{"recipe": item, "analysis": _display_analysis(item.nutrition), "is_draft": item.is_draft} for item in own_recipes],
+        "spoonacular_recipes": [
+            {"recipe": item, "analysis": _display_analysis(item.nutrition)}
+            for item in spoonacular_recipes
+        ],
+        "own_recipes": [
+            {"recipe": item, "analysis": _display_analysis(item.nutrition)}
+            for item in own_recipes
+        ],
         "query": query, "sort": sort if sort in sort_fields else "newest",
     })
 
@@ -404,11 +419,16 @@ def _ingredient_text(items):
     )
 
 
-def _analyze_own_recipe(recipe, items):
-    api_ingredients = [f"{item['amount_g']} g {item['name']}" for item in items]
+def _analyze_own_recipe(recipe):
+    ingredients = [
+        f"{item['amount_g']} g {item['name']}" if item.get("amount_g") else item["name"]
+        for item in recipe.ingredient_items
+    ]
     return analyze_with_spoonacular(
-        title=recipe.title, ingredients=api_ingredients,
-        instructions=recipe.instructions, servings=recipe.servings,
+        title=recipe.title,
+        ingredients=ingredients,
+        instructions=recipe.instructions,
+        servings=recipe.servings,
     )
 
 
@@ -429,12 +449,7 @@ def recipe_create(request):
             messages.success(request, "Draft saved under My recipes.")
             return redirect("main:recipe_detail", pk=recipe.pk)
         try:
-            recipe.nutrition = analyze_with_spoonacular(
-                title=recipe.title,
-                ingredients=[f"{item['amount_g']} g {item['name']}" if item.get("amount_g") else item["name"] for item in recipe.ingredient_items],
-                instructions=recipe.instructions,
-                servings=recipe.servings,
-            )
+            recipe.nutrition = _analyze_own_recipe(recipe)
         except (ImproperlyConfigured, requests.RequestException, ValueError):
             _spoonacular_error(request)
             return render(request, "pages/recipes/form.html", {"form": form, "ingredient_formset": ingredient_formset, "editing": False}, status=502)
@@ -468,11 +483,7 @@ def recipe_update(request, pk):
             messages.success(request, "Draft updated.")
             return redirect("main:recipe_detail", pk=updated.pk)
         try:
-            updated.nutrition = analyze_with_spoonacular(
-                title=updated.title,
-                ingredients=[f"{item['amount_g']} g {item['name']}" if item.get("amount_g") else item["name"] for item in updated.ingredient_items],
-                instructions=updated.instructions, servings=updated.servings,
-            )
+            updated.nutrition = _analyze_own_recipe(updated)
         except (ImproperlyConfigured, requests.RequestException, ValueError):
             _spoonacular_error(request)
             return render(request, "pages/recipes/form.html", {"form": form, "ingredient_formset": ingredient_formset, "recipe": recipe, "editing": True}, status=502)

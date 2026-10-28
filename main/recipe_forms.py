@@ -11,6 +11,7 @@ class RecipeIngredientForm(forms.Form):
     }))
     amount_g = forms.DecimalField(min_value=0.01, max_value=10000, max_digits=8, decimal_places=2,
         widget=forms.NumberInput(attrs={"class": "form-control", "placeholder": "e.g. 100", "step": "0.01"}))
+
     def __init__(self, *args, require_weight=True, **kwargs):
         self.require_weight = require_weight
         super().__init__(*args, **kwargs)

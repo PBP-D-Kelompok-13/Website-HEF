@@ -5,6 +5,7 @@ from django.core.exceptions import ImproperlyConfigured
 
 API_BASE_URL = "https://api.spoonacular.com"
 SPOONACULAR_ANALYZE_URL = f"{API_BASE_URL}/recipes/analyze"
+RECIPE_PAGE_SIZE = 6
 
 
 def _api_key():
@@ -38,7 +39,7 @@ def search_spoonacular_recipes(*, query="", diet="", max_ready_time=None, offset
     params = {
         "apiKey": _api_key(),
         "query": query,
-        "number": 6,
+        "number": RECIPE_PAGE_SIZE,
         "offset": offset,
         "addRecipeInformation": "true",
         "addRecipeNutrition": "true",

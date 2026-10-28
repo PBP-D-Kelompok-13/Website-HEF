@@ -5,8 +5,8 @@ from django.contrib.auth import get_user_model
 from django.test import Client, TestCase
 from django.urls import reverse
 
-from main.forms import RecipeForm
 from main.models import SavedRecipe
+from main.recipe_forms import RecipeAuthorForm, RecipeIngredientFormSet
 
 User = get_user_model()
 
@@ -18,22 +18,37 @@ class RecipeAnalyzerTests(TestCase):
         self.client.force_login(self.owner)
         self.recipe = SavedRecipe.objects.create(user=self.owner, title="Lentil bowl", ingredients="1 cup lentils\n1 tomato", instructions="Cook the lentils.", servings=2, nutrition={"nutrition": {"nutrients": []}})
 
-    def test_form_validates_required_ingredients_and_serving_range(self):
-        valid = RecipeForm({"title": "Green soup", "ingredients": "2 cups spinach\n1 onion", "instructions": "Blend.", "servings": 2})
+    def test_author_form_validates_title_and_serving_range(self):
+        valid = RecipeAuthorForm({"title": "Green soup", "servings": 2})
         self.assertTrue(valid.is_valid(), valid.errors)
-        invalid = RecipeForm({"title": "Soup", "ingredients": " ", "servings": 0})
+        invalid = RecipeAuthorForm({"title": " ", "servings": 0})
         self.assertFalse(invalid.is_valid())
-        self.assertIn("ingredients", invalid.errors)
+        self.assertIn("title", invalid.errors)
         self.assertIn("servings", invalid.errors)
+
+    def test_ingredient_formset_validates_required_ingredient_and_weight(self):
+        valid = RecipeIngredientFormSet({
+            "ingredient-TOTAL_FORMS": "1", "ingredient-INITIAL_FORMS": "0",
+            "ingredient-MIN_NUM_FORMS": "1", "ingredient-MAX_NUM_FORMS": "30",
+            "ingredient-0-name": "Spinach", "ingredient-0-amount_g": "100",
+        }, prefix="ingredient")
+        self.assertTrue(valid.is_valid(), valid.errors)
+
+        invalid = RecipeIngredientFormSet({
+            "ingredient-TOTAL_FORMS": "1", "ingredient-INITIAL_FORMS": "0",
+            "ingredient-MIN_NUM_FORMS": "1", "ingredient-MAX_NUM_FORMS": "30",
+            "ingredient-0-name": "", "ingredient-0-amount_g": "",
+        }, prefix="ingredient")
+        self.assertFalse(invalid.is_valid())
 
     def test_anonymous_cannot_read_recipes(self):
         self.client.logout()
-        url = reverse("main:recipe_list")
+        url = reverse("main:recipe_saved_list")
         self.assertRedirects(self.client.get(url), f"{reverse('main:login_account')}?next={url}")
 
     def test_list_and_detail_only_expose_owned_recipes(self):
         SavedRecipe.objects.create(user=self.other, title="Private curry", ingredients="rice", servings=1)
-        response = self.client.get(reverse("main:recipe_list"))
+        response = self.client.get(reverse("main:recipe_saved_list"))
         self.assertContains(response, "Lentil bowl")
         self.assertNotContains(response, "Private curry")
         detail = reverse("main:recipe_detail", args=[self.recipe.pk])
@@ -41,8 +56,8 @@ class RecipeAnalyzerTests(TestCase):
         self.assertEqual(detail_response.status_code, 200)
         self.assertContains(detail_response, f'data-bs-target="#removeRecipeModal-{self.recipe.pk}"')
         self.assertContains(detail_response, f'id="removeRecipeModal-{self.recipe.pk}"')
-        self.assertContains(detail_response, "max-width: 400px")
-        self.assertContains(detail_response, "grid-template-columns: repeat(2")
+        self.assertContains(detail_response, 'class="modal-dialog modal-dialog-centered"')
+        self.assertContains(detail_response, 'class="hef-recipe-confirm-actions"')
         self.assertContains(detail_response, "recipe_analyzer.css?v=recipe-modal-layout-3")
         self.client.force_login(self.other)
         self.assertEqual(self.client.get(detail).status_code, 404)
@@ -70,7 +85,7 @@ class RecipeAnalyzerTests(TestCase):
             HTTP_HX_REQUEST="true",
         )
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(response["HX-Redirect"], reverse("main:recipe_list"))
+        self.assertEqual(response["HX-Redirect"], reverse("main:recipe_saved_list"))
         self.assertFalse(SavedRecipe.objects.filter(pk=self.recipe.pk).exists())
 
     def test_update_delete_and_method_restriction(self):
@@ -86,7 +101,7 @@ class RecipeAnalyzerTests(TestCase):
         self.assertEqual(self.client.post(delete).status_code, 404)
         self.assertTrue(SavedRecipe.objects.filter(pk=self.recipe.pk).exists())
         self.client.force_login(self.owner)
-        self.assertRedirects(self.client.post(delete), reverse("main:recipe_list"))
+        self.assertRedirects(self.client.post(delete), reverse("main:recipe_saved_list"))
         self.assertFalse(SavedRecipe.objects.filter(pk=self.recipe.pk).exists())
 
     @patch("main.views.analyze_with_spoonacular")

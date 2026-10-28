@@ -1,6 +1,6 @@
 from django import forms
 from django.contrib.auth.forms import UserCreationForm, AuthenticationForm, PasswordChangeForm
-from .models import CustomUser, SavedRecipe
+from .models import CustomUser
 from django.core.exceptions import ValidationError
 
 def style(field, placeholder):
@@ -84,42 +84,3 @@ class ReactivationForm(forms.Form):
 
         return cleaned_data
 
-class RecipeForm(forms.ModelForm):
-    class Meta:
-        model = SavedRecipe
-        fields = ("title", "ingredients", "instructions", "servings")
-        widgets = {
-            "title": forms.TextInput(attrs={
-                "class": "form-control", "maxlength": 120,
-                "placeholder": "e.g. Green lentil bowl",
-            }),
-            "ingredients": forms.Textarea(attrs={
-                "class": "form-control", "rows": 6,
-                "placeholder": "Add one ingredient per line",
-            }),
-            "instructions": forms.Textarea(attrs={
-                "class": "form-control", "rows": 4,
-                "placeholder": "Optional preparation steps",
-            }),
-            "servings": forms.NumberInput(attrs={
-                "class": "form-control", "min": 1, "max": 50,
-            }),
-        }
-
-    def clean_title(self):
-        title = self.cleaned_data["title"].strip()
-        if not title:
-            raise forms.ValidationError("Enter a recipe name.")
-        return title
-
-    def clean_ingredients(self):
-        ingredients = self.cleaned_data["ingredients"].strip()
-        if not ingredients or not any(line.strip() for line in ingredients.splitlines()):
-            raise forms.ValidationError("Add at least one ingredient.")
-        return "\n".join(line.strip() for line in ingredients.splitlines() if line.strip())
-
-    def clean_servings(self):
-        servings = self.cleaned_data["servings"]
-        if not 1 <= servings <= 50:
-            raise forms.ValidationError("Servings must be between 1 and 50.")
-        return servings

@@ -7,7 +7,6 @@ urlpatterns = [
     path("", show_landing_page, name="show_landing_page"),
     path("recipes/", recipe_discover, name="recipe_discover"),
     path("recipes/ingredient-suggestions/", recipe_ingredient_suggestions, name="recipe_ingredient_suggestions"),
-    path("recipes/saved/", recipe_list, name="recipe_list"),
     path("recipes/saved/", recipe_list, name="recipe_saved_list"),
     path("recipes/spoonacular/<int:spoonacular_id>/", recipe_spoonacular_detail, name="recipe_spoonacular_detail"),
     path("recipes/spoonacular/<int:spoonacular_id>/save/", recipe_save_spoonacular, name="recipe_save_spoonacular"),
