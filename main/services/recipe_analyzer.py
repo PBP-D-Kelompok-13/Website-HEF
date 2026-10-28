@@ -53,6 +53,16 @@ def search_spoonacular_recipes(*, query="", diet="", max_ready_time=None, offset
     return response.json()
 
 
+def search_spoonacular_ingredients(query):
+    response = requests.get(
+        f"{API_BASE_URL}/food/ingredients/autocomplete",
+        params={"apiKey": _api_key(), "query": query, "number": 8},
+        timeout=8,
+    )
+    response.raise_for_status()
+    return response.json()
+
+
 def get_spoonacular_recipe(recipe_id):
     response = requests.get(
         f"{API_BASE_URL}/recipes/{int(recipe_id)}/information",

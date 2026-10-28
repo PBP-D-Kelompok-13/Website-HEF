@@ -1,5 +1,6 @@
 from django import forms
-from django.forms import formset_factory
+from django.forms import BaseFormSet, formset_factory
+from django.urls import reverse
 
 from .models import SavedRecipe
 
@@ -10,20 +11,32 @@ class RecipeIngredientForm(forms.Form):
     }))
     amount_g = forms.DecimalField(min_value=0.01, max_value=10000, max_digits=8, decimal_places=2,
         widget=forms.NumberInput(attrs={"class": "form-control", "placeholder": "e.g. 100", "step": "0.01"}))
-    DELETE = forms.BooleanField(required=False, widget=forms.HiddenInput)
-
     def __init__(self, *args, require_weight=True, **kwargs):
         self.require_weight = require_weight
         super().__init__(*args, **kwargs)
         self.fields["amount_g"].required = require_weight
+        suggestions_id = f"{self['name'].id_for_label}-suggestions"
+        self.fields["name"].widget.attrs.update({
+            "list": suggestions_id,
+            "autocomplete": "off",
+            "hx-get": reverse("main:recipe_ingredient_suggestions"),
+            "hx-trigger": "input changed delay:300ms",
+            "hx-include": "this",
+            "hx-target": f"#{suggestions_id}",
+            "hx-swap": "innerHTML",
+        })
 
     def clean_name(self):
         return self.cleaned_data["name"].strip()
 
 
+class RecipeIngredientFormSetBase(BaseFormSet):
+    deletion_widget = forms.HiddenInput
+
+
 RecipeIngredientFormSet = formset_factory(
-    RecipeIngredientForm, extra=6, can_delete=True, min_num=1, validate_min=True,
-    max_num=30, validate_max=True,
+    RecipeIngredientForm, extra=3, can_delete=True, min_num=1, validate_min=True,
+    max_num=30, validate_max=True, formset=RecipeIngredientFormSetBase,
 )
 
 

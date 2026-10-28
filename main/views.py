@@ -24,6 +24,7 @@ from .models import SavedRecipe
 from .recipe_forms import RecipeAuthorForm, RecipeIngredientFormSet
 from .services.recipe_analyzer import (
     analyze_with_spoonacular, get_spoonacular_recipe, search_spoonacular_recipes,
+    search_spoonacular_ingredients,
 )
 
 # Custom wrapper that only allows HTMX requests
@@ -179,6 +180,27 @@ def deactivate_account(request):
 
 RECIPE_PAGE_SIZE = 6
 ALLOWED_DIETS = {"vegetarian", "vegan", "gluten free"}
+
+
+@login_required
+def recipe_ingredient_suggestions(request):
+    query = (request.GET.get("q") or next(
+        (value for key, value in request.GET.items() if key.endswith("-name")), ""
+    )).strip()[:80]
+    suggestions = []
+    if len(query) >= 2:
+        try:
+            suggestions = search_spoonacular_ingredients(query)
+        except (ImproperlyConfigured, requests.RequestException, ValueError):
+            suggestions = []
+    normalized_suggestions = []
+    if isinstance(suggestions, list):
+        for item in suggestions[:8]:
+            name = item.get("name") if isinstance(item, dict) else None
+            if isinstance(name, str) and name.strip():
+                normalized_suggestions.append({"name": name.strip()})
+    suggestions = normalized_suggestions
+    return render(request, "pages/recipes/_ingredient_suggestions.html", {"suggestions": suggestions})
 
 
 def _owned_recipe(request, pk):
