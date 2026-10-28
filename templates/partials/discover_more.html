@@ -1,0 +1,20 @@
+<div hx-swap-oob="beforeend:#product-grid">
+    {% include "partials/discover_cards.html" %}
+</div>
+
+<div id="load-more" class="text-center my-4">
+    <p class="text-label mb-2">
+        You've explored {{ shown_count }} of {{ total_count }} products
+    </p>
+    {% if page_obj.has_next %}
+    <button type="button"
+            class="btn-hef-outline"
+            hx-get="{% url 'main:discover' %}?{% if filter_querystring %}{{ filter_querystring }}&amp;{% endif %}page={{ page_obj.next_page_number }}"
+            hx-target="#load-more"
+            hx-swap="outerHTML"
+            hx-push-url="false">
+        Load more products ({{ page_obj.paginator.per_page }} per page)
+    </button>
+    {% endif %}
+</div>
+{% if messages %}{% include "partials/toasts_oob.html" %}{% endif %}

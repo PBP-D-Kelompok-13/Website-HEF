@@ -34,7 +34,7 @@
             {% if page_obj.has_next %}
             <button type="button"
                     class="btn-hef-outline"
-                    hx-get="{% url 'main:discover' %}?{% if filter_querystring %}{{ filter_querystring }}&{% endif %}page={{ page_obj.next_page_number }}"
+                    hx-get="{% url 'main:discover' %}?{% if filter_querystring %}{{ filter_querystring }}&amp;{% endif %}page={{ page_obj.next_page_number }}"
                     hx-target="#load-more"
                     hx-swap="outerHTML"
                     hx-push-url="false">
