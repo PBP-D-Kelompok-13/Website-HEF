@@ -2,6 +2,7 @@ from datetime import date
 from unittest.mock import patch
 
 from django.contrib.auth import get_user_model
+from django.core.files.uploadedfile import SimpleUploadedFile
 from django.test import Client, TestCase
 from django.urls import reverse
 
@@ -40,6 +41,45 @@ class RecipeAnalyzerTests(TestCase):
             "ingredient-0-name": "", "ingredient-0-amount_g": "",
         }, prefix="ingredient")
         self.assertFalse(invalid.is_valid())
+
+    def test_author_form_validates_photo_size_type_signature_and_valid_image(self):
+        oversized = SimpleUploadedFile(
+            "large.png", b"x" * (10 * 1024 * 1024 + 1), content_type="image/png"
+        )
+        oversized_form = RecipeAuthorForm(
+            {"title": "Soup", "servings": 2}, {"photo": oversized}
+        )
+        self.assertFalse(oversized_form.is_valid())
+        self.assertIn("10 MB or smaller", oversized_form.errors["photo"][0])
+
+        wrong_type = SimpleUploadedFile(
+            "notes.txt", b"not an image", content_type="text/plain"
+        )
+        wrong_type_form = RecipeAuthorForm(
+            {"title": "Soup", "servings": 2}, {"photo": wrong_type}
+        )
+        self.assertFalse(wrong_type_form.is_valid())
+        self.assertIn("JPG or PNG", wrong_type_form.errors["photo"][0])
+
+        invalid_signature = SimpleUploadedFile(
+            "invalid.png", b"not an image", content_type="image/png"
+        )
+        invalid_form = RecipeAuthorForm(
+            {"title": "Soup", "servings": 2}, {"photo": invalid_signature}
+        )
+        self.assertFalse(invalid_form.is_valid())
+        self.assertIn("not a valid JPG or PNG", invalid_form.errors["photo"][0])
+
+        valid_image = SimpleUploadedFile(
+            "valid.png", b"\x89PNG\r\n\x1a\ncontent", content_type="image/png"
+        )
+        valid_form = RecipeAuthorForm(
+            {"title": "Soup", "servings": 2}, {"photo": valid_image}
+        )
+        self.assertTrue(valid_form.is_valid(), valid_form.errors)
+
+    def test_saved_recipe_string_representation(self):
+        self.assertEqual(str(self.recipe), "Lentil bowl")
 
     def test_anonymous_cannot_read_recipes(self):
         self.client.logout()

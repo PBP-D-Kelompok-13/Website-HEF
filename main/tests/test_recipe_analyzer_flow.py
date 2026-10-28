@@ -1,11 +1,13 @@
 from datetime import date
 from unittest.mock import patch
 
+import requests
 from django.contrib.auth import get_user_model
 from django.test import TestCase
 from django.urls import reverse
 
 from main.models import SavedRecipe
+from main.views import _display_analysis, _instruction_steps
 
 User = get_user_model()
 
@@ -35,6 +37,43 @@ class RecipeAnalyzerFlowTests(TestCase):
         self.assertContains(response, "Are you sure you want to save this recipe?")
         self.assertContains(response, "Yes, save recipe")
         search.assert_called_once_with(query="tofu", diet="vegan", max_ready_time=30, offset=0)
+
+    @patch("main.views.search_spoonacular_recipes")
+    def test_discover_sanitizes_filters_and_handles_api_failure(self, search):
+        search.side_effect = ValueError("invalid API payload")
+
+        response = self.client.get(
+            reverse("main:recipe_discover"),
+            {"diet": "unknown", "maxReadyTime": "2000", "offset": "bad"},
+            HTTP_HX_REQUEST="true",
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, "pages/recipes/_discover_results.html")
+        self.assertContains(response, "temporarily unavailable")
+        search.assert_called_once_with(query="", diet="", max_ready_time=None, offset=0)
+
+    @patch("main.views.search_spoonacular_recipes")
+    def test_discover_invalid_time_and_load_more_use_htmx_partial(self, search):
+        search.return_value = {"results": [], "totalResults": 20, "offset": 6}
+
+        response = self.client.get(
+            reverse("main:recipe_discover"),
+            {"diet": "vegan", "maxReadyTime": "fast", "offset": "6"},
+            HTTP_HX_REQUEST="true",
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, "pages/recipes/_discover_more.html")
+        search.assert_called_once_with(query="", diet="vegan", max_ready_time=None, offset=6)
+
+    def test_recipe_display_helpers_handle_empty_values_and_instruction_shapes(self):
+        self.assertEqual(_display_analysis(None)["calories"], 0)
+        self.assertEqual(
+            _instruction_steps([{"steps": [{"step": "Mix"}, {"step": ""}]}]),
+            ["Mix"],
+        )
+        self.assertEqual(_instruction_steps(" Chop\n\nServe "), ["Chop", "Serve"])
 
     @patch("main.views.analyze_with_spoonacular")
     def test_create_accepts_weighted_ingredient_rows_and_saves_description(self, analyze):
@@ -101,6 +140,40 @@ class RecipeAnalyzerFlowTests(TestCase):
         self.assertContains(response, "Are you sure you want to remove this recipe?")
         self.assertNotContains(response, "▮")
 
+    def test_saved_page_filters_by_title_and_falls_back_to_default_sort(self):
+        SavedRecipe.objects.create(user=self.user, title="Tofu bowl", ingredients="tofu")
+        SavedRecipe.objects.create(user=self.user, title="Bean soup", ingredients="beans")
+
+        response = self.client.get(
+            reverse("main:recipe_saved_list"), {"query": "tofu", "sort": "unknown"}
+        )
+
+        self.assertContains(response, "Tofu bowl")
+        self.assertNotContains(response, "Bean soup")
+        self.assertEqual(response.context["sort"], "newest")
+
+    def test_saved_spoonacular_detail_reads_nested_nutrition_and_instructions(self):
+        recipe = SavedRecipe.objects.create(
+            user=self.user,
+            source=SavedRecipe.Source.SPOONACULAR,
+            spoonacular_id=456,
+            title="Saved tofu",
+            ingredients="200 g tofu",
+            ingredient_items=[{"name": "tofu", "amount": 200, "unit": "g"}],
+            nutrition={
+                "nutrition": {"nutrients": []},
+                "analyzedInstructions": [{"steps": [{"step": "Bake the tofu."}]}],
+            },
+            instructions="",
+            servings=2,
+        )
+
+        response = self.client.get(reverse("main:recipe_detail", args=[recipe.pk]))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Bake the tofu.")
+        self.assertContains(response, "200 g")
+
     def test_anonymous_user_cannot_access_discover(self):
         self.client.logout()
         url = reverse("main:recipe_discover")
@@ -139,3 +212,103 @@ class RecipeAnalyzerFlowTests(TestCase):
         self.assertEqual(response.context["ingredient_formset"].total_form_count(), 4)
         self.assertContains(response, 'id="recipe-actions" class="col-12 col-xl-7 d-flex justify-content-end"')
         self.assertLess(response.content.index(b"Save as draft"), response.content.index(b"Clear form"))
+
+    @patch("main.views.analyze_with_spoonacular", side_effect=ValueError("API error"))
+    def test_create_renders_form_when_spoonacular_analysis_fails(self, analyze):
+        response = self.client.post(reverse("main:recipe_create"), {
+            "title": "Carrot soup", "ingredients": "1 carrot", "servings": 2,
+        })
+
+        self.assertEqual(response.status_code, 502)
+        self.assertTemplateUsed(response, "pages/recipes/form.html")
+        self.assertTrue(response.context["form"].is_bound)
+        analyze.assert_called_once()
+
+    def test_update_get_restores_legacy_ingredients_and_post_can_save_draft(self):
+        recipe = SavedRecipe.objects.create(
+            user=self.user, title="Old beans", ingredients="Black beans\nOnion", servings=2,
+        )
+        edit_url = reverse("main:recipe_update", args=[recipe.pk])
+
+        get_response = self.client.get(edit_url)
+        self.assertEqual(get_response.status_code, 200)
+        self.assertEqual(
+            get_response.context["ingredient_formset"].initial,
+            [{"name": "Black beans", "amount_g": ""}, {"name": "Onion", "amount_g": ""}],
+        )
+
+        post_response = self.client.post(edit_url, {
+            "title": "Updated beans", "servings": 3, "action": "draft",
+        })
+
+        recipe.refresh_from_db()
+        self.assertRedirects(post_response, reverse("main:recipe_detail", args=[recipe.pk]))
+        self.assertTrue(recipe.is_draft)
+        self.assertEqual(recipe.ingredient_items[0], {"name": "Black beans", "amount_g": ""})
+
+    @patch("main.views.analyze_with_spoonacular", side_effect=requests.RequestException("API unavailable"))
+    def test_update_renders_form_when_reanalysis_fails(self, analyze):
+        recipe = SavedRecipe.objects.create(
+            user=self.user, title="Old beans", ingredients="Black beans", servings=2,
+        )
+        response = self.client.post(reverse("main:recipe_update", args=[recipe.pk]), {
+            "title": "Updated beans", "servings": 3,
+            "ingredient-TOTAL_FORMS": "1", "ingredient-INITIAL_FORMS": "0",
+            "ingredient-MIN_NUM_FORMS": "1", "ingredient-MAX_NUM_FORMS": "30",
+            "ingredient-0-name": "Black beans", "ingredient-0-amount_g": "150",
+        })
+
+        self.assertEqual(response.status_code, 502)
+        self.assertTemplateUsed(response, "pages/recipes/form.html")
+        analyze.assert_called_once()
+
+    @patch("main.views.get_spoonacular_recipe")
+    def test_spoonacular_detail_and_duplicate_htmx_save(self, get_recipe):
+        payload = {
+            "id": 123, "title": "Tofu bowl", "summary": "<b>A tofu bowl.</b>",
+            "sourceUrl": "https://example.com/tofu", "readyInMinutes": 20,
+            "healthScore": 75, "image": "https://img.example/tofu.jpg", "servings": 2,
+            "nutrition": {"nutrition": {"nutrients": []}},
+            "extendedIngredients": [{"original": "200 g tofu"}],
+            "analyzedInstructions": [{"steps": [{"step": "Bake the tofu."}]}],
+        }
+        get_recipe.return_value = payload
+
+        detail_response = self.client.get(
+            reverse("main:recipe_spoonacular_detail", args=[123]), {"query": "tofu"}
+        )
+        self.assertEqual(detail_response.status_code, 200)
+        self.assertContains(detail_response, "Bake the tofu.")
+        self.assertContains(detail_response, "A tofu bowl.")
+
+        SavedRecipe.objects.create(
+            user=self.user, source=SavedRecipe.Source.SPOONACULAR, spoonacular_id=123,
+            title="Tofu bowl", ingredients="200 g tofu", servings=2,
+        )
+        save_response = self.client.post(
+            reverse("main:recipe_save_spoonacular", args=[123]), HTTP_HX_REQUEST="true"
+        )
+        self.assertEqual(save_response["HX-Redirect"], reverse("main:recipe_saved_list"))
+        self.assertEqual(SavedRecipe.objects.filter(user=self.user, spoonacular_id=123).count(), 1)
+        self.assertEqual(get_recipe.call_count, 2)
+
+    @patch("main.views.get_spoonacular_recipe", side_effect=ValueError("API error"))
+    def test_spoonacular_detail_and_save_failures_return_to_discover(self, get_recipe):
+        detail_response = self.client.get(
+            reverse("main:recipe_spoonacular_detail", args=[321])
+        )
+        save_response = self.client.post(
+            reverse("main:recipe_save_spoonacular", args=[321])
+        )
+
+        self.assertRedirects(detail_response, reverse("main:recipe_discover"))
+        self.assertRedirects(save_response, reverse("main:recipe_discover"))
+        self.assertEqual(get_recipe.call_count, 2)
+
+    @patch("main.views.search_spoonacular_ingredients", side_effect=ValueError("API error"))
+    def test_ingredient_suggestions_fail_gracefully(self, search):
+        response = self.client.get(reverse("main:recipe_ingredient_suggestions"), {"q": "beans"})
+
+        self.assertEqual(response.status_code, 200)
+        self.assertNotContains(response, "<option")
+        search.assert_called_once_with("beans")

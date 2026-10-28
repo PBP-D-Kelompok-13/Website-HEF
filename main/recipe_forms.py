@@ -63,10 +63,7 @@ class RecipeAuthorForm(forms.ModelForm):
         self.fields["photo"].required = False
 
     def clean_title(self):
-        title = self.cleaned_data["title"].strip()
-        if not title:
-            raise forms.ValidationError("Enter a recipe name.")
-        return title
+        return self.cleaned_data["title"].strip()
 
     def clean_servings(self):
         servings = self.cleaned_data["servings"]
