@@ -22,4 +22,6 @@ urlpatterns = [
     path("products/<str:barcode>/edit/", product_edit, name="product_edit"),
     path("products/<str:barcode>/delete/", product_delete, name="product_delete"),
     path("products/<str:barcode>/bookmark/", toggle_bookmark, name="toggle_bookmark"),
+    path("api/products/", products_json, name="products_json"),
+    path("api/products/<str:barcode>/", product_json, name="product_json"),
 ]

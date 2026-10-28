@@ -165,7 +165,7 @@ def deactivate_account(request):
 
 
 from django.core.paginator import Paginator
-from django.http import HttpResponse, HttpResponseForbidden
+from django.http import HttpResponse, HttpResponseForbidden, JsonResponse
 from django.shortcuts import get_object_or_404
 from django.urls import reverse
 from django.views.decorators.vary import vary_on_headers
@@ -369,3 +369,14 @@ def toggle_bookmark(request, barcode):
         {"product": product, "saved": created},
     )
 
+
+
+
+def products_json(request):
+    qs, _ = _filtered_products(request)
+    return JsonResponse({"count": qs.count(), "results": [p.to_dict() for p in qs[:50]]})
+
+
+def product_json(request, barcode):
+    product = get_object_or_404(Product, barcode=barcode)
+    return JsonResponse(product.to_dict())
