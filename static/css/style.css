@@ -428,3 +428,19 @@ h2, .h2 {
     max-width: none;
   }
 }
+
+
+.hef-footer {
+  border-top: 1px solid var(--hef-border-default);
+}
+
+.hef-footer-link {
+  color: var(--hef-brand-forest);
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.hef-footer-link:hover {
+  color: var(--hef-brand-leaf);
+  text-decoration: underline;
+}

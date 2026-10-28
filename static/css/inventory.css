@@ -1,0 +1,217 @@
+/* ==================================
+   FOOD INVENTORY PAGE STYLING
+   ================================== */
+
+.hef-page-title {
+    color: var(--hef-brand-forest, #32694A);
+    font-family: 'Space Grotesk', sans-serif;
+    font-weight: 700;
+    font-size: 32px;
+}
+
+.hef-page-desc {
+    color: var(--hef-text-secondary, #617064);
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 15px;
+}
+
+/* Controls Bar */
+.hef-search-wrapper {
+    width: 100%;
+    max-width: 320px;
+}
+
+.hef-search-input {
+    width: 100%;
+    height: 43px;
+    padding: 0 16px;
+    background: var(--hef-surface-card, #FFFFFF);
+    border-radius: 999px;
+    border: 1px solid var(--hef-border-default, #D9E2D6);
+    font-family: 'Source Sans 3', sans-serif;
+    font-size: 13px;
+    color: var(--hef-text-primary, #21352A);
+}
+
+.hef-search-input:focus {
+    outline: none;
+    border-color: var(--hef-brand-forest, #32694A);
+    box-shadow: 0 0 0 3px rgba(50, 105, 74, 0.15);
+}
+
+/* Category Filter Pills Container */
+.hef-category-pills-wrapper {
+    overflow-x: auto;
+    white-space: nowrap;
+    -webkit-overflow-scrolling: touch;
+}
+
+.hef-category-pills-wrapper::-webkit-scrollbar {
+    display: none;
+}
+
+.hef-pill-btn {
+    background: var(--hef-surface-card, #FFFFFF);
+    border: 1px solid var(--hef-border-default, #D9E2D6);
+    border-radius: 999px;
+    padding: 8px 18px;
+    font-family: 'Source Sans 3', sans-serif;
+    font-size: 13px;
+    color: var(--hef-text-primary, #21352A);
+    transition: all 0.2s ease-in-out;
+    cursor: pointer;
+}
+
+.hef-pill-btn:hover,
+.hef-pill-btn.active {
+    background-color: var(--hef-brand-mint, #DDEBD4);
+    border-color: var(--hef-brand-forest, #32694A);
+    color: var(--hef-brand-forest, #32694A);
+}
+
+/* Expiry Warning & Expired States (Using Design Tokens) */
+.hef-expiry-pill.warning {
+    background-color: var(--hef-brand-citrus, #E6B95C) !important;
+    color: var(--hef-text-primary, #21352A) !important;
+    font-weight: 600;
+}
+
+.hef-expiry-pill.expired {
+    background-color: var(--hef-brand-watermelon, #E97560) !important;
+    color: #FFFFFF !important;
+    font-weight: 600;
+}
+
+/* Inventory Cards */
+.hef-inventory-card {
+    background: var(--hef-surface-card, #FFFFFF);
+    box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.04);
+    border-radius: 22px;
+    border: 1px solid var(--hef-border-default, #D9E2D6);
+    height: 100%;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.hef-inventory-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0px 8px 20px rgba(0, 0, 0, 0.08);
+}
+
+.hef-card-img-wrapper {
+    width: 140px;
+    height: 140px;
+    background: var(--hef-surface-paper, #F7F7F0);
+    border-radius: 999px;
+}
+
+.hef-card-title {
+    color: var(--hef-brand-forest, #32694A);
+    font-size: 24px;
+    font-family: 'Space Grotesk', sans-serif;
+    font-weight: 700;
+}
+
+.hef-card-subtitle {
+    color: var(--hef-text-secondary, #617064);
+    font-size: 14px;
+    font-family: 'Source Sans 3', sans-serif;
+    line-height: 20px;
+}
+
+.hef-expiry-pill {
+    height: 36px;
+    padding: 8px 12px;
+    background: var(--hef-surface-paper, #F7F7F0);
+    border-radius: 999px;
+    font-family: 'Source Sans 3', sans-serif;
+    font-size: 13px;
+    color: var(--hef-text-primary, #21352A);
+}
+
+.btn-hef-primary.btn-fill-white {
+    background-color: var(--hef-surface-card, #FFFFFF);
+    color: var(--hef-brand-forest, #32694A) !important;
+    border: 1px solid var(--hef-border-default, #D9E2D6);
+}
+
+.btn-hef-primary.btn-fill-white:hover {
+    background-color: var(--hef-surface-paper, #F7F7F0);
+    color: var(--hef-brand-forest, #32694A) !important;
+}
+
+/* Responsive Overrides */
+@media (max-width: 991.98px) {
+    .hef-search-wrapper {
+        max-width: 100%;
+    }
+}
+
+/* Modal Form Pill */
+.hef-modal-card .hef-field {
+    margin-bottom: 16px;
+}
+
+.hef-modal-card .hef-label {
+    display: block;
+    font-family: 'Space Grotesk', sans-serif;
+    font-weight: 700;
+    font-size: 16px;
+    line-height: 22px;
+    color: var(--hef-text-primary, #21352A);
+    margin-bottom: 6px;
+}
+
+.hef-modal-card .hef-input {
+    width: 100% !important;
+    height: 42px !important;
+    padding: 0 18px !important;
+    border: 1px solid var(--hef-border-default, #D9E2D6) !important;
+    border-radius: 999px !important;
+    background-color: var(--hef-surface-card, #FFFFFF) !important;
+    font-family: 'Source Sans 3', sans-serif !important;
+    font-size: 14px !important;
+    color: var(--hef-text-primary, #21352A) !important;
+    box-sizing: border-box !important;
+    outline: none !important;
+}
+
+.hef-modal-card .hef-input:focus {
+    border-color: var(--hef-brand-forest, #32694A) !important;
+    box-shadow: 0 0 0 3px rgba(50, 105, 74, 0.15) !important;
+}
+
+/* Select dropdown arrows */
+.hef-modal-card select.hef-input {
+    appearance: none !important;
+    -webkit-appearance: none !important;
+    -moz-appearance: none !important;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%23617064' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E") !important;
+    background-repeat: no-repeat !important;
+    background-position: right 18px center !important;
+    padding-right: 40px !important;
+}
+
+/* Modal Buttons Container Layout */
+.hef-modal-card .hef-auth-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-top: 24px;
+}
+
+.hef-modal-card .hef-auth-actions button {
+    width: 100% !important;
+}
+
+@media (min-width: 576px) {
+    .hef-modal-card .hef-auth-actions {
+        flex-direction: row;
+        justify-content: center;
+        gap: 16px;
+    }
+
+    .hef-modal-card .hef-auth-actions button {
+        width: auto !important;
+        min-width: 140px !important;
+    }
+}

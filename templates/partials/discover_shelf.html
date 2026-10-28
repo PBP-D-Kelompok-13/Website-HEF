@@ -1,0 +1,61 @@
+<section aria-labelledby="shelf-heading">
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center gap-2 mb-3">
+        <div class="d-flex align-items-center gap-2">
+            <h2 id="shelf-heading" class="h4 fw-bold mb-0">The shelf</h2>
+            <span class="hef-count-pill">{{ total_count }} product{{ total_count|pluralize }}</span>
+        </div>
+
+        <div class="d-flex flex-wrap align-items-center gap-2">
+            <label for="discover-sort" class="text-label mb-0">Sort by:</label>
+            <select id="discover-sort"
+                    name="sort"
+                    form="discover-filter-form"
+                    class="hef-sort-select hef-filter-input">
+                <option value="eco" {% if filters.sort == "eco" %}selected{% endif %}>Eco-Score (best first)</option>
+                <option value="name" {% if filters.sort == "name" %}selected{% endif %}>Name (A–Z)</option>
+                <option value="newest" {% if filters.sort == "newest" %}selected{% endif %}>Recently added</option>
+            </select>
+
+            {% if user.is_authenticated %}
+            <a href="{% url 'main:product_create' %}" class="btn-hef-outline">+ Add product</a>
+            {% endif %}
+        </div>
+    </div>
+
+    {% if page_obj.object_list %}
+        <div id="product-grid" class="row g-3 g-md-4 mb-4">
+            {% include "partials/discover_cards.html" %}
+        </div>
+
+        <div id="load-more" class="text-center my-4">
+            <p class="text-label mb-2">
+                You've explored {{ shown_count }} of {{ total_count }} products
+            </p>
+            {% if page_obj.has_next %}
+            <button type="button"
+                    class="btn-hef-outline"
+                    hx-get="{% url 'main:discover' %}?{% if filter_querystring %}{{ filter_querystring }}&amp;{% endif %}page={{ page_obj.next_page_number }}"
+                    hx-target="#load-more"
+                    hx-swap="outerHTML"
+                    hx-push-url="false">
+                Load more products ({{ page_obj.paginator.per_page }} per page)
+            </button>
+            {% endif %}
+        </div>
+    {% else %}
+        <div class="hef-empty-card text-center p-5 my-3">
+            {% if filters.q or filters.category != "all" or filters.eco or filters.nutri or filters.saved %}
+                <p class="fw-bold mb-1">No products match your search.</p>
+                <p class="text-label mb-3">Try clearing a filter pill, scanning a barcode, or importing from Open Food Facts.</p>
+            {% else %}
+                <p class="fw-bold mb-1">The shelf is empty. Scan a barcode to add your first product.</p>
+                <p class="text-label mb-3">Use the camera scanner above to pull live Eco-Score &amp; Nutri-Score data from Open Food Facts.</p>
+            {% endif %}
+            {% if can_lookup_barcode %}
+            <a href="{% url 'main:lookup_product' filters.q %}" class="btn-hef-forest">
+                Import barcode {{ filters.q }} from Open Food Facts
+            </a>
+            {% endif %}
+        </div>
+    {% endif %}
+</section>
