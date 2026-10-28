@@ -26,6 +26,21 @@ class RecipeAnalyzerTests(TestCase):
         self.assertIn("ingredients", invalid.errors)
         self.assertIn("servings", invalid.errors)
 
+    def test_anonymous_cannot_read_recipes(self):
+        self.client.logout()
+        url = reverse("main:recipe_list")
+        self.assertRedirects(self.client.get(url), f"{reverse('main:login_account')}?next={url}")
+
+    def test_list_and_detail_only_expose_owned_recipes(self):
+        SavedRecipe.objects.create(user=self.other, title="Private curry", ingredients="rice", servings=1)
+        response = self.client.get(reverse("main:recipe_list"))
+        self.assertContains(response, "Lentil bowl")
+        self.assertNotContains(response, "Private curry")
+        detail = reverse("main:recipe_detail", args=[self.recipe.pk])
+        self.assertEqual(self.client.get(detail).status_code, 200)
+        self.client.force_login(self.other)
+        self.assertEqual(self.client.get(detail).status_code, 404)
+
     @patch("main.views.analyze_with_spoonacular")
     def test_create_calls_spoonacular_and_saves_for_owner(self, analyze):
         analyze.return_value = {"nutrition": {"nutrients": [{"name": "Calories", "amount": 210, "unit": "kcal"}]}}
@@ -35,6 +50,13 @@ class RecipeAnalyzerTests(TestCase):
         self.assertEqual(saved.nutrition["nutrition"]["nutrients"][0]["amount"], 210)
         self.assertRedirects(response, reverse("main:recipe_detail", args=[saved.pk]))
         analyze.assert_called_once()
+
+    def test_detail_escapes_untrusted_recipe_title(self):
+        self.recipe.title = "<script>alert(1)</script>"
+        self.recipe.save(update_fields=["title"])
+        response = self.client.get(reverse("main:recipe_detail", args=[self.recipe.pk]))
+        self.assertContains(response, "&lt;script&gt;alert(1)&lt;/script&gt;")
+        self.assertNotContains(response, "<script>alert(1)</script>")
 
     def test_htmx_delete_returns_redirect_header(self):
         response = self.client.post(

@@ -63,6 +63,33 @@ class RecipeAnalyzerFlowTests(TestCase):
         analyze.assert_not_called()
         self.assertRedirects(response, reverse("main:recipe_detail", args=[draft.pk]))
 
+    @patch("main.views.get_spoonacular_recipe")
+    def test_save_spoonacular_recipe_creates_user_scoped_saved_entry(self, get_recipe):
+        get_recipe.return_value = {
+            "id": 123, "title": "Tofu Bowl", "image": "https://img.example/tofu.jpg",
+            "readyInMinutes": 25, "servings": 2, "healthScore": 80,
+            "diets": ["vegan"], "nutrition": {"nutrients": []},
+            "extendedIngredients": [{"name": "tofu", "amount": 200, "unit": "g", "original": "200 g tofu"}],
+            "analyzedInstructions": [], "summary": "A tofu bowl.", "sourceUrl": "https://example.com/tofu",
+        }
+        response = self.client.post(reverse("main:recipe_save_spoonacular", args=[123]))
+        saved = SavedRecipe.objects.get(user=self.user, spoonacular_id=123)
+        self.assertEqual(saved.source, SavedRecipe.Source.SPOONACULAR)
+        self.assertEqual(saved.title, "Tofu Bowl")
+        self.assertEqual(saved.ingredient_items[0]["name"], "tofu")
+        self.assertRedirects(response, reverse("main:recipe_saved_list"))
+
+    def test_saved_page_separates_spoonacular_from_my_recipes(self):
+        SavedRecipe.objects.create(user=self.user, title="My Soup", ingredients="beans", servings=1)
+        SavedRecipe.objects.create(
+            user=self.user, title="Saved Tofu", ingredients="tofu", servings=2,
+            source=SavedRecipe.Source.SPOONACULAR, spoonacular_id=123,
+        )
+        response = self.client.get(reverse("main:recipe_saved_list"))
+        self.assertContains(response, "From Spoonacular")
+        self.assertContains(response, "My recipes")
+        self.assertContains(response, "Saved Tofu")
+        self.assertContains(response, "My Soup")
 
     def test_anonymous_user_cannot_access_discover(self):
         self.client.logout()
