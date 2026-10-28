@@ -1,6 +1,6 @@
 from django import forms
 from django.contrib.auth.forms import UserCreationForm, AuthenticationForm, PasswordChangeForm
-from .models import CustomUser
+from .models import CustomUser, Ingredient, Product
 from django.core.exceptions import ValidationError
 
 def style(field, placeholder):
@@ -85,7 +85,24 @@ class ReactivationForm(forms.Form):
         return cleaned_data
 
 
-from .models import Product
+class IngredientForm(forms.ModelForm):
+    class Meta:
+        model = Ingredient
+        fields = ['name', 'category', 'quantity', 'expiration_date', 'image']
+        widgets = {
+            'category': forms.Select(attrs={'class': 'hef-input'}),
+            'expiration_date': forms.DateInput(attrs={'class': 'hef-input', 'type': 'date'}),
+            'image': forms.ClearableFileInput(attrs={'class': 'hef-input'}),
+        }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        style(self.fields['name'], 'e.g., Spinach')
+        style(self.fields['quantity'], 'e.g., 2 pcs, 500g')
+        self.fields['category'].empty_label = 'Select Category'
+
+        for field in self.fields.values():
+            field.widget.attrs.update({'class': 'hef-input'})
 
 
 class ProductForm(forms.ModelForm):

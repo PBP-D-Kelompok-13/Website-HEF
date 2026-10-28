@@ -1,0 +1,258 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Food Inventory | Healthy Eco Foody{% endblock %}
+
+{% block head %}
+<link rel="stylesheet" href="{% static 'css/inventory.css' %}">
+{% endblock %}
+
+{% block content %}
+<main class="container py-4">
+    <!-- Page Header -->
+    <header class="mb-4">
+        <h1 class="hef-page-title mb-1">Food Inventory</h1>
+        <p class="hef-page-desc mb-0">Manage your household ingredients to reduce food waste.</p>
+    </header>
+
+    <!-- Controls Bar -->
+    <div class="hef-inventory-controls d-flex flex-column flex-xl-row align-items-stretch align-items-xl-center justify-content-between gap-3 mb-4">
+
+        <!-- Search Field Form -->
+        <form method="get" action="{% url 'main:show_inventory' %}" class="hef-search-wrapper m-0">
+            <!-- Retain current category if searching -->
+            {% if request.GET.category %}
+            <input type="hidden" name="category" value="{{ request.GET.category }}">
+            {% endif %}
+            <input type="text" name="q" value="{{ search_query }}" class="hef-search-input"
+                placeholder="Search food ingredients...">
+        </form>
+
+        <!-- Category Filter Pills -->
+        <div class="hef-category-pills-wrapper flex-grow-1">
+            <div class="hef-category-pills d-flex align-items-center gap-2 overflow-auto pb-2 pb-xl-0">
+                <a href="{% url 'main:show_inventory' %}{% if search_query %}?q={{ search_query }}{% endif %}"
+                    class="hef-pill-btn text-decoration-none text-center {% if current_category == 'All' %}active{% endif %}">
+                    All
+                </a>
+                <a href="?category=Vegetables{% if search_query %}&q={{ search_query }}{% endif %}"
+                    class="hef-pill-btn text-decoration-none text-center {% if current_category == 'Vegetables' %}active{% endif %}">
+                    Vegetables
+                </a>
+                <a href="?category=Fruits{% if search_query %}&q={{ search_query }}{% endif %}"
+                    class="hef-pill-btn text-decoration-none text-center {% if current_category == 'Fruits' %}active{% endif %}">
+                    Fruits
+                </a>
+                <a href="?category=Dairy+%26+Eggs{% if search_query %}&q={{ search_query }}{% endif %}"
+                    class="hef-pill-btn text-decoration-none text-center {% if current_category == 'Dairy & Eggs' %}active{% endif %}">
+                    Dairy & Eggs
+                </a>
+                <a href="?category=Protein{% if search_query %}&q={{ search_query }}{% endif %}"
+                    class="hef-pill-btn text-decoration-none text-center {% if current_category == 'Protein' %}active{% endif %}">
+                    Protein
+                </a>
+                <a href="?category=Carbohydrates{% if search_query %}&q={{ search_query }}{% endif %}"
+                    class="hef-pill-btn text-decoration-none text-center {% if current_category == 'Carbohydrates' %}active{% endif %}">
+                    Carbohydrates
+                </a>
+                <a href="?category=Drinks{% if search_query %}&q={{ search_query }}{% endif %}"
+                    class="hef-pill-btn text-decoration-none text-center {% if current_category == 'Drinks' %}active{% endif %}">
+                    Drinks
+                </a>
+                <a href="?category=Condiments{% if search_query %}&q={{ search_query }}{% endif %}"
+                    class="hef-pill-btn text-decoration-none text-center {% if current_category == 'Condiments' %}active{% endif %}">
+                    Condiments
+                </a>
+                <a href="?category=Snacks{% if search_query %}&q={{ search_query }}{% endif %}"
+                    class="hef-pill-btn text-decoration-none text-center {% if current_category == 'Snacks' %}active{% endif %}">
+                    Snacks
+                </a>
+            </div>
+        </div>
+
+        <!-- Add Ingredient CTA Button -->
+        <button class="btn-hef-primary flex-shrink-0" type="button" data-bs-toggle="modal"
+            data-bs-target="#addIngredientModal">
+            + Add Ingredient
+        </button>
+    </div>
+
+    <!-- Expiration Reminder Banner (Appears if any items are <= 3 days) -->
+    {% if expiring_count > 0 %}
+    <div class="hef-expiry-banner text-center py-3 px-4 mb-4 rounded-4" style="background-color: #F7D579; font-weight: 600; color: #21352A;">
+        Expiration Reminder: {{ expiring_count }} ingredient 
+        {% if expiring_count == 1 %}is{% else %}are{% endif %} 
+        about to expire!
+    </div>
+    {% endif %}
+
+    <!-- Inventory Cards Grid -->
+    <div class="row g-4">
+        {% for item in ingredients %}
+        <div class="col-12 col-md-6 col-lg-4">
+            <article class="hef-inventory-card d-flex align-items-center gap-3 p-4">
+                <!-- Image wrapper -->
+                <div class="hef-card-img-wrapper d-flex align-items-center justify-content-center overflow-hidden">
+                    {% if item.image %}
+                        <img src="{{ item.image.url }}" alt="{{ item.name }}" class="w-100 h-100 object-fit-cover">
+                    {% else %}
+                        <!-- Default placeholder icon if no image uploaded -->
+                        <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                            <polyline points="17 8 12 3 7 8"/>
+                            <line x1="12" y1="3" x2="12" y2="15"/>
+                        </svg>
+                    {% endif %}
+                </div>
+                <div class="hef-card-content flex-grow-1 d-flex flex-column justify-content-between gap-3">
+                    <div>
+                        <h3 class="hef-card-title mb-1">{{ item.name }}</h3>
+                        <p class="hef-card-subtitle mb-0">{{ item.category }}</p>
+                        <p class="hef-card-subtitle mb-0">Quantity: {{ item.quantity }}</p>
+                    </div>
+                    
+                    <!-- Dynamic Expiry Pill with Warning Condition (<= 3 days) -->
+                    <div class="hef-expiry-pill text-center {% if item.days_until_expiry is not None and item.days_until_expiry < 0 %}expired{% elif item.days_until_expiry is not None and item.days_until_expiry <= 3 %}warning{% endif %}">
+                        {% if item.days_until_expiry is not None and item.days_until_expiry < 0 %}
+                            Expired
+                        {% elif item.days_until_expiry == 0 %}
+                            Expires: Today
+                        {% elif item.days_until_expiry == 1 %}
+                            Expires: Tomorrow
+                        {% else %}
+                            Expires: in {{ item.days_until_expiry }} days
+                        {% endif %}
+                    </div>
+
+                    <div class="d-flex gap-2">
+                        <button class="btn-hef-secondary btn-sm flex-fill py-2 edit-btn" type="button"
+                                data-bs-toggle="modal" 
+                                data-bs-target="#editIngredientModal"
+                                data-id="{{ item.id }}"
+                                data-name="{{ item.name }}"
+                                data-category="{{ item.category }}"
+                                data-quantity="{{ item.quantity }}"
+                                data-expiry="{{ item.expiration_date|date:'Y-m-d' }}">
+                            Edit
+                        </button>
+                        <form action="{% url 'main:delete_ingredient' item.id %}" method="post" class="flex-fill d-flex">
+                            {% csrf_token %}
+                            <button class="btn-hef-danger btn-sm w-100 py-2 border-0" type="submit">Delete</button>
+                        </form>
+                    </div>
+                </div>
+            </article>
+        </div>
+        {% empty %}
+        <div class="col-12 text-center py-5">
+            <p class="text-muted">Your pantry is currently empty. Add an ingredient to get started!</p>
+        </div>
+        {% endfor %}
+    </div>
+</main>
+
+<!-- ================= MODALS ================= -->
+
+<!-- 1. Add Ingredient Modal -->
+<div class="modal fade" id="addIngredientModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content hef-modal-card p-4 border-0">
+            <div class="text-center mb-3">
+                <h2 class="hef-auth-title" style="font-size: 32px;">Add Ingredient</h2>
+            </div>
+            <form method="post" action="{% url 'main:add_ingredient' %}" enctype="multipart/form-data">
+                {% csrf_token %}
+
+                {% for field in form %}
+                <div class="hef-field mb-3">
+                    <label class="hef-label" for="{{ field.id_for_label }}">{{ field.label }}</label>
+                    {{ field }}
+                    {% for error in field.errors %}
+                    <p class="hef-error">{{ error }}</p>
+                    {% endfor %}
+                </div>
+                {% endfor %}
+
+                <div class="hef-auth-actions mt-4">
+                    <button type="button" class="btn-hef-danger" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn-hef-secondary">Add</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- 2. Edit Ingredient Modal -->
+<div class="modal fade" id="editIngredientModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content hef-modal-card p-4 border-0">
+            <div class="text-center mb-3">
+                <h2 class="hef-auth-title" style="font-size: 32px;">Edit Ingredient</h2>
+            </div>
+            <form id="editForm" method="post" action="" enctype="multipart/form-data">
+                {% csrf_token %}
+
+                <div class="hef-field mb-3">
+                    <label class="hef-label" for="edit-name">Ingredient Name</label>
+                    <input type="text" id="edit-name" name="name" class="hef-input" required>
+                </div>
+
+                <div class="hef-field mb-3">
+                    <label class="hef-label" for="edit-category">Category</label>
+                    <select id="edit-category" name="category" class="hef-input" required>
+                        <option value="" disabled selected>Select Category</option>
+                        <option value="Vegetables">Vegetables</option>
+                        <option value="Fruits">Fruits</option>
+                        <option value="Dairy & Eggs">Dairy & Eggs</option>
+                        <option value="Protein">Protein</option>
+                        <option value="Carbohydrates">Carbohydrates</option>
+                        <option value="Drinks">Drinks</option>
+                        <option value="Condiments">Condiments</option>
+                        <option value="Snacks">Snacks</option>
+                    </select>
+                </div>
+
+                <div class="hef-field mb-3">
+                    <label class="hef-label" for="edit-quantity">Quantity</label>
+                    <input type="text" id="edit-quantity" name="quantity" class="hef-input" required>
+                </div>
+
+                <div class="hef-field mb-4">
+                    <label class="hef-label" for="edit-expiry">Expiration Date</label>
+                    <input type="date" id="edit-expiry" name="expiration_date" class="hef-input" required>
+                </div>
+
+                <div class="hef-auth-actions mt-4">
+                    <button type="button" class="btn-hef-danger" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn-hef-secondary">Save Changes</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+{% block script %}
+<script>
+    const editModal = document.getElementById('editIngredientModal');
+    if (editModal) {
+        editModal.addEventListener('show.bs.modal', function (event) {
+            const button = event.relatedTarget;
+            const id = button.getAttribute('data-id');
+            const name = button.getAttribute('data-name');
+            const category = button.getAttribute('data-category');
+            const quantity = button.getAttribute('data-quantity');
+            const expiry = button.getAttribute('data-expiry');
+
+            document.getElementById('edit-name').value = name;
+            document.getElementById('edit-category').value = category;
+            document.getElementById('edit-quantity').value = quantity;
+            document.getElementById('edit-expiry').value = expiry;
+
+            // Reverted path back to pantry/edit/
+            document.getElementById('editForm').action = `/pantry/edit/${id}/`;
+        });
+    }
+</script>
+{% endblock %}
+
+{% endblock %}

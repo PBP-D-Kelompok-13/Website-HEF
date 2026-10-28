@@ -1,17 +1,25 @@
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
 from django.contrib.auth import login, logout, update_session_auth_hash
+from django.core.paginator import Paginator
+from django.http import HttpResponse, HttpResponseForbidden, JsonResponse
+from django.urls import reverse
+from django.views.decorators.vary import vary_on_headers
 from .forms import (
     CustomUserCreationForm,
     CustomAuthenticationForm,
     ProfileDetailsForm,
     CustomPasswordChangeForm,
     ReactivationForm,
+    IngredientForm,
+    ProductForm,
 )
+from .models import Bookmark, Ingredient, Product
+from .services import fetch_and_save_product
 from django.contrib.auth.decorators import login_required
-from django.shortcuts import redirect
 from django.views.decorators.http import require_POST
 from functools import wraps
+from datetime import date, timedelta
 import random
 
 # Custom wrapper that only allows HTMX requests
@@ -164,14 +172,73 @@ def deactivate_account(request):
     return redirect("main:show_landing_page")
 
 
-from django.core.paginator import Paginator
-from django.http import HttpResponse, HttpResponseForbidden, JsonResponse
-from django.shortcuts import get_object_or_404
-from django.urls import reverse
-from django.views.decorators.vary import vary_on_headers
-from .forms import ProductForm
-from .models import Bookmark, Product
-from .services import fetch_and_save_product
+''' =============================== 
+    Functions for Food Inventory
+    =============================== '''
+@login_required(login_url='main:login_account')
+def show_inventory(request):
+    ingredients = Ingredient.objects.filter(user=request.user)
+
+    search_query = request.GET.get('q', '')
+    if search_query:
+        ingredients = ingredients.filter(name__icontains=search_query)
+
+    category_filter = request.GET.get('category', '')
+    if category_filter and category_filter != 'All':
+        ingredients = ingredients.filter(category=category_filter)
+
+    # Calculate ingredients about to expire (<= 3 days from today)
+    today = date.today()
+    warning_threshold = today + timedelta(days=3)
+    expiring_count = sum(
+        1 for item in ingredients
+        if item.expiration_date and item.expiration_date <= warning_threshold
+    )
+
+    form = IngredientForm()
+    context = {
+        'ingredients': ingredients,
+        'form': form,
+        'search_query': search_query,
+        'current_category': category_filter or 'All',
+        'expiring_count': expiring_count,
+    }
+    return render(request, 'pages/inventory.html', context)
+
+@login_required(login_url='main:login_account')
+def add_ingredient(request):
+    if request.method == 'POST':
+        form = IngredientForm(request.POST, request.FILES)
+        if form.is_valid():
+            ingredient = form.save(commit=False)
+            ingredient.user = request.user
+            ingredient.save()
+            messages.success(request, "Ingredient successfully added.")
+            return redirect('main:show_inventory')
+        else:
+            messages.error(request, "Failed to add ingredient.")
+    else:
+        form = IngredientForm()
+    return redirect('main:show_inventory')
+
+@login_required(login_url='main:login_account')
+def edit_ingredient(request, pk):
+    ingredient = get_object_or_404(Ingredient, pk=pk, user=request.user)
+    if request.method == 'POST':
+        form = IngredientForm(request.POST, request.FILES, instance=ingredient)
+        if form.is_valid():
+            form.save()
+            messages.success(request, "Ingredient successfully editted.")
+            return redirect('main:show_inventory')
+        else:
+            messages.error(request, "Failed to edit ingredient.")
+    return redirect('main:show_inventory')
+
+@login_required(login_url='main:login_account')
+def delete_ingredient(request, pk):
+    ingredient = get_object_or_404(Ingredient, pk=pk, user=request.user)
+    ingredient.delete()
+    return redirect('main:show_inventory')
 
 
 ''' =============================== 
@@ -368,8 +435,6 @@ def toggle_bookmark(request, barcode):
         "partials/bookmark_toggle.html",
         {"product": product, "saved": created},
     )
-
-
 
 
 def products_json(request):

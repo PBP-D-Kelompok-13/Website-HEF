@@ -12,7 +12,7 @@
                     <li class="nav-item"><a href="{% url 'main:discover' %}" class="nav-link p-0">Discover</a></li>
                     <li class="nav-item"><a href="#" class="nav-link p-0">Compare</a></li>
                     <li class="nav-item"><a href="#" class="nav-link p-0">Recipes</a></li>
-                    <li class="nav-item"><a href="#" class="nav-link p-0">Pantry</a></li>
+                    <li class="nav-item"><a href="{% url 'main:show_inventory' %}" class="nav-link p-0">Pantry</a></li>
                 </ul>
             </div>
 
@@ -87,7 +87,7 @@
                     <a href="#" class="nav-link p-0">Recipes</a>
                 </li>
                 <li class="nav-item">
-                    <a href="#" class="nav-link p-0">Pantry</a>
+                    <a href="{% url 'main:show_inventory' %}" class="nav-link p-0">Pantry</a>
                 </li>
             </ul>
 
@@ -105,7 +105,7 @@
                         </span>
                     </a>
                 {% else %}
-                    <a href="{% url 'main:login_account' %}" class="login-link text-decoration-none d-flex align-items-center justify-content-between py-1">
+                    <a href="{% url 'main:login_account' %}" class="login-link text-decoration-none d-flex align-items-center gap-2 justify-content-between py-1">
                         <span>Login</span>
                         <svg width="24" height="22" viewBox="0 0 33 30" fill="none" xmlns="http://www.w3.org/2000/svg">
                             <path d="M16 4H27V26H16M6 15H20M15 20L20 15L15 10" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
