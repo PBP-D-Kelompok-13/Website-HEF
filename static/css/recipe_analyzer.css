@@ -75,6 +75,20 @@
     background: var(--hef-brand-mint)
 }
 
+.hef-icon-button {
+    display: inline-grid;
+    place-items: center;
+    width: 36px;
+    height: 36px;
+    padding: 0;
+}
+
+.hef-bookmark-icon,
+.hef-trash-icon {
+    display: block;
+    flex: 0 0 auto;
+}
+
 .hef-recipe-photo-detail {
     height: 250px;
     object-fit: cover;
@@ -103,6 +117,55 @@
     padding: 14px
 }
 
+.hef-recipe-confirm-modal .modal-dialog {
+    width: calc(100% - 32px) !important;
+    max-width: 400px !important;
+    margin-right: auto;
+    margin-left: auto;
+}
+
+.hef-recipe-confirm-modal .hef-modal-content {
+    gap: 10px;
+    padding: 26px 28px 14px;
+    background: var(--hef-surface-card);
+    border: 0;
+    border-radius: 28px;
+    box-shadow: 0 12px 36px rgba(22, 37, 27, .16);
+}
+
+.hef-recipe-confirm-modal .hef-modal-title {
+    margin: 0 0 2px;
+    color: var(--hef-brand-forest);
+    font-size: 21px;
+    line-height: 1.4;
+}
+
+.hef-recipe-confirm-actions {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+}
+
+.hef-recipe-confirm-actions form {
+    display: flex;
+    min-width: 0;
+    margin: 0;
+}
+
+.hef-recipe-confirm-actions > button {
+    min-width: 0;
+}
+
+.hef-recipe-confirm-actions .btn-hef-danger,
+.hef-recipe-confirm-actions .btn-hef-secondary {
+    height: auto;
+    min-height: 38px;
+    padding: 8px 10px;
+    font-size: 12px;
+    line-height: 1.2;
+    white-space: normal;
+}
+
 @media(max-width:575.98px) {
     .hef-ingredient-grid {
         grid-template-columns: minmax(0, 1fr) 92px 36px;
@@ -111,5 +174,13 @@
 
     .hef-recipe-photo {
         height: 200px
+    }
+
+    .hef-recipe-confirm-modal .hef-modal-content {
+        padding: 24px 20px 14px;
+    }
+
+    .hef-recipe-confirm-actions {
+        gap: 8px;
     }
 }

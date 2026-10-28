@@ -361,7 +361,6 @@ h2, .h2 {
 .hef-toast-item--warning { --hef-toast-accent: var(--hef-brand-citrus); }
 .hef-toast-item--info    { --hef-toast-accent: var(--hef-text-secondary); }
 
-
 /* ================================
    MOBILE & RESPONSIVE BREAKPOINTS
    ================================ */
