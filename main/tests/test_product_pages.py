@@ -76,3 +76,65 @@ class ScanFlowTests(TestCase):
         shelf = self.client.get(reverse("main:discover"))
         self.assertContains(shelf, "Scanned Nutella")
         self.assertContains(shelf, "1 product")
+
+
+
+class ProductDetailTests(TestCase):
+    def test_404_for_unknown_barcode(self):
+        self.assertEqual(self.client.get(reverse("main:product_detail", args=["nope"])).status_code, 404)
+
+    def test_scores_are_public_but_details_need_login(self):
+        p = make_product(ingredients="Water, oats", co2_kg=0.45, eco_grade="a")
+        r = self.client.get(reverse("main:product_detail", args=[p.barcode]))
+        self.assertTemplateUsed(r, "pages/product_detail.html")
+        self.assertContains(r, "hef-score-banner")
+        self.assertContains(r, "Log in to see the full breakdown")
+        self.assertNotContains(r, "Water, oats")
+        self.assertNotContains(r, "0.45")
+
+    def test_logged_in_user_sees_full_breakdown(self):
+        p = make_product(
+            ingredients="Water, oats",
+            co2_kg=0.45,
+            nova_group=1,
+            allergens="gluten",
+            origin="Local",
+            sugars_100g=2.0,
+            sugars_level="low",
+        )
+        self.client.force_login(make_user())
+        r = self.client.get(reverse("main:product_detail", args=[p.barcode]))
+        for text in ("Water, oats", "0.45", "Group 1 - Unprocessed", "gluten", "Local", "low"):
+            self.assertContains(r, text)
+        self.assertNotContains(r, "Log in to see the full breakdown")
+
+    def test_selected_grade_is_marked_once_per_scale(self):
+        p = make_product(eco_grade="a", nutri_grade="c")
+        r = self.client.get(reverse("main:product_detail", args=[p.barcode]))
+        self.assertContains(r, "hef-scale-item hef-score-a selected", count=1)
+        self.assertContains(r, "hef-scale-item hef-score-c selected", count=1)
+
+    def test_missing_data_uses_fallbacks(self):
+        p = make_product(eco_grade="", nutri_grade="", co2_kg=None)
+        self.client.force_login(make_user())
+        r = self.client.get(reverse("main:product_detail", args=[p.barcode]))
+        for text in (
+            "N/A",
+            "Not classified",
+            "Ingredients list not available.",
+            "None reported.",
+            "Location not specified",
+            "Eco-Score not available",
+        ):
+            self.assertContains(r, text)
+        self.assertNotContains(r, " selected")
+
+    def test_edit_and_delete_controls_only_for_owner(self):
+        owner, stranger = make_user("owner"), make_user("stranger")
+        p = make_product(created_by=owner)
+        url = reverse("main:product_detail", args=[p.barcode])
+        self.client.force_login(stranger)
+        self.assertNotContains(self.client.get(url), reverse("main:product_edit", args=[p.barcode]))
+        self.client.force_login(owner)
+        self.assertContains(self.client.get(url), reverse("main:product_edit", args=[p.barcode]))
+        self.assertContains(self.client.get(url), "deleteProductModal")
