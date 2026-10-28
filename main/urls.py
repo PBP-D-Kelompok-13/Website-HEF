@@ -1,3 +1,4 @@
+from .comparison_views import compare_add
 from django.urls import path
 from .views import *
 
@@ -16,4 +17,5 @@ urlpatterns = [
     path("reactivate/", reactivate_account, name="reactivate_account"),
     path("profile/deactivate/", deactivate_account, name="deactivate_account"),
     path("compare/", show_compare, name="show_compare"),
+    path("compare/add/", compare_add, name="compare_add"),
 ]
