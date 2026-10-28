@@ -4,7 +4,7 @@ from django.core.exceptions import ValidationError
 from django.http import JsonResponse
 from django.views.decorators.http import require_POST
 
-from .comparison_selection import add_product
+from .comparison_selection import add_product, remove_product
 
 
 SESSION_KEY = "comparison_barcodes"
@@ -63,6 +63,41 @@ def compare_add(request):
                 "errors": ["Produk tidak ditemukan."],
             },
             status=404,
+        )
+
+    request.session[SESSION_KEY] = updated_selection
+
+    return JsonResponse(
+        {
+            "ok": True,
+            "barcodes": updated_selection,
+            "count": len(updated_selection),
+            "can_compare": len(updated_selection) >= 2,
+        }
+    )
+    
+@login_required
+@require_POST
+def compare_remove(request):
+    barcode = request.POST.get("barcode", "").strip()
+
+    if not barcode:
+        return JsonResponse(
+            {
+                "ok": False,
+                "errors": ["Identitas produk tidak boleh kosong."],
+            },
+            status=400,
+        )
+
+    selected = request.session.get(SESSION_KEY, [])
+
+    try:
+        updated_selection = remove_product(selected, barcode)
+    except ValidationError as exc:
+        return JsonResponse(
+            {"ok": False, "errors": exc.messages},
+            status=400,
         )
 
     request.session[SESSION_KEY] = updated_selection
