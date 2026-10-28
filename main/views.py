@@ -6,6 +6,7 @@ from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
 from django.utils.html import strip_tags
 from .forms import (
+    RecipeForm,
     CustomUserCreationForm,
     CustomAuthenticationForm,
     ProfileDetailsForm,
@@ -20,6 +21,7 @@ import random
 import requests
 
 from .models import SavedRecipe
+from .recipe_forms import RecipeAuthorForm, RecipeIngredientFormSet
 from .services.recipe_analyzer import (
     analyze_with_spoonacular, get_spoonacular_recipe, search_spoonacular_recipes,
 )
@@ -178,6 +180,11 @@ def deactivate_account(request):
 RECIPE_PAGE_SIZE = 6
 ALLOWED_DIETS = {"vegetarian", "vegan", "gluten free"}
 
+
+def _owned_recipe(request, pk):
+    return get_object_or_404(SavedRecipe, pk=pk, user=request.user)
+
+
 def _spoonacular_error(request):
     messages.error(request, "Spoonacular is unavailable right now. Please try again shortly.")
 
@@ -260,3 +267,132 @@ def recipe_discover(request):
     else:
         template = "pages/recipes/discover.html"
     return render(request, template, context)
+
+
+def _ingredient_formset(request, instance=None):
+    prefix = "ingredient"
+    legacy = request.method == "POST" and f"{prefix}-TOTAL_FORMS" not in request.POST
+    data = request.POST
+    if legacy:
+        lines = [line.strip() for line in request.POST.get("ingredients", "").splitlines() if line.strip()]
+        if not lines and instance:
+            lines = [line.strip() for line in instance.ingredients.splitlines() if line.strip()]
+        if lines:
+            data = request.POST.copy()
+            data[f"{prefix}-TOTAL_FORMS"] = str(len(lines))
+            data[f"{prefix}-INITIAL_FORMS"] = "0"
+            data[f"{prefix}-MIN_NUM_FORMS"] = "1"
+            data[f"{prefix}-MAX_NUM_FORMS"] = "30"
+            for index, line in enumerate(lines):
+                data[f"{prefix}-{index}-name"] = line
+                data[f"{prefix}-{index}-amount_g"] = ""
+    initial = instance.ingredient_items if instance and instance.ingredient_items else None
+    if request.method == "GET" and initial is None and instance:
+        initial = [{"name": line, "amount_g": ""} for line in instance.ingredients.splitlines() if line]
+    formset = RecipeIngredientFormSet(
+        data if request.method == "POST" else None,
+        initial=initial, prefix=prefix,
+        form_kwargs={"require_weight": not legacy},
+    )
+    return formset
+
+
+def _ingredient_rows(formset):
+    return [
+        {"name": form.cleaned_data["name"], "amount_g": format(form.cleaned_data["amount_g"], "f") if form.cleaned_data.get("amount_g") else ""}
+        for form in formset.forms
+        if form.cleaned_data and not form.cleaned_data.get("DELETE") and form.cleaned_data.get("name")
+    ]
+
+
+def _ingredient_text(items):
+    return "\n".join(
+        f"{item['name']} — {item['amount_g']} g" if item.get("amount_g") else item["name"]
+        for item in items
+    )
+
+
+def _analyze_own_recipe(recipe, items):
+    api_ingredients = [f"{item['amount_g']} g {item['name']}" for item in items]
+    return analyze_with_spoonacular(
+        title=recipe.title, ingredients=api_ingredients,
+        instructions=recipe.instructions, servings=recipe.servings,
+    )
+
+
+@login_required
+def recipe_create(request):
+    form = RecipeAuthorForm(request.POST or None, request.FILES or None)
+    ingredient_formset = _ingredient_formset(request)
+    if request.method == "POST" and form.is_valid() and ingredient_formset.is_valid():
+        recipe = form.save(commit=False)
+        recipe.user = request.user
+        recipe.source = SavedRecipe.Source.OWN
+        recipe.ingredient_items = _ingredient_rows(ingredient_formset)
+        recipe.ingredients = _ingredient_text(recipe.ingredient_items)
+        action = request.POST.get("action", "analyze")
+        if action == "draft":
+            recipe.is_draft = True
+            recipe.save()
+            messages.success(request, "Draft saved under My recipes.")
+            return redirect("main:recipe_detail", pk=recipe.pk)
+        try:
+            recipe.nutrition = analyze_with_spoonacular(
+                title=recipe.title,
+                ingredients=[f"{item['amount_g']} g {item['name']}" if item.get("amount_g") else item["name"] for item in recipe.ingredient_items],
+                instructions=recipe.instructions,
+                servings=recipe.servings,
+            )
+        except (ImproperlyConfigured, requests.RequestException, ValueError):
+            _spoonacular_error(request)
+            return render(request, "pages/recipes/form.html", {"form": form, "ingredient_formset": ingredient_formset, "editing": False}, status=502)
+        recipe.health_score = recipe.nutrition.get("healthScore")
+        recipe.diets = recipe.nutrition.get("diets", [])
+        recipe.is_draft = False
+        recipe.save()
+        messages.success(request, "Recipe analyzed and saved.")
+        return redirect("main:recipe_detail", pk=recipe.pk)
+    return render(request, "pages/recipes/form.html", {"form": form, "ingredient_formset": ingredient_formset, "editing": False})
+
+
+@login_required
+def recipe_update(request, pk):
+    recipe = _owned_recipe(request, pk)
+    form = RecipeAuthorForm(request.POST or None, request.FILES or None, instance=recipe)
+    ingredient_formset = _ingredient_formset(request, recipe)
+    if request.method == "POST" and form.is_valid() and ingredient_formset.is_valid():
+        updated = form.save(commit=False)
+        updated.ingredient_items = _ingredient_rows(ingredient_formset)
+        updated.ingredients = _ingredient_text(updated.ingredient_items)
+        if request.POST.get("action", "analyze") == "draft":
+            updated.is_draft = True
+            updated.save()
+            messages.success(request, "Draft updated.")
+            return redirect("main:recipe_detail", pk=updated.pk)
+        try:
+            updated.nutrition = analyze_with_spoonacular(
+                title=updated.title,
+                ingredients=[f"{item['amount_g']} g {item['name']}" if item.get("amount_g") else item["name"] for item in updated.ingredient_items],
+                instructions=updated.instructions, servings=updated.servings,
+            )
+        except (ImproperlyConfigured, requests.RequestException, ValueError):
+            _spoonacular_error(request)
+            return render(request, "pages/recipes/form.html", {"form": form, "ingredient_formset": ingredient_formset, "recipe": recipe, "editing": True}, status=502)
+        updated.health_score = updated.nutrition.get("healthScore")
+        updated.diets = updated.nutrition.get("diets", [])
+        updated.is_draft = False
+        updated.save()
+        messages.success(request, "Recipe updated and analyzed.")
+        return redirect("main:recipe_detail", pk=updated.pk)
+    return render(request, "pages/recipes/form.html", {"form": form, "ingredient_formset": ingredient_formset, "recipe": recipe, "editing": True})
+
+
+@login_required
+@require_POST
+def recipe_delete(request, pk):
+    recipe = _owned_recipe(request, pk)
+    recipe.delete()
+    messages.success(request, "Recipe removed from My recipes.")
+    if request.headers.get("HX-Request") == "true":
+        return HttpResponse(headers={"HX-Redirect": reverse("main:recipe_saved_list")})
+    return redirect("main:recipe_saved_list")
