@@ -208,3 +208,90 @@ class BookmarkToggleTests(TestCase):
         self.assertNotContains(self.client.get(reverse("main:discover")), "is-saved")
         self.client.force_login(other)
         self.assertContains(self.client.get(reverse("main:discover")), "is-saved")
+
+
+
+VALID = {"barcode": "2000000099999", "name": "Home Granola", "category": "Breakfast"}
+
+
+class ProductCreateTests(TestCase):
+    url = reverse("main:product_create")
+
+    def test_requires_login(self):
+        self.assertRedirects(
+            self.client.get(self.url),
+            f'{reverse("main:login_account")}?next={self.url}',
+        )
+
+    def test_get_renders_form(self):
+        self.client.force_login(make_user())
+        r = self.client.get(self.url)
+        self.assertTemplateUsed(r, "pages/product_form.html")
+
+    def test_valid_post_creates_product_owned_by_user_with_toast(self):
+        user = make_user()
+        self.client.force_login(user)
+        r = self.client.post(self.url, VALID, follow=True)
+        product = Product.objects.get(barcode="2000000099999")
+        self.assertEqual(product.created_by, user)
+        self.assertRedirects(r, reverse("main:product_detail", args=[product.barcode]))
+        self.assertContains(r, "Product successfully added.", count=1)
+
+    def test_invalid_barcode_and_duplicate_are_rejected(self):
+        self.client.force_login(make_user())
+        r = self.client.post(self.url, {**VALID, "barcode": "12ab"})
+        self.assertContains(r, "Barcode must be 8-14 digits.")
+        make_product(barcode="2000000099999")
+        r = self.client.post(self.url, VALID)
+        self.assertEqual(Product.objects.filter(barcode="2000000099999").count(), 1)
+        self.assertEqual(r.status_code, 200)
+
+    def test_invalid_post_shows_no_toast(self):
+        self.client.force_login(make_user())
+        self.assertNotContains(self.client.post(self.url, {**VALID, "name": ""}), "successfully")
+
+
+class ProductEditDeleteTests(TestCase):
+    def setUp(self):
+        self.owner, self.stranger = make_user("owner"), make_user("stranger")
+        self.product = make_product(name="Old Name", created_by=self.owner)
+        self.edit_url = reverse("main:product_edit", args=[self.product.barcode])
+        self.delete_url = reverse("main:product_delete", args=[self.product.barcode])
+
+    def test_owner_can_update_but_barcode_is_immutable(self):
+        self.client.force_login(self.owner)
+        r = self.client.post(
+            self.edit_url,
+            {**VALID, "barcode": "9999999999999", "name": "New Name"},
+            follow=True,
+        )
+        self.product.refresh_from_db()
+        self.assertEqual((self.product.name, self.product.barcode), ("New Name", self.product.barcode))
+        self.assertNotEqual(self.product.barcode, "9999999999999")
+        self.assertContains(r, "Product successfully updated.", count=1)
+
+    def test_stranger_cannot_edit_or_delete(self):
+        self.client.force_login(self.stranger)
+        self.assertEqual(self.client.get(self.edit_url).status_code, 403)
+        self.assertEqual(self.client.post(self.edit_url, VALID).status_code, 403)
+        self.assertEqual(self.client.post(self.delete_url).status_code, 403)
+        self.assertTrue(Product.objects.filter(pk=self.product.pk).exists())
+
+    def test_staff_can_edit(self):
+        self.client.force_login(make_user("staffer", is_staff=True))
+        self.assertEqual(self.client.get(self.edit_url).status_code, 200)
+
+    def test_anonymous_is_redirected_to_login(self):
+        self.assertEqual(self.client.get(self.edit_url).status_code, 302)
+        self.assertEqual(self.client.post(self.delete_url).status_code, 302)
+
+    def test_delete_requires_post(self):
+        self.client.force_login(self.owner)
+        self.assertEqual(self.client.get(self.delete_url).status_code, 405)
+
+    def test_owner_can_delete_with_toast(self):
+        self.client.force_login(self.owner)
+        r = self.client.post(self.delete_url, follow=True)
+        self.assertFalse(Product.objects.filter(pk=self.product.pk).exists())
+        self.assertRedirects(r, reverse("main:discover"))
+        self.assertContains(r, "Product successfully deleted.", count=1)
