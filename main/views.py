@@ -167,6 +167,7 @@ def deactivate_account(request):
 from django.core.paginator import Paginator
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404
+from django.urls import reverse
 from django.views.decorators.vary import vary_on_headers
 from .models import Bookmark, Product
 from .services import fetch_and_save_product
@@ -304,6 +305,34 @@ def lookup_product(request, barcode):
     return redirect("main:product_detail", barcode=product.barcode)
 
 
+def htmx_login_required(view):
+    @wraps(view)
+    def wrapper(request, *args, **kwargs):
+        if not request.user.is_authenticated:
+            messages.error(request, "Please log in to save products.")
+            response = HttpResponse(status=204)
+            response["HX-Redirect"] = reverse("main:login_account")
+            return response
+        return view(request, *args, **kwargs)
+    return wrapper
+
+
+@require_POST
+@htmx_only("main:discover")
+@htmx_login_required
 def toggle_bookmark(request, barcode):
-    return HttpResponse("ok")
+    product = get_object_or_404(Product, barcode=barcode)
+    bookmark, created = Bookmark.objects.get_or_create(
+        user=request.user, product=product
+    )
+    if created:
+        messages.success(request, f"Saved {product.name}.")
+    else:
+        bookmark.delete()
+        messages.info(request, f"Removed {product.name} from saved.")
+    return render(
+        request,
+        "partials/bookmark_toggle.html",
+        {"product": product, "saved": created},
+    )
 
