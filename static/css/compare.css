@@ -633,3 +633,63 @@
         width: 100%;
     }
 }
+
+.compare-page-actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 12px;
+    margin: 24px 0;
+}
+
+.compare-page-actions > a {
+    min-width: 250px;
+}
+
+.compare-page-actions form {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 12px;
+    margin: 0;
+}
+
+.compare-clear-button {
+    min-width: 180px;
+    min-height: 45px;
+    padding: 12px 20px;
+    border: 1px solid var(--hef-border-default);
+    border-radius: 999px;
+    background: var(--hef-surface-card);
+    color: var(--hef-text-primary);
+    font-family: "Source Sans 3", sans-serif;
+    font-size: 13px;
+    line-height: 19px;
+}
+
+.compare-clear-button:focus-visible {
+    outline: 3px solid var(--hef-brand-forest);
+    outline-offset: 3px;
+}
+
+.compare-clear-button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.compare-clear-loading {
+    display: none;
+}
+
+.compare-clear-loading.htmx-request {
+    display: inline;
+}
+
+@media (max-width: 767px) {
+    .compare-page-actions > a,
+    .compare-page-actions form,
+    .compare-clear-button {
+        width: 100%;
+        min-width: 0;
+    }
+}

@@ -1,6 +1,7 @@
 from .comparison_views import (
     compare_add,
     compare_remove,
+    compare_clear,
     compare_product_picker,
     compare_save,
     compare_saved_list,
@@ -41,6 +42,7 @@ urlpatterns = [
             compare_product_picker,
             name="compare_product_picker",
     ),
+    path("compare/clear/", compare_clear, name="compare_clear"),
     path(
         "compare/saved/",
         compare_saved_list,

@@ -439,3 +439,34 @@ def compare_saved_detail(request, pk):
         "pages/compare_saved_detail.html",
         context,
     )
+    
+@login_required
+@require_POST
+@never_cache
+@vary_on_headers("HX-Request")
+def compare_clear(request):
+    """Kosongkan pilihan aktif tanpa mengubah perbandingan tersimpan."""
+    request.session[SESSION_KEY] = []
+
+    if request.headers.get("HX-Request") == "true":
+        context = build_comparison_context(request)
+        context["show_results"] = False
+        context["selection_notice"] = "Selection cleared."
+
+        response = render(
+            request,
+            "partials/compare_workspace.html",
+            context,
+        )
+        response["HX-Trigger-After-Swap"] = "comparisonSelectionCleared"
+        response["HX-Replace-Url"] = reverse("main:show_compare")
+        return response
+
+    return JsonResponse(
+        {
+            "ok": True,
+            "barcodes": [],
+            "count": 0,
+            "can_compare": False,
+        }
+    )

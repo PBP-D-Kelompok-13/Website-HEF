@@ -7,10 +7,55 @@
         <p class="visually-hidden">
             Select 2–3 different products to compare.
         </p>
-        <a href="{% url 'main:compare_saved_list' %}"
-        class="btn-hef-secondary mb-3">
-            Saved comparisons
-        </a>
+        <div class="compare-page-actions">
+            <a href="{% url 'main:compare_saved_list' %}"
+            class="btn-hef-secondary">
+                Saved comparisons
+            </a>
+
+            <form
+                id="compare-clear-form"
+                method="post"
+                action="{% url 'main:compare_clear' %}"
+                hx-post="{% url 'main:compare_clear' %}"
+                hx-target="#compare-workspace"
+                hx-swap="outerHTML"
+                hx-sync="#compare-workspace:drop"
+                hx-disabled-elt="find button"
+                hx-indicator="#compare-clear-loading"
+                hx-request='{"timeout": 10000}'
+                data-login-url="{% url 'main:login_account' %}">
+                {% csrf_token %}
+
+                <button
+                    type="submit"
+                    class="compare-clear-button"
+                    {% if not selected_count %}disabled{% endif %}>
+                    Clear selection
+                </button>
+
+                <span
+                    id="compare-clear-loading"
+                    class="htmx-indicator compare-clear-loading compare-muted"
+                    role="status">
+                    Clearing…
+                </span>
+            </form>
+        </div>
+
+        {% if selection_notice %}
+            <p id="compare-clear-status"
+            class="compare-notice"
+            role="status"
+            tabindex="-1">
+                {{ selection_notice }}
+            </p>
+        {% endif %}
+
+        <p id="compare-clear-error"
+        class="compare-notice"
+        role="alert"
+        hidden></p>
     </header>
 
     {% if source_unavailable %}
