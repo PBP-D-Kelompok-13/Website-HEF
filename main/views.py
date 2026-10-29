@@ -13,8 +13,9 @@ from .models import Ingredient
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import redirect
 from django.views.decorators.http import require_POST
+from django.core import serializers
+from django.http import HttpResponse
 from functools import wraps
-from django.contrib import messages
 from datetime import date, timedelta
 import random
 
@@ -99,7 +100,13 @@ PROFILE_AVATARS = [
 @login_required
 def show_profile_page(request):
     avatar = random.choice(PROFILE_AVATARS)
-    return render(request, "pages/profile_page.html", {"avatar": avatar})
+    ingredients = Ingredient.objects.filter(user=request.user)
+    context = {
+        'avatar': avatar,
+        'ingredients': ingredients,
+    }
+    
+    return render(request, "pages/profile_page.html", context)
 
 @login_required
 @require_POST
@@ -177,7 +184,7 @@ def show_inventory(request):
     search_query = request.GET.get('q', '')
     if search_query:
         ingredients = ingredients.filter(name__icontains=search_query)
-        
+
     category_filter = request.GET.get('category', '')
     if category_filter and category_filter != 'All':
         ingredients = ingredients.filter(category=category_filter)
@@ -186,7 +193,7 @@ def show_inventory(request):
     today = date.today()
     warning_threshold = today + timedelta(days=3)
     expiring_count = sum(
-        1 for item in ingredients 
+        1 for item in ingredients
         if item.expiration_date and item.expiration_date <= warning_threshold
     )
 
@@ -234,3 +241,13 @@ def delete_ingredient(request, pk):
     ingredient = get_object_or_404(Ingredient, pk=pk, user=request.user)
     ingredient.delete()
     return redirect('main:show_inventory')
+
+def get_ingredients_json(request):
+    name_query = request.GET.get("name", "").strip()
+    ingredients = Ingredient.objects.filter(user=request.user) if request.user.is_authenticated else Ingredient.objects.none()
+    
+    if name_query:
+        ingredients = ingredients.filter(name__icontains=name_query)
+        
+    ingredients_json = serializers.serialize("json", ingredients)
+    return HttpResponse(ingredients_json, content_type="application/json")

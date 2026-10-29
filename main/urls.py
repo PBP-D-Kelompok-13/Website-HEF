@@ -19,4 +19,5 @@ urlpatterns = [
     path('pantry/add/', add_ingredient, name='add_ingredient'),
     path('pantry/edit/<int:pk>/', edit_ingredient, name='edit_ingredient'),
     path('pantry/delete/<int:pk>/', delete_ingredient, name='delete_ingredient'),
+    path("pantry/api/", get_ingredients_json, name="get_ingredients_json"),
 ]
