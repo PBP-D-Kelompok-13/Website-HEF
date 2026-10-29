@@ -1,0 +1,138 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}{{ comparison.title }} | HEF{% endblock %}
+
+{% block head %}
+    <link rel="stylesheet" href="{% static 'css/compare.css' %}">
+    <link rel="stylesheet" href="{% static 'css/compare_saved.css' %}">
+{% endblock %}
+
+{% block content %}
+<main class="container compare-page compare-saved-page">
+    <a href="{% url 'main:compare_saved_list' %}"
+       class="btn-hef-secondary mb-4">
+        Back to Saved Comparisons
+    </a>
+
+    <header class="compare-saved-heading">
+        <h1>{{ comparison.title }}</h1>
+        <p class="compare-muted">
+            {{ selected_count }} products · Scores reflect the current shared product data.
+        </p>
+    </header>
+
+    {% if has_unavailable_products %}
+        <p class="compare-notice" role="status">
+            Some products are no longer available.
+            Your saved comparison has been kept.
+        </p>
+    {% endif %}
+
+    <section class="compare-results"
+             aria-labelledby="saved-scores-title">
+        <h2 id="saved-scores-title">Scores at a glance</h2>
+
+        <p id="saved-scroll-help" class="compare-muted">
+            On smaller screens, scroll horizontally inside the table.
+        </p>
+
+        <div class="compare-table-scroll"
+             role="region"
+             aria-label="Saved product score comparison"
+             aria-describedby="saved-scroll-help"
+             tabindex="0">
+
+            <table class="compare-table">
+                <caption class="visually-hidden">
+                    Eco-Score and Nutri-Score for {{ comparison.title }}
+                </caption>
+
+                <thead>
+                    <tr>
+                        <th scope="col">Product</th>
+
+                        {% for product in products %}
+                            <th scope="col">
+                                {% if product.image_url %}
+                                    <img class="saved-table-image"
+                                         src="{{ product.image_url }}"
+                                         alt=""
+                                         width="56"
+                                         height="56">
+                                {% else %}
+                                    <img class="saved-table-image"
+                                         src="{% static 'img/compare-product-placeholder.png' %}"
+                                         alt=""
+                                         width="56"
+                                         height="56">
+                                {% endif %}
+
+                                {{ product.name }}
+
+                                <span class="compare-description">
+                                    {{ product.brand|default:"Brand not available" }}
+                                </span>
+
+                                <span class="compare-description">
+                                    Barcode: {{ product.barcode }}
+                                </span>
+                            </th>
+                        {% endfor %}
+                    </tr>
+                </thead>
+
+                <tbody>
+                    {% for row in score_rows %}
+                        <tr>
+                            <th scope="row">
+                                {{ row.label }}
+                                <span class="compare-description">
+                                    {{ row.description }}
+                                </span>
+                            </th>
+
+                            {% for grade in row.grades %}
+                                <td>
+                                    {% if grade %}
+                                        <div class="compare-score compare-score-{{ grade }}"
+                                             aria-label="{{ row.label }} {{ grade|upper }}">
+                                            <strong>{{ grade|upper }}</strong>
+                                            <span>Grade provided</span>
+                                        </div>
+                                    {% else %}
+                                        <div class="compare-score compare-score-na"
+                                             aria-label="{{ row.label }} not available">
+                                            <strong aria-hidden="true">—</strong>
+                                            <span>Not available</span>
+                                        </div>
+                                    {% endif %}
+                                </td>
+                            {% endfor %}
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <p class="compare-source">
+            Scores use the shared product data from Discover.
+            Missing scores are not treated as zero.
+        </p>
+    </section>
+
+    <aside class="compare-explanations" aria-label="About the scores">
+        <div>
+            <h2>Eco-Score</h2>
+            <p>
+                Describes environmental impact.
+                Eco-Score alone does not determine how healthy a product is.
+            </p>
+        </div>
+        <div>
+            <h2>Nutri-Score</h2>
+            <p>Describes nutritional quality.</p>
+        </div>
+    </aside>
+</main>
+{% endblock content %}

@@ -7,6 +7,10 @@
         <p class="visually-hidden">
             Select 2–3 different products to compare.
         </p>
+        <a href="{% url 'main:compare_saved_list' %}"
+        class="btn-hef-secondary mb-3">
+            Saved comparisons
+        </a>
     </header>
 
     {% if source_unavailable %}

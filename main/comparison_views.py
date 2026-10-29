@@ -2,8 +2,9 @@ from django.apps import apps
 from django.contrib.auth.decorators import login_required
 from django.core.exceptions import ValidationError
 from django.http import HttpResponse, JsonResponse
-from django.shortcuts import render
+from django.shortcuts import get_object_or_404, render
 from django.urls import reverse
+from django.views.decorators.vary import vary_on_headers
 from django.views.decorators.http import (
     require_GET,
     require_POST,
@@ -166,6 +167,10 @@ def display_grade(value):
 
 def build_comparison_context(request):
     selected = request.session.get(SESSION_KEY, [])
+    return build_comparison_context_for_barcodes(selected)
+
+
+def build_comparison_context_for_barcodes(selected):
     products = []
     source_unavailable = False
 
@@ -315,4 +320,122 @@ def compare_save(request):
             "form": form,
             "selected_count": selected_count,
         },
+    )
+
+@login_required
+@require_GET
+@never_cache
+@vary_on_headers("HX-Request")
+def compare_saved_list(request):
+    query = request.GET.get("q", "").strip()[:120]
+    count_filter = request.GET.get("count", "all")
+
+    if count_filter not in {"2", "3"}:
+        count_filter = "all"
+
+    owned = SavedComparison.objects.filter(user=request.user)
+    has_saved_comparisons = owned.exists()
+
+    comparisons = owned
+
+    if query:
+        comparisons = comparisons.filter(title__icontains=query)
+
+    if count_filter == "2":
+        comparisons = comparisons.filter(
+            barcodes__1__isnull=False,
+            barcodes__2__isnull=True,
+        )
+    elif count_filter == "3":
+        comparisons = comparisons.filter(
+            barcodes__2__isnull=False,
+            barcodes__3__isnull=True,
+        )
+
+    comparisons = comparisons.order_by("-updated_at", "-pk")
+    page = Paginator(comparisons, 6).get_page(request.GET.get("page"))
+
+    records = []
+
+    for comparison in page:
+        product_context = build_comparison_context_for_barcodes(
+            comparison.barcodes
+        )
+
+        records.append(
+            {
+                "comparison": comparison,
+                "products": product_context["products"],
+                "product_count": len(comparison.barcodes),
+            }
+        )
+
+    context = {
+        "records": records,
+        "page": page,
+        "query": query,
+        "count_filter": count_filter,
+        "count_options": (
+            ("all", "All"),
+            ("2", "2 products"),
+            ("3", "3 products"),
+        ),
+        "has_saved_comparisons": has_saved_comparisons,
+    }
+
+    template = "pages/compare_saved.html"
+
+    if request.headers.get("HX-Request") == "true":
+        template = "partials/compare_saved_results.html"
+
+    return render(request, template, context)
+
+
+@login_required
+@require_GET
+@never_cache
+def compare_saved_detail(request, pk):
+    comparison = get_object_or_404(
+        SavedComparison,
+        pk=pk,
+        user=request.user,
+    )
+
+    context = build_comparison_context_for_barcodes(
+        comparison.barcodes
+    )
+    products = context["products"]
+
+    context.update(
+        {
+            "comparison": comparison,
+            "has_unavailable_products": any(
+                not product["available"]
+                for product in products
+            ),
+            "score_rows": [
+                {
+                    "label": "Eco-Score",
+                    "description": "Environmental impact",
+                    "grades": [
+                        product["eco_grade"]
+                        for product in products
+                    ],
+                },
+                {
+                    "label": "Nutri-Score",
+                    "description": "Nutritional quality",
+                    "grades": [
+                        product["nutri_grade"]
+                        for product in products
+                    ],
+                },
+            ],
+        }
+    )
+
+    return render(
+        request,
+        "pages/compare_saved_detail.html",
+        context,
     )

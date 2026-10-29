@@ -1,0 +1,116 @@
+{% load static %}
+
+<div id="saved-comparison-results" tabindex="-1">
+    {% if records %}
+        <p class="compare-muted saved-results-count" role="status">
+            {{ page.paginator.count }} comparison{{ page.paginator.count|pluralize }} found
+        </p>
+
+        <div class="saved-records">
+            {% for item in records %}
+                <article class="saved-record">
+                    <h2>{{ item.comparison.title }}</h2>
+
+                    <p class="compare-muted saved-record-meta">
+                        {{ item.product_count }} products
+                    </p>
+
+                    <div class="saved-products">
+                        {% for product in item.products %}
+                            <div class="saved-product">
+                                {% if product.image_url %}
+                                    <img src="{{ product.image_url }}"
+                                         alt=""
+                                         width="56"
+                                         height="56"
+                                         loading="lazy">
+                                {% else %}
+                                    <img src="{% static 'img/compare-product-placeholder.png' %}"
+                                         alt=""
+                                         width="56"
+                                         height="56">
+                                {% endif %}
+
+                                <div class="saved-product-copy">
+                                    <p class="saved-product-name">
+                                        {{ product.name }}
+                                    </p>
+
+                                    <p class="compare-muted">
+                                        {% if product.available %}
+                                            {{ product.brand|default:"Brand not available" }}
+                                        {% else %}
+                                            Barcode: {{ product.barcode }}
+                                        {% endif %}
+                                    </p>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+
+                    <div class="saved-record-actions">
+                        <a href="{% url 'main:compare_saved_detail' item.comparison.pk %}"
+                           class="btn-hef-secondary">
+                            Open comparison
+                        </a>
+                    </div>
+                </article>
+            {% endfor %}
+        </div>
+
+        {% if page.has_other_pages %}
+            <nav class="saved-pagination"
+                 aria-label="Saved comparison pages">
+                {% if page.has_previous %}
+                    <a href="{% url 'main:compare_saved_list' %}?q={{ query|urlencode }}&amp;count={{ count_filter }}&amp;page={{ page.previous_page_number }}"
+                       hx-get="{% url 'main:compare_saved_list' %}?q={{ query|urlencode }}&amp;count={{ count_filter }}&amp;page={{ page.previous_page_number }}"
+                       hx-target="#saved-comparison-results"
+                       hx-swap="outerHTML"
+                       hx-sync="#saved-filter-form:replace"
+                       hx-indicator="#saved-search-loading"
+                       hx-request='{"timeout":10000}'
+                       class="btn-hef-secondary"
+                       data-saved-pagination>
+                        Previous
+                    </a>
+                {% endif %}
+
+                <span class="compare-muted">
+                    {{ page.number }} / {{ page.paginator.num_pages }}
+                </span>
+
+                {% if page.has_next %}
+                    <a href="{% url 'main:compare_saved_list' %}?q={{ query|urlencode }}&amp;count={{ count_filter }}&amp;page={{ page.next_page_number }}"
+                       hx-get="{% url 'main:compare_saved_list' %}?q={{ query|urlencode }}&amp;count={{ count_filter }}&amp;page={{ page.next_page_number }}"
+                       hx-target="#saved-comparison-results"
+                       hx-swap="outerHTML"
+                       hx-sync="#saved-filter-form:replace"
+                       hx-indicator="#saved-search-loading"
+                       hx-request='{"timeout":10000}'
+                       class="btn-hef-secondary"
+                       data-saved-pagination>
+                        Next
+                    </a>
+                {% endif %}
+            </nav>
+        {% endif %}
+    {% else %}
+        <section class="saved-empty" role="status">
+            {% if has_saved_comparisons %}
+                <h2>No comparisons match your search.</h2>
+                <p class="compare-muted">
+                    Try another title or choose a different product filter.
+                </p>
+            {% else %}
+                <h2>No saved comparisons yet</h2>
+                <p class="compare-muted">
+                    Compare a few products, then save them here.
+                </p>
+                <a href="{% url 'main:show_compare' %}"
+                   class="btn-hef-primary">
+                    Compare products
+                </a>
+            {% endif %}
+        </section>
+    {% endif %}
+</div>
