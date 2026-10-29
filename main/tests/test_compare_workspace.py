@@ -27,6 +27,7 @@ class CompareWorkspaceTests(TestCase):
         response = self.client.get(self.page_url)
 
         self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "data-compare-slot", count=3)
         self.assertContains(
             response,
             f'hx-get="{reverse("main:compare_product_picker")}"',
