@@ -81,7 +81,7 @@
     {% if expiring_count > 0 %}
     <div class="hef-expiry-banner text-center py-3 px-4 mb-4 rounded-4" style="background-color: #F7D579; font-weight: 600; color: #21352A;">
         Expiration Reminder: {{ expiring_count }}
-        {% if expiring_count == 1 %}ingredient is{% else %}ingredients are{% endif %} 
+        {% if expiring_count == 1 %} ingredient is{% else %} ingredients are{% endif %} 
         about to expire!
     </div>
     {% endif %}

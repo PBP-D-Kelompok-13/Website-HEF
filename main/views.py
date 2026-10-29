@@ -714,8 +714,7 @@ def show_inventory(request):
     today = date.today()
     warning_threshold = today + timedelta(days=3)
     expiring_count = sum(
-        1
-        for item in ingredients
+        1 for item in ingredients
         if item.expiration_date and item.expiration_date <= warning_threshold
     )
 
