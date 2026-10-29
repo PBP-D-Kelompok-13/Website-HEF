@@ -195,20 +195,29 @@ def deactivate_account(request):
 @vary_on_headers("HX-Request")
 def show_compare(request):
     context = build_comparison_context(request)
+    requested = request.GET.get("run") == "1"
 
-    if request.headers.get("HX-Request") == "true":
+    context["show_results"] = requested and context["can_compare"]
+
+    if requested and not context["can_compare"]:
+        context["comparison_error"] = (
+            "Choose 2–3 different, available products before comparing."
+        )
+
+    is_htmx = request.headers.get("HX-Request") == "true"
+
+    if is_htmx:
         template = "partials/compare_workspace.html"
     else:
         template = "pages/compare.html"
 
-    return render(request, template, context)
-''' =============================== 
-    Recipe
-    =============================== '''
-# Recipe Analyzer views keep saved data scoped to the signed-in owner.
+    # HTMX menampilkan pesan validasi sebagai HTML.
+    # Request halaman biasa menerima status 400 jika pilihan tidak valid.
+    status = 200
+    if requested and not context["can_compare"] and not is_htmx:
+        status = 400
 
-ALLOWED_DIETS = {"vegetarian", "vegan", "gluten free"}
-
+    return render(request, template, context, status=status)
 
 @login_required
 def recipe_ingredient_suggestions(request):

@@ -179,6 +179,7 @@ def build_comparison_context(request):
     return {
         "products": products,
         "slots": products + [None] * max(0, 3 - len(products)),
+        "show_results": False,
         "selected_count": len(products),
         "source_unavailable": source_unavailable,
         "can_compare": (

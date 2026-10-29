@@ -88,14 +88,39 @@
         {% endfor %}
     </div>
 
-    <div class="compare-selection-status" role="status">
-        <p>{{ selected_count }} of 3 products selected</p>
-        <p class="compare-muted">
-            Choose at least 2 different products. Maximum 3.
-        </p>
+    <div class="compare-controls">
+        <div class="compare-selection-status" role="status">
+            <p>{{ selected_count }} of 3 products selected</p>
+            <p class="compare-muted">
+                Choose at least 2 different products. Maximum 3.
+            </p>
+        </div>
+
+        <form method="get"
+              action="{% url 'main:show_compare' %}"
+              hx-get="{% url 'main:show_compare' %}"
+              hx-target="#compare-workspace"
+              hx-swap="outerHTML"
+              hx-sync="#compare-workspace:drop"
+              hx-disabled-elt="find button"
+              hx-indicator="#compare-run-loading">
+            <input type="hidden" name="run" value="1">
+
+            <button type="submit"
+                    class="btn-hef-primary compare-run"
+                    {% if not can_compare %}disabled{% endif %}>
+                Compare products
+            </button>
+
+            <span id="compare-run-loading"
+                  class="htmx-indicator compare-muted"
+                  role="status">
+                Comparing…
+            </span>
+        </form>
     </div>
 
-    {% if can_compare %}
+    {% if show_results %}
         <section class="compare-results" aria-labelledby="compare-results-title">
             <h2 id="compare-results-title">Scores at a glance</h2>
 
@@ -188,9 +213,18 @@
             </p>
         </section>
     {% else %}
-        <p class="compare-notice">
-            Select 2–3 different, available products to view the comparison.
-        </p>
+        <section class="compare-pending" aria-labelledby="compare-ready-title">
+            <h2 id="compare-ready-title">Ready when you are</h2>
+            <p class="compare-muted">
+                Select your products, then press Compare products to see the scores.
+            </p>
+
+            {% if comparison_error %}
+                <p class="compare-validation" role="alert">
+                    {{ comparison_error }}
+                </p>
+            {% endif %}
+        </section>
     {% endif %}
 
     <aside class="compare-explanations" aria-label="About the scores">
