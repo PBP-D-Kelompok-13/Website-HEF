@@ -1,0 +1,5 @@
+<nav class="hef-recipe-tabs nav border-bottom mb-4" aria-label="Recipe Analyzer pages">
+  <a class="nav-link {% if active_tab == 'discover' %}active{% endif %}" href="{% url 'main:recipe_discover' %}">Discover</a>
+  <a class="nav-link {% if active_tab == 'create' %}active{% endif %}" href="{% url 'main:recipe_create' %}">Create</a>
+  <a class="nav-link {% if active_tab == 'saved' %}active{% endif %}" href="{% url 'main:recipe_saved_list' %}">Saved</a>
+</nav>

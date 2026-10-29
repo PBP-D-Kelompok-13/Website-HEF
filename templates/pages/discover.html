@@ -1,0 +1,109 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Discover Friendly Groceries — Healthy Eco Foody{% endblock %}
+
+{% block head %}
+<link rel="stylesheet" href="{% static 'css/discover.css' %}">
+<script src="https://unpkg.com/html5-qrcode" defer></script>
+{% endblock %}
+
+{% block content %}
+<main class="container my-4">
+    <section class="hef-discover-hero p-4 p-md-5 mb-4">
+        <div class="hef-hero-mark" aria-hidden="true">🌱</div>
+        <p class="hef-eyebrow mb-1">OPEN FOOD FACTS · LIVE SCORES</p>
+        <h1 class="hef-discover-title mb-2">Discover friendly groceries</h1>
+        <p class="hef-discover-sub mb-4">
+            Search by product, brand, or barcode — then peek at its Eco-Score and Nutri-Score in one place.
+        </p>
+
+        <form id="discover-filter-form"
+              method="get"
+              action="{% url 'main:discover' %}"
+              hx-get="{% url 'main:discover' %}"
+              hx-target="#discover-results"
+              hx-push-url="true"
+              hx-trigger="submit, input changed delay:300ms from:#discover-q, change from:.hef-filter-input">
+
+            <div class="d-flex flex-column flex-md-row gap-2 mb-3">
+                <div class="hef-search-wrap flex-grow-1">
+                    <span aria-hidden="true">🔎</span>
+                    <input id="discover-q"
+                           type="search"
+                           name="q"
+                           value="{{ filters.q }}"
+                           placeholder="Search oat milk, pasta, barcode 7300400481588..."
+                           aria-label="Search products">
+                </div>
+                <div class="d-flex gap-2">
+                    <button type="submit" class="btn-hef-forest flex-grow-1 flex-md-grow-0">Search</button>
+                    <button type="button"
+                            class="btn-hef-forest"
+                            data-bs-toggle="modal"
+                            data-bs-target="#scannerModal">
+                        📷 Scan Barcode
+                    </button>
+                </div>
+            </div>
+
+            <div class="d-flex flex-wrap align-items-center gap-2">
+                <label class="hef-pill">
+                    <input type="radio" name="category" value="all" {% if filters.category == "all" %}checked{% endif %} class="hef-filter-input">
+                    <span>All items</span>
+                </label>
+                {% for cat in categories %}
+                <label class="hef-pill">
+                    <input type="radio" name="category" value="{{ cat }}" {% if filters.category == cat %}checked{% endif %} class="hef-filter-input">
+                    <span>{{ cat }}</span>
+                </label>
+                {% endfor %}
+
+                <span class="hef-pill-divider d-none d-md-inline"></span>
+
+                <label class="hef-pill">
+                    <input type="checkbox" name="eco" value="a" {% if filters.eco == "a" %}checked{% endif %} class="hef-filter-input">
+                    <span>Eco-Score A</span>
+                </label>
+                <label class="hef-pill">
+                    <input type="checkbox" name="nutri" value="a" {% if filters.nutri == "a" %}checked{% endif %} class="hef-filter-input">
+                    <span>Nutri-Score A</span>
+                </label>
+
+                {% if user.is_authenticated %}
+                <label class="hef-pill">
+                    <input type="checkbox" name="saved" value="1" {% if filters.saved == "1" %}checked{% endif %} class="hef-filter-input">
+                    <span>♥ Saved only</span>
+                </label>
+                {% endif %}
+            </div>
+        </form>
+    </section>
+
+    <div id="discover-results">
+        {% include "partials/discover_shelf.html" %}
+    </div>
+</main>
+
+<div class="modal fade" id="scannerModal" tabindex="-1" aria-labelledby="scannerModalLabel" aria-hidden="true"
+     data-lookup-url="{% url 'main:lookup_product' '__CODE__' %}">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content hef-modal-card p-3">
+            <div class="modal-header border-0 pb-1">
+                <h2 class="h5 fw-bold mb-0" id="scannerModalLabel">Scan Product Barcode</h2>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div id="reader" class="hef-scanner-box"></div>
+                <p id="scannerStatus" class="text-label text-center mt-3 mb-0">
+                    Point your camera at a food product barcode.
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block script %}
+<script src="{% static 'js/discover_scanner.js' %}"></script>
+{% endblock %}

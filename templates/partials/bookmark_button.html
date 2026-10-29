@@ -1,0 +1,11 @@
+<button type="button"
+        id="bookmark-{{ product.barcode }}"
+        class="hef-bookmark-btn {% if saved %}is-saved{% endif %}"
+        hx-post="{% url 'main:toggle_bookmark' product.barcode %}"
+        hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'
+        hx-swap="outerHTML"
+        aria-pressed="{{ saved|yesno:'true,false' }}"
+        aria-label="{% if saved %}Remove {{ product.name }} from saved{% else %}Save {{ product.name }}{% endif %}"
+        title="{% if saved %}Saved{% else %}Save product{% endif %}">
+    {% if saved %}♥{% else %}♡{% endif %}
+</button>

@@ -1,0 +1,50 @@
+{% for product in page_obj %}
+<div class="col-6 col-lg-4">
+    <article class="hef-product-card h-100 d-flex flex-column p-2 p-md-3">
+        <div class="hef-card-img mb-2 mb-md-3">
+            {% if product.image_url %}
+                <img src="{{ product.image_url }}" alt="{{ product.name }}" loading="lazy">
+            {% else %}
+                <div class="hef-img-placeholder">🥗</div>
+            {% endif %}
+            <span class="hef-card-tag">{{ product.category }}</span>
+            <div class="hef-card-bookmark">
+                {% include "partials/bookmark_button.html" with product=product saved=product.is_saved %}
+            </div>
+        </div>
+
+        <p class="text-label mb-1 text-truncate">{{ product.brand|default:"Unbranded" }}</p>
+        <h3 class="hef-card-title mb-1">
+            <a href="{{ product.get_absolute_url }}" class="stretched-link- target-link text-decoration-none">
+                {{ product.name }}
+            </a>
+        </h3>
+        <p class="hef-barcode mb-2 text-truncate">Barcode {{ product.barcode }}</p>
+
+        <div class="d-flex flex-column flex-md-row flex-wrap align-items-start gap-1 gap-md-2 mb-2">
+            <span class="hef-mini-score hef-score-{{ product.eco_grade|default:'na' }}">
+                🌱 Eco-Score {{ product.eco_grade|default:"?"|upper }}
+            </span>
+            <span class="hef-mini-score hef-score-{{ product.nutri_grade|default:'na' }}">
+                🥗 Nutri-Score {{ product.nutri_grade|default:"?"|upper }}
+            </span>
+        </div>
+
+        <p class="hef-card-co2 mb-1">
+            {% if product.co2_kg %}
+                🌍 {{ product.co2_kg }} kg CO₂e / kg
+            {% else %}
+                🌍 CO₂ data unavailable
+            {% endif %}
+        </p>
+        <p class="text-label mb-2 mb-md-3 text-truncate">
+            {{ product.quantity|default:"—" }}
+            {% if product.label_list %} · {{ product.label_list|join:" · " }}{% endif %}
+        </p>
+
+        <a href="{{ product.get_absolute_url }}" class="btn-hef-forest w-100 justify-content-center mt-auto">
+            View details →
+        </a>
+    </article>
+</div>
+{% endfor %}

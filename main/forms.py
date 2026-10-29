@@ -1,6 +1,6 @@
 from django import forms
 from django.contrib.auth.forms import UserCreationForm, AuthenticationForm, PasswordChangeForm
-from .models import CustomUser
+from .models import CustomUser, Ingredient, Product
 from django.core.exceptions import ValidationError
 
 def style(field, placeholder):
@@ -83,3 +83,71 @@ class ReactivationForm(forms.Form):
             self.user = user
 
         return cleaned_data
+
+
+class IngredientForm(forms.ModelForm):
+    class Meta:
+        model = Ingredient
+        fields = ['name', 'category', 'quantity', 'expiration_date', 'image']
+        widgets = {
+            'category': forms.Select(attrs={'class': 'hef-input'}),
+            'expiration_date': forms.DateInput(attrs={'class': 'hef-input', 'type': 'date'}),
+            'image': forms.ClearableFileInput(attrs={'class': 'hef-input'}),
+        }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        style(self.fields['name'], 'e.g., Spinach')
+        style(self.fields['quantity'], 'e.g., 2 pcs, 500g')
+        self.fields['category'].empty_label = 'Select Category'
+
+        for field in self.fields.values():
+            field.widget.attrs.update({'class': 'hef-input'})
+
+
+class ProductForm(forms.ModelForm):
+    class Meta:
+        model = Product
+        fields = (
+            "barcode",
+            "name",
+            "brand",
+            "category",
+            "quantity",
+            "description",
+            "image_url",
+            "labels",
+            "eco_grade",
+            "nutri_grade",
+            "nova_group",
+            "sugars_100g",
+            "sugars_level",
+            "salt_100g",
+            "salt_level",
+            "fat_100g",
+            "fat_level",
+            "calories_100g",
+            "fiber_100g",
+            "co2_kg",
+            "origin",
+            "packaging",
+            "ingredients",
+            "allergens",
+        )
+        widgets = {
+            "description": forms.Textarea(attrs={"rows": 2}),
+            "ingredients": forms.Textarea(attrs={"rows": 3}),
+        }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        for name, field in self.fields.items():
+            style(field, field.label or name.replace("_", " ").capitalize())
+        if self.instance and self.instance.pk:
+            self.fields["barcode"].disabled = True
+
+    def clean_barcode(self):
+        code = (self.cleaned_data.get("barcode") or "").strip()
+        if not code.isdigit() or not (8 <= len(code) <= 14):
+            raise ValidationError("Barcode must be 8-14 digits.")
+        return code

@@ -1,0 +1,137 @@
+from datetime import date
+
+from django.test import TestCase
+from django.urls import reverse
+
+from main.forms import *
+from main.models import *
+
+class PantryFeatureAcceptanceTest(TestCase):
+    def test_user_pantry_management_journey(self):
+        user = CustomUser.objects.create_user(
+            username="celine",
+            email="celine@example.com",
+            date_of_birth=date(2005, 1, 1),
+            password="Password123!"
+        )
+        self.client.force_login(user)
+
+        response = self.client.get(reverse("main:show_inventory"))
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, "pages/inventory.html")
+
+        response = self.client.post(reverse("main:add_ingredient"), {
+            "name": "Broccoli",
+            "category": "Vegetables",
+            "quantity": "2 pcs",
+            "expiration_date": "2026-11-05"
+        })
+        self.assertRedirects(response, reverse("main:show_inventory"))
+        self.assertEqual(Ingredient.objects.count(), 1)
+        
+        response = self.client.get(reverse("main:show_inventory"))
+        self.assertContains(response, "Broccoli")
+        
+class IngredientModelTests(TestCase):
+    def setUp(self):
+        self.user = CustomUser.objects.create_user(
+            username="celine",
+            email="celine@example.com",
+            date_of_birth=date(2005, 1, 1),
+            password="Password123!"
+        )
+
+    def test_ingredient_creation_and_string_representation(self):
+        ingredient = Ingredient.objects.create(
+            user=self.user,
+            name="Milk",
+            category="Dairy & Eggs",
+            quantity="1 bottle",
+            expiration_date=date(2026, 11, 2)
+        )
+        self.assertEqual(ingredient.name, "Milk")
+        self.assertEqual(ingredient.category, "Dairy & Eggs")
+        self.assertEqual(str(ingredient), "Milk (celine)")
+        
+class IngredientFormTests(TestCase):
+    def test_ingredient_form_accepts_valid_category_choices(self):
+        form_data = {
+            "name": "Apples",
+            "category": "Fruits",
+            "quantity": "1 kg",
+            "expiration_date": "2026-11-10"
+        }
+        form = IngredientForm(data=form_data)
+        self.assertTrue(form.is_valid(), form.errors)
+
+    def test_ingredient_form_rejects_invalid_category(self):
+        form_data = {
+            "name": "Unknown Item",
+            "category": "InvalidCategory",
+            "quantity": "1",
+            "expiration_date": "2026-11-10"
+        }
+        form = IngredientForm(data=form_data)
+        self.assertFalse(form.is_valid())
+        self.assertIn("category", form.errors)
+
+class IngredientCRUDViewTests(TestCase):
+    def setUp(self):
+        self.user = CustomUser.objects.create_user(
+            username="celine",
+            email="celine@example.com",
+            date_of_birth=date(2005, 1, 1),
+            password="P4ssword123!"
+        )
+        self.client.force_login(self.user)
+        self.ingredient = Ingredient.objects.create(
+            user=self.user,
+            name="Lettuce",
+            category="Vegetables",
+            quantity="1",
+            expiration_date=date(2026, 11, 1)
+        )
+
+    def test_edit_ingredient_success(self):
+        response = self.client.post(reverse("main:edit_ingredient", args=[self.ingredient.id]), {
+            "name": "Organic Lettuce",
+            "category": "Vegetables",
+            "quantity": "2",
+            "expiration_date": "2026-11-03"
+        })
+        self.assertRedirects(response, reverse("main:show_inventory"))
+        self.ingredient.refresh_from_db()
+        self.assertEqual(self.ingredient.name, "Organic Lettuce")
+
+    def test_delete_ingredient_success(self):
+        response = self.client.post(reverse("main:delete_ingredient", args=[self.ingredient.id]))
+        self.assertRedirects(response, reverse("main:show_inventory"))
+        self.assertFalse(Ingredient.objects.filter(id=self.ingredient.id).exists())
+        
+class IngredientSearchAndFilterTests(TestCase):
+    def setUp(self):
+        self.user = CustomUser.objects.create_user(
+            username="celine",
+            email="celine@example.com",
+            date_of_birth=date(2005, 1, 1),
+            password="Password123!"
+        )
+        self.client.force_login(self.user)
+        Ingredient.objects.create(
+            user=self.user, name="Broccoli", category="Vegetables", quantity="1", expiration_date=date(2026, 11, 1)
+        )
+        Ingredient.objects.create(
+            user=self.user, name="Milk", category="Dairy & Eggs", quantity="2", expiration_date=date(2026, 11, 2)
+        )
+
+    def test_search_ingredient_returns_matching_items(self):
+        response = self.client.get(reverse("main:show_inventory"), {"q": "Brocc"})
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Broccoli")
+        self.assertNotContains(response, "Milk")
+
+    def test_category_filter_returns_correct_items(self):
+        response = self.client.get(reverse("main:show_inventory"), {"category": "Dairy & Eggs"})
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Milk")
+        self.assertNotContains(response, "Broccoli")

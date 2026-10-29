@@ -74,7 +74,10 @@ pip install -r requirements.txt
 Create a `.env` file in the root directory and configure local settings:
 ```
 PRODUCTION=False
+SPOONACULAR_API_KEY=your_spoonacular_api_key
 ```
+
+The Recipe Analyzer uses Spoonacular's recipe analysis endpoint. Set `SPOONACULAR_API_KEY` in `.env` to enable analysis; saved recipe data is available only after login.
 
 ### 5. Run Migrations & Start Server
 ```bash
