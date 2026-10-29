@@ -1,7 +1,9 @@
 from django.apps import apps
 from django.contrib.auth.decorators import login_required
 from django.core.exceptions import ValidationError
-from django.http import JsonResponse
+from django.http import HttpResponse, JsonResponse
+from django.shortcuts import render
+from django.urls import reverse
 from django.views.decorators.http import require_POST
 
 from .comparison_selection import add_product, remove_product
@@ -25,6 +27,19 @@ def resolve_product(barcode):
 
     return product_model.objects.filter(barcode=barcode).first()
 
+def comparison_add_error(request, errors, status):
+    if request.headers.get("HX-Request") == "true":
+        return render(
+            request,
+            "partials/compare_add_feedback.html",
+            {"errors": errors},
+        )
+
+    return JsonResponse(
+        {"ok": False, "errors": errors},
+        status=status,
+    )
+
 
 @login_required
 @require_POST
@@ -32,40 +47,36 @@ def compare_add(request):
     barcode = request.POST.get("barcode", "").strip()
     selected = request.session.get(SESSION_KEY, [])
 
-    # Validasi dahulu tanpa mengubah pilihan di session.
     try:
         updated_selection = add_product(selected, barcode)
     except ValidationError as exc:
-        return JsonResponse(
-            {"ok": False, "errors": exc.messages},
-            status=400,
-        )
+        return comparison_add_error(request, exc.messages, 400)
 
-    # Pastikan produk benar-benar tersedia sebelum menyimpannya.
     try:
         product = resolve_product(barcode)
     except ProductSourceUnavailable:
-        return JsonResponse(
-            {
-                "ok": False,
-                "errors": [
-                    "Sumber produk belum tersedia. "
-                    "Silakan coba lagi setelah Discover terhubung."
-                ],
-            },
-            status=503,
+        return comparison_add_error(
+            request,
+            [
+                "Sumber produk belum tersedia. "
+                "Silakan coba lagi setelah Discover terhubung."
+            ],
+            503,
         )
 
     if product is None:
-        return JsonResponse(
-            {
-                "ok": False,
-                "errors": ["Produk tidak ditemukan."],
-            },
-            status=404,
+        return comparison_add_error(
+            request,
+            ["Produk tidak ditemukan."],
+            404,
         )
 
     request.session[SESSION_KEY] = updated_selection
+
+    if request.headers.get("HX-Request") == "true":
+        response = HttpResponse()
+        response["HX-Redirect"] = reverse("main:show_compare")
+        return response
 
     return JsonResponse(
         {
