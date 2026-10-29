@@ -112,6 +112,13 @@ def compare_remove(request):
         )
 
     request.session[SESSION_KEY] = updated_selection
+    
+    if request.headers.get("HX-Request") == "true":
+        return render(
+            request,
+            "partials/compare_workspace.html",
+            build_comparison_context(request),
+        )
 
     return JsonResponse(
         {
@@ -171,6 +178,7 @@ def build_comparison_context(request):
 
     return {
         "products": products,
+        "slots": products + [None] * max(0, 3 - len(products)),
         "selected_count": len(products),
         "source_unavailable": source_unavailable,
         "can_compare": (
