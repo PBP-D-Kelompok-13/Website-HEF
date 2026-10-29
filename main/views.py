@@ -115,7 +115,12 @@ PROFILE_AVATARS = [
 @login_required
 def show_profile_page(request):
     avatar = random.choice(PROFILE_AVATARS)
-    return render(request, "pages/profile_page.html", {"avatar": avatar})
+    saved_recipe = SavedRecipe.objects.filter(user=request.user).order_by("-created_at").first()
+    return render(
+        request,
+        "pages/profile_page.html",
+        {"avatar": avatar, "saved_recipe": saved_recipe},
+    )
 
 @login_required
 @require_POST
