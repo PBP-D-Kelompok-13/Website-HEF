@@ -280,6 +280,11 @@ class RecipeAnalyzerFlowTests(TestCase):
         self.assertEqual(detail_response.status_code, 200)
         self.assertContains(detail_response, "Bake the tofu.")
         self.assertContains(detail_response, "A tofu bowl.")
+        self.assertContains(
+            detail_response,
+            '<progress class="hef-score-progress mb-3" value="75" max="100" aria-label="Health score"></progress>',
+            html=True,
+        )
 
         SavedRecipe.objects.create(
             user=self.user, source=SavedRecipe.Source.SPOONACULAR, spoonacular_id=123,
