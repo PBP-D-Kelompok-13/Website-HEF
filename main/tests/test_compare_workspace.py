@@ -27,13 +27,15 @@ class CompareWorkspaceTests(TestCase):
         response = self.client.get(self.page_url)
 
         self.assertEqual(response.status_code, 200)
-        self.assertContains(response, "data-compare-slot", count=3)
         self.assertContains(
             response,
-            '<a class="btn-hef-secondary compare-add-product" '
-            f'href="{reverse("main:discover")}">Add product</a>',
+            f'hx-get="{reverse("main:compare_product_picker")}"',
             count=3,
-            html=True,
+        )
+        self.assertContains(
+            response,
+            'data-bs-target="#compareProductPicker"',
+            count=3,
         )
         self.assertEqual(
             self.client.session.get("comparison_barcodes", []),
@@ -51,10 +53,13 @@ class CompareWorkspaceTests(TestCase):
         self.assertContains(response, self.second.name)
         self.assertContains(
             response,
-            '<a class="btn-hef-secondary compare-add-product" '
-            f'href="{reverse("main:discover")}">Add product</a>',
+            f'hx-get="{reverse("main:compare_product_picker")}"',
             count=1,
-            html=True,
+        )
+        self.assertContains(
+            response,
+            'data-bs-target="#compareProductPicker"',
+            count=1,
         )
         self.assertContains(
             response,
