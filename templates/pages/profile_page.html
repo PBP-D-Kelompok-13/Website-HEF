@@ -31,7 +31,7 @@
             <section class="hef-profile-section hef-profile-section--green">
                 <div class="d-flex justify-content-between align-items-baseline mb-3">
                     <h2 class="hef-profile-section-title mb-0">Product Search History</h2>
-                    <a href="#" class="hef-profile-view-all text-label">View all →</a>
+                    <a href="{% url 'main:recipe_saved_list' %}" class="hef-profile-view-all text-label">View all →</a>
                 </div>
                 <div class="hef-profile-row hef-profile-row--head text-label"><span>Product</span><span>Searched at</span></div>
                 <div class="hef-profile-row"><span>Placeholder</span><span>Placeholder Date</span></div>
@@ -49,10 +49,20 @@
             <section class="hef-profile-section hef-profile-section--pink">
                 <div class="d-flex justify-content-between align-items-baseline mb-3">
                     <h2 class="hef-profile-section-title mb-0">Saved Recipes</h2>
-                    <a href="#" class="hef-profile-view-all text-label">View all →</a>
+                    <a href="{% url 'main:recipe_saved_list' %}" class="hef-profile-view-all text-label">View all →</a>
                 </div>
                 <div class="hef-profile-row hef-profile-row--head text-label"><span>Recipe</span><span>Date added</span></div>
-                <div class="hef-profile-row"><span>Placeholder</span><span>Placeholder Date</span></div>
+                {% if saved_recipe %}
+                    <a class="hef-profile-row text-decoration-none text-reset" href="{% url 'main:recipe_detail' saved_recipe.pk %}">
+                        <span>{{ saved_recipe.title }}</span>
+                        <span>{{ saved_recipe.created_at|date:"M j, Y" }}</span>
+                    </a>
+                {% else %}
+                    <div class="hef-profile-row">
+                        <span>No saved recipes yet.</span>
+                        <span>-</span>
+                    </div>
+                {% endif %}
             </section>
 
             <div class="hef-profile-actions">

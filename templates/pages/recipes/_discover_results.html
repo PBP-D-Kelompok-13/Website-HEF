@@ -1,0 +1,7 @@
+<div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-2 mb-3">
+  <div><h2 class="h4 mb-0">Search results <span class="badge rounded-pill text-bg-success">{{ total_results }}</span></h2><small class="text-secondary">Recipes, photos and nutrition values are provided by Spoonacular. Nutrition is an estimate per serving.</small></div>
+  <span class="small text-secondary">Sort by: Popularity</span>
+</div>
+{% if api_error %}<div class="alert alert-warning" role="status">Recipe search is temporarily unavailable. Try again shortly.</div>{% endif %}
+<div id="recipe-grid" class="row g-3">{% for card in search_cards %}{% include "pages/recipes/_recipe_card.html" %}{% empty %}<div class="col-12"><div class="hef-recipe-panel p-5 text-center">{% if not api_error %}<h3 class="h5">No recipes found</h3><p class="text-secondary mb-0">Try another search or dietary filter.</p>{% endif %}</div></div>{% endfor %}</div>
+<div id="load-more-wrapper">{% if more_available %}<div class="text-center my-4"><p class="small text-secondary">You’ve explored {{ next_offset }} of {{ total_results }} recipes</p><button id="load-more" class="btn-hef-secondary" hx-get="{% url 'main:recipe_discover' %}?query={{ query|urlencode }}&diet={{ diet|urlencode }}&maxReadyTime={{ max_ready_time }}&offset={{ next_offset }}" hx-target="#recipe-grid" hx-swap="beforeend">Load more recipes</button></div>{% endif %}</div>

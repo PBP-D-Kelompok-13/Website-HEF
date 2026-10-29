@@ -1,6 +1,6 @@
 import os
 import requests
-from .models import Product
+from ..models import Product
 
 OFF_API = "https://world.openfoodfacts.org/api/v2/product/{barcode}"
 OFF_FIELDS = ",".join(

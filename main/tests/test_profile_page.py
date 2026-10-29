@@ -4,6 +4,10 @@ from django.contrib.auth import get_user_model
 from django.test import Client, TestCase
 from django.urls import reverse
 from django.contrib.auth.forms import PasswordChangeForm
+from django.utils import dateformat, timezone
+from datetime import timedelta
+
+from main.models import SavedRecipe
 
 User = get_user_model()
 HTMX = {"HTTP_HX_REQUEST": "true"}
@@ -38,6 +42,46 @@ class ProfilePageTests(TestCase):
         self.assertContains(response, "Your Pantry")
         self.assertContains(response, "Saved Recipes")
         self.assertNotContains(response, self.user.password)
+
+    def test_profile_shows_latest_owned_recipe_and_view_all_link(self):
+        older_recipe = SavedRecipe.objects.create(
+            user=self.user, title="Older soup", ingredients="beans", servings=2,
+        )
+        SavedRecipe.objects.filter(pk=older_recipe.pk).update(
+            created_at=timezone.now() - timedelta(days=2)
+        )
+        latest_recipe = SavedRecipe.objects.create(
+            user=self.user, title="Latest tofu bowl", ingredients="tofu", servings=1,
+        )
+        other_user = User.objects.create_user(
+            username="anotheruser", email="another@example.com", password="StrongPass123!",
+            date_of_birth=date(2000, 1, 1),
+        )
+        SavedRecipe.objects.create(
+            user=other_user, title="Private recipe", ingredients="secret", servings=1,
+        )
+        self.client.force_login(self.user)
+
+        response = self.client.get(self.url)
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Latest tofu bowl")
+        self.assertContains(response, dateformat.format(latest_recipe.created_at, "M j, Y"))
+        self.assertContains(
+            response,
+            f'href="{reverse("main:recipe_detail", args=[latest_recipe.pk])}"',
+        )
+        self.assertContains(response, f'href="{reverse("main:recipe_saved_list")}"')
+        self.assertNotContains(response, "Older soup")
+        self.assertNotContains(response, "Private recipe")
+
+    def test_profile_shows_empty_saved_recipe_state(self):
+        self.client.force_login(self.user)
+
+        response = self.client.get(self.url)
+
+        self.assertContains(response, "No saved recipes yet.")
+        self.assertContains(response, f'href="{reverse("main:recipe_saved_list")}"')
 
 class LogoutTests(TestCase):
     def setUp(self):
