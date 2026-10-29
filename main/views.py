@@ -9,6 +9,7 @@ from django.utils.html import strip_tags
 from django.views.decorators.vary import vary_on_headers
 from django.contrib.auth.decorators import login_required
 from django.views.decorators.http import require_POST
+from django.core import serializers
 from datetime import date, timedelta
 from functools import wraps
 import random
@@ -34,6 +35,7 @@ from .services.recipe_analyzer import (
     search_spoonacular_ingredients,
 )
 
+
 # Custom wrapper that only allows HTMX requests
 def htmx_only(redirect_to="main:show_landing_page"):
     def decorator(view):
@@ -42,44 +44,54 @@ def htmx_only(redirect_to="main:show_landing_page"):
             if request.headers.get("HX-Request") != "true":
                 return redirect(redirect_to)
             return view(request, *args, **kwargs)
+
         return wrapper
+
     return decorator
 
-''' ===============================
+
+""" ===============================
     Functions for Main Landing Page
-    =============================== '''
+    =============================== """
+
+
 def show_landing_page(request):
     return render(request, "pages/landing_page.html")
 
-''' ===============================
+
+""" ===============================
     Functions for Authentication
-    =============================== '''
+    =============================== """
+
+
 def register_account(request):
     if request.user.is_authenticated:
-        return redirect('main:show_landing_page')
+        return redirect("main:show_landing_page")
 
-    form = CustomUserCreationForm(request.POST if request.method == 'POST' else None)
-    if request.method == 'POST' and form.is_valid():
+    form = CustomUserCreationForm(request.POST if request.method == "POST" else None)
+    if request.method == "POST" and form.is_valid():
         form.save()
         messages.success(request, "Account successfully registered. Please log in.")
-        return redirect('main:login_account')
+        return redirect("main:login_account")
 
-    return render(request, 'pages/register.html', {'form': form})
+    return render(request, "pages/register.html", {"form": form})
+
 
 def login_account(request):
     if request.user.is_authenticated:
-        return redirect('main:show_landing_page')
+        return redirect("main:show_landing_page")
 
     form = CustomAuthenticationForm(
         request,
-        data=request.POST if request.method == 'POST' else None,
+        data=request.POST if request.method == "POST" else None,
     )
-    if request.method == 'POST' and form.is_valid():
+    if request.method == "POST" and form.is_valid():
         login(request, form.get_user())
         messages.success(request, "Login successful.")
-        return redirect('main:show_landing_page')
+        return redirect("main:show_landing_page")
 
-    return render(request, 'pages/login.html', {'form': form})
+    return render(request, "pages/login.html", {"form": form})
+
 
 def reactivate_account(request):
     if request.user.is_authenticated:
@@ -96,15 +108,17 @@ def reactivate_account(request):
 
     return render(request, "pages/reactivate_account.html", {"form": form})
 
+
 @require_POST
 def logout_account(request):
     logout(request)
     messages.success(request, "Logout successful.")
     return redirect("main:show_landing_page")
 
-''' =============================== 
+
+""" =============================== 
     Functions for User Profile Page
-    =============================== '''
+    =============================== """
 
 PROFILE_AVATARS = [
     "img/avatar-1.png",
@@ -112,15 +126,22 @@ PROFILE_AVATARS = [
     "img/avatar-3.png",
 ]
 
+
 @login_required
 def show_profile_page(request):
     avatar = random.choice(PROFILE_AVATARS)
-    saved_recipe = SavedRecipe.objects.filter(user=request.user).order_by("-created_at").first()
-    return render(
-        request,
-        "pages/profile_page.html",
-        {"avatar": avatar, "saved_recipe": saved_recipe},
+    saved_recipe = (
+        SavedRecipe.objects.filter(user=request.user).order_by("-created_at").first()
     )
+    ingredients = Ingredient.objects.filter(user=request.user)
+    context = {
+        "avatar": avatar,
+        "ingredients": ingredients,
+        "saved_recipe": saved_recipe,
+    }
+
+    return render(request, "pages/profile_page.html", context)
+
 
 @login_required
 @require_POST
@@ -131,14 +152,15 @@ def delete_account(request):
     messages.success(request, "Account successfully deleted.")
     return redirect("main:show_landing_page")
 
+
 @login_required
-@htmx_only('main:show_profile_page')
+@htmx_only("main:show_profile_page")
 def show_profile_details(request):
     return render(request, "partials/profile_details.html")
 
 
 @login_required
-@htmx_only('main:show_profile_page')
+@htmx_only("main:show_profile_page")
 def edit_profile_details(request):
     if request.method == "POST":
         form = ProfileDetailsForm(request.POST, instance=request.user)
@@ -154,6 +176,7 @@ def edit_profile_details(request):
         form = ProfileDetailsForm(instance=request.user)
     return render(request, "partials/profile_details_edit.html", {"form": form})
 
+
 @login_required
 @htmx_only("main:show_profile_page")
 def change_password(request):
@@ -164,9 +187,7 @@ def change_password(request):
             user = form.save()
             update_session_auth_hash(request, user)
             messages.success(request, "Password successfully changed.")
-            return render(
-                request, "partials/profile_details.html", {"toast": True}
-            )
+            return render(request, "partials/profile_details.html", {"toast": True})
     else:
         form = CustomPasswordChangeForm(request.user)
 
@@ -175,6 +196,7 @@ def change_password(request):
         "partials/profile_change_password.html",
         {"form": form},
     )
+
 
 @login_required
 @require_POST
@@ -188,9 +210,10 @@ def deactivate_account(request):
 
     return redirect("main:show_landing_page")
 
-''' =============================== 
+
+""" =============================== 
     Recipe
-    =============================== '''
+    =============================== """
 # Recipe Analyzer views keep saved data scoped to the signed-in owner.
 
 ALLOWED_DIETS = {"vegetarian", "vegan", "gluten free"}
@@ -198,9 +221,12 @@ ALLOWED_DIETS = {"vegetarian", "vegan", "gluten free"}
 
 @login_required
 def recipe_ingredient_suggestions(request):
-    query = (request.GET.get("q") or next(
-        (value for key, value in request.GET.items() if key.endswith("-name")), ""
-    )).strip()[:80]
+    query = (
+        request.GET.get("q")
+        or next(
+            (value for key, value in request.GET.items() if key.endswith("-name")), ""
+        )
+    ).strip()[:80]
     suggestions = []
     if len(query) >= 2:
         try:
@@ -214,7 +240,11 @@ def recipe_ingredient_suggestions(request):
             if isinstance(name, str) and name.strip():
                 normalized_suggestions.append({"name": name.strip()})
     suggestions = normalized_suggestions
-    return render(request, "pages/recipes/_ingredient_suggestions.html", {"suggestions": suggestions})
+    return render(
+        request,
+        "pages/recipes/_ingredient_suggestions.html",
+        {"suggestions": suggestions},
+    )
 
 
 def _owned_recipe(request, pk):
@@ -222,7 +252,9 @@ def _owned_recipe(request, pk):
 
 
 def _spoonacular_error(request):
-    messages.error(request, "Spoonacular is unavailable right now. Please try again shortly.")
+    messages.error(
+        request, "Spoonacular is unavailable right now. Please try again shortly."
+    )
 
 
 def _nutrients(nutrition):
@@ -253,8 +285,16 @@ def _display_analysis(nutrition):
     total_energy = sum(macro_energy) or 1
     for index, macro in enumerate(macros):
         macro["percentage"] = round(macro_energy[index] * 100 / total_energy)
-    nutrition_tiles = [values[name.lower()] for name in ("Protein", "Carbohydrates", "Fat", "Fiber", "Sugar", "Sodium") if name.lower() in values]
-    return {"calories": round(float(calories)), "macros": macros, "nutrition_tiles": nutrition_tiles}
+    nutrition_tiles = [
+        values[name.lower()]
+        for name in ("Protein", "Carbohydrates", "Fat", "Fiber", "Sugar", "Sodium")
+        if name.lower() in values
+    ]
+    return {
+        "calories": round(float(calories)),
+        "macros": macros,
+        "nutrition_tiles": nutrition_tiles,
+    }
 
 
 def _instruction_steps(value):
@@ -276,7 +316,8 @@ def _detail_context(recipe, *, spoonacular=False):
             "recipe_description": strip_tags(recipe.get("summary", "")),
             "nutrition_view": _display_analysis(nutrition),
             "ingredients_view": ingredients,
-            "steps": _instruction_steps(recipe.get("analyzedInstructions", [])) or _instruction_steps(recipe.get("instructions", "")),
+            "steps": _instruction_steps(recipe.get("analyzedInstructions", []))
+            or _instruction_steps(recipe.get("instructions", "")),
             "is_spoonacular": True,
             "source_url": recipe.get("sourceUrl", ""),
             "ready_time": recipe.get("readyInMinutes"),
@@ -286,10 +327,16 @@ def _detail_context(recipe, *, spoonacular=False):
     nutrition = recipe.nutrition or {}
     if recipe.source == SavedRecipe.Source.SPOONACULAR:
         ingredients = recipe.ingredient_items
-        steps = _instruction_steps(nutrition.get("analyzedInstructions", [])) or _instruction_steps(recipe.instructions)
+        steps = _instruction_steps(
+            nutrition.get("analyzedInstructions", [])
+        ) or _instruction_steps(recipe.instructions)
         nutrition = nutrition.get("nutrition", nutrition)
     else:
-        ingredients = recipe.ingredient_items or [{"name": line, "amount_g": ""} for line in recipe.ingredients.splitlines() if line]
+        ingredients = recipe.ingredient_items or [
+            {"name": line, "amount_g": ""}
+            for line in recipe.ingredients.splitlines()
+            if line
+        ]
         steps = _instruction_steps(recipe.instructions)
     return {
         "recipe": recipe,
@@ -298,7 +345,9 @@ def _detail_context(recipe, *, spoonacular=False):
         "ingredients_view": ingredients,
         "steps": steps,
         "is_spoonacular": recipe.source == SavedRecipe.Source.SPOONACULAR,
-        "saved_recipe": recipe if recipe.source == SavedRecipe.Source.SPOONACULAR else None,
+        "saved_recipe": (
+            recipe if recipe.source == SavedRecipe.Source.SPOONACULAR else None
+        ),
         "ready_time": recipe.ready_in_minutes,
         "health_score": recipe.health_score,
         "image_url": recipe.image_url or (recipe.photo.url if recipe.photo else ""),
@@ -340,23 +389,33 @@ def recipe_discover(request):
     )
     search_cards = []
     for item in results.get("results", []):
-        search_cards.append({
-            **item,
-            "analysis": _display_analysis(item.get("nutrition", {})),
-            "category": (item.get("cuisines") or item.get("dishTypes") or ["Recipe"])[0].title(),
-            "diets": item.get("diets", []),
-            "saved_pk": saved_map.get(item.get("id")),
-        })
+        search_cards.append(
+            {
+                **item,
+                "analysis": _display_analysis(item.get("nutrition", {})),
+                "category": (
+                    item.get("cuisines") or item.get("dishTypes") or ["Recipe"]
+                )[0].title(),
+                "diets": item.get("diets", []),
+                "saved_pk": saved_map.get(item.get("id")),
+            }
+        )
     context = {
         "search_cards": search_cards,
         "total_results": results.get("totalResults", 0),
-        "query": query, "diet": diet, "max_ready_time": max_ready_time or "",
+        "query": query,
+        "diet": diet,
+        "max_ready_time": max_ready_time or "",
         "next_offset": offset + RECIPE_PAGE_SIZE,
         "more_available": results.get("totalResults", 0) > offset + RECIPE_PAGE_SIZE,
         "api_error": api_error,
     }
     if request.headers.get("HX-Request") == "true":
-        template = "pages/recipes/_discover_more.html" if offset else "pages/recipes/_discover_results.html"
+        template = (
+            "pages/recipes/_discover_more.html"
+            if offset
+            else "pages/recipes/_discover_results.html"
+        )
     else:
         template = "pages/recipes/discover.html"
     return render(request, template, context)
@@ -373,17 +432,22 @@ def recipe_list(request):
     saved = saved.order_by(sort_fields.get(sort, "-created_at"))
     spoonacular_recipes = saved.filter(source=SavedRecipe.Source.SPOONACULAR)
     own_recipes = saved.filter(source=SavedRecipe.Source.OWN)
-    return render(request, "pages/recipes/saved.html", {
-        "spoonacular_recipes": [
-            {"recipe": item, "analysis": _display_analysis(item.nutrition)}
-            for item in spoonacular_recipes
-        ],
-        "own_recipes": [
-            {"recipe": item, "analysis": _display_analysis(item.nutrition)}
-            for item in own_recipes
-        ],
-        "query": query, "sort": sort if sort in sort_fields else "newest",
-    })
+    return render(
+        request,
+        "pages/recipes/saved.html",
+        {
+            "spoonacular_recipes": [
+                {"recipe": item, "analysis": _display_analysis(item.nutrition)}
+                for item in spoonacular_recipes
+            ],
+            "own_recipes": [
+                {"recipe": item, "analysis": _display_analysis(item.nutrition)}
+                for item in own_recipes
+            ],
+            "query": query,
+            "sort": sort if sort in sort_fields else "newest",
+        },
+    )
 
 
 def _ingredient_formset(request, instance=None):
@@ -391,9 +455,17 @@ def _ingredient_formset(request, instance=None):
     legacy = request.method == "POST" and f"{prefix}-TOTAL_FORMS" not in request.POST
     data = request.POST
     if legacy:
-        lines = [line.strip() for line in request.POST.get("ingredients", "").splitlines() if line.strip()]
+        lines = [
+            line.strip()
+            for line in request.POST.get("ingredients", "").splitlines()
+            if line.strip()
+        ]
         if not lines and instance:
-            lines = [line.strip() for line in instance.ingredients.splitlines() if line.strip()]
+            lines = [
+                line.strip()
+                for line in instance.ingredients.splitlines()
+                if line.strip()
+            ]
         if lines:
             data = request.POST.copy()
             data[f"{prefix}-TOTAL_FORMS"] = str(len(lines))
@@ -403,12 +475,19 @@ def _ingredient_formset(request, instance=None):
             for index, line in enumerate(lines):
                 data[f"{prefix}-{index}-name"] = line
                 data[f"{prefix}-{index}-amount_g"] = ""
-    initial = instance.ingredient_items if instance and instance.ingredient_items else None
+    initial = (
+        instance.ingredient_items if instance and instance.ingredient_items else None
+    )
     if request.method == "GET" and initial is None and instance:
-        initial = [{"name": line, "amount_g": ""} for line in instance.ingredients.splitlines() if line]
+        initial = [
+            {"name": line, "amount_g": ""}
+            for line in instance.ingredients.splitlines()
+            if line
+        ]
     formset = RecipeIngredientFormSet(
         data if request.method == "POST" else None,
-        initial=initial, prefix=prefix,
+        initial=initial,
+        prefix=prefix,
         form_kwargs={"require_weight": not legacy},
     )
     return formset
@@ -416,15 +495,28 @@ def _ingredient_formset(request, instance=None):
 
 def _ingredient_rows(formset):
     return [
-        {"name": form.cleaned_data["name"], "amount_g": format(form.cleaned_data["amount_g"], "f") if form.cleaned_data.get("amount_g") else ""}
+        {
+            "name": form.cleaned_data["name"],
+            "amount_g": (
+                format(form.cleaned_data["amount_g"], "f")
+                if form.cleaned_data.get("amount_g")
+                else ""
+            ),
+        }
         for form in formset.forms
-        if form.cleaned_data and not form.cleaned_data.get("DELETE") and form.cleaned_data.get("name")
+        if form.cleaned_data
+        and not form.cleaned_data.get("DELETE")
+        and form.cleaned_data.get("name")
     ]
 
 
 def _ingredient_text(items):
     return "\n".join(
-        f"{item['name']} — {item['amount_g']} g" if item.get("amount_g") else item["name"]
+        (
+            f"{item['name']} — {item['amount_g']} g"
+            if item.get("amount_g")
+            else item["name"]
+        )
         for item in items
     )
 
@@ -462,14 +554,27 @@ def recipe_create(request):
             recipe.nutrition = _analyze_own_recipe(recipe)
         except (ImproperlyConfigured, requests.RequestException, ValueError):
             _spoonacular_error(request)
-            return render(request, "pages/recipes/form.html", {"form": form, "ingredient_formset": ingredient_formset, "editing": False}, status=502)
+            return render(
+                request,
+                "pages/recipes/form.html",
+                {
+                    "form": form,
+                    "ingredient_formset": ingredient_formset,
+                    "editing": False,
+                },
+                status=502,
+            )
         recipe.health_score = recipe.nutrition.get("healthScore")
         recipe.diets = recipe.nutrition.get("diets", [])
         recipe.is_draft = False
         recipe.save()
         messages.success(request, "Recipe analyzed and saved.")
         return redirect("main:recipe_detail", pk=recipe.pk)
-    return render(request, "pages/recipes/form.html", {"form": form, "ingredient_formset": ingredient_formset, "editing": False})
+    return render(
+        request,
+        "pages/recipes/form.html",
+        {"form": form, "ingredient_formset": ingredient_formset, "editing": False},
+    )
 
 
 @login_required
@@ -481,7 +586,9 @@ def recipe_detail(request, pk):
 @login_required
 def recipe_update(request, pk):
     recipe = _owned_recipe(request, pk)
-    form = RecipeAuthorForm(request.POST or None, request.FILES or None, instance=recipe)
+    form = RecipeAuthorForm(
+        request.POST or None, request.FILES or None, instance=recipe
+    )
     ingredient_formset = _ingredient_formset(request, recipe)
     if request.method == "POST" and form.is_valid() and ingredient_formset.is_valid():
         updated = form.save(commit=False)
@@ -496,14 +603,33 @@ def recipe_update(request, pk):
             updated.nutrition = _analyze_own_recipe(updated)
         except (ImproperlyConfigured, requests.RequestException, ValueError):
             _spoonacular_error(request)
-            return render(request, "pages/recipes/form.html", {"form": form, "ingredient_formset": ingredient_formset, "recipe": recipe, "editing": True}, status=502)
+            return render(
+                request,
+                "pages/recipes/form.html",
+                {
+                    "form": form,
+                    "ingredient_formset": ingredient_formset,
+                    "recipe": recipe,
+                    "editing": True,
+                },
+                status=502,
+            )
         updated.health_score = updated.nutrition.get("healthScore")
         updated.diets = updated.nutrition.get("diets", [])
         updated.is_draft = False
         updated.save()
         messages.success(request, "Recipe updated and analyzed.")
         return redirect("main:recipe_detail", pk=updated.pk)
-    return render(request, "pages/recipes/form.html", {"form": form, "ingredient_formset": ingredient_formset, "recipe": recipe, "editing": True})
+    return render(
+        request,
+        "pages/recipes/form.html",
+        {
+            "form": form,
+            "ingredient_formset": ingredient_formset,
+            "recipe": recipe,
+            "editing": True,
+        },
+    )
 
 
 @login_required
@@ -513,7 +639,11 @@ def recipe_spoonacular_detail(request, spoonacular_id):
     except (ImproperlyConfigured, requests.RequestException, ValueError):
         _spoonacular_error(request)
         return redirect("main:recipe_discover")
-    saved = SavedRecipe.objects.filter(user=request.user, spoonacular_id=spoonacular_id, source=SavedRecipe.Source.SPOONACULAR).first()
+    saved = SavedRecipe.objects.filter(
+        user=request.user,
+        spoonacular_id=spoonacular_id,
+        source=SavedRecipe.Source.SPOONACULAR,
+    ).first()
     context = _detail_context(data, spoonacular=True)
     context.update({"saved_recipe": saved, "back_query": request.GET.get("query", "")})
     return render(request, "pages/recipes/detail.html", context)
@@ -527,12 +657,19 @@ def recipe_save_spoonacular(request, spoonacular_id):
     except (ImproperlyConfigured, requests.RequestException, ValueError):
         _spoonacular_error(request)
         return redirect("main:recipe_discover")
-    items = [{
-        "name": item.get("name", ""), "amount": item.get("amount", ""),
-        "unit": item.get("unit", ""), "original": item.get("original", ""),
-    } for item in data.get("extendedIngredients", [])]
+    items = [
+        {
+            "name": item.get("name", ""),
+            "amount": item.get("amount", ""),
+            "unit": item.get("unit", ""),
+            "original": item.get("original", ""),
+        }
+        for item in data.get("extendedIngredients", [])
+    ]
     saved, created = SavedRecipe.objects.get_or_create(
-        user=request.user, source=SavedRecipe.Source.SPOONACULAR, spoonacular_id=spoonacular_id,
+        user=request.user,
+        source=SavedRecipe.Source.SPOONACULAR,
+        spoonacular_id=spoonacular_id,
         defaults={
             "title": data.get("title", "Saved recipe")[:120],
             "description": strip_tags(data.get("summary", ""))[:4000],
@@ -548,83 +685,107 @@ def recipe_save_spoonacular(request, spoonacular_id):
             "source_url": data.get("sourceUrl", ""),
         },
     )
-    messages.success(request, "Recipe saved." if created else "Recipe is already in My recipes.")
+    messages.success(
+        request, "Recipe saved." if created else "Recipe is already in My recipes."
+    )
     if request.headers.get("HX-Request") == "true":
         return HttpResponse(headers={"HX-Redirect": reverse("main:recipe_saved_list")})
     return redirect("main:recipe_saved_list")
 
-''' ===============================
+
+""" ===============================
     Functions for Food Inventory
-    =============================== '''
-@login_required(login_url='main:login_account')
+    =============================== """
+
+
+@login_required(login_url="main:login_account")
 def show_inventory(request):
     ingredients = Ingredient.objects.filter(user=request.user)
 
-    search_query = request.GET.get('q', '')
+    search_query = request.GET.get("q", "")
     if search_query:
         ingredients = ingredients.filter(name__icontains=search_query)
 
-    category_filter = request.GET.get('category', '')
-    if category_filter and category_filter != 'All':
+    category_filter = request.GET.get("category", "")
+    if category_filter and category_filter != "All":
         ingredients = ingredients.filter(category=category_filter)
 
     # Calculate ingredients about to expire (<= 3 days from today)
     today = date.today()
     warning_threshold = today + timedelta(days=3)
     expiring_count = sum(
-        1 for item in ingredients
+        1
+        for item in ingredients
         if item.expiration_date and item.expiration_date <= warning_threshold
     )
 
     form = IngredientForm()
     context = {
-        'ingredients': ingredients,
-        'form': form,
-        'search_query': search_query,
-        'current_category': category_filter or 'All',
-        'expiring_count': expiring_count,
+        "ingredients": ingredients,
+        "form": form,
+        "search_query": search_query,
+        "current_category": category_filter or "All",
+        "expiring_count": expiring_count,
     }
-    return render(request, 'pages/inventory.html', context)
+    return render(request, "pages/inventory.html", context)
 
-@login_required(login_url='main:login_account')
+
+@login_required(login_url="main:login_account")
 def add_ingredient(request):
-    if request.method == 'POST':
+    if request.method == "POST":
         form = IngredientForm(request.POST, request.FILES)
         if form.is_valid():
             ingredient = form.save(commit=False)
             ingredient.user = request.user
             ingredient.save()
             messages.success(request, "Ingredient successfully added.")
-            return redirect('main:show_inventory')
+            return redirect("main:show_inventory")
         else:
             messages.error(request, "Failed to add ingredient.")
     else:
         form = IngredientForm()
-    return redirect('main:show_inventory')
+    return redirect("main:show_inventory")
 
-@login_required(login_url='main:login_account')
+
+@login_required(login_url="main:login_account")
 def edit_ingredient(request, pk):
     ingredient = get_object_or_404(Ingredient, pk=pk, user=request.user)
-    if request.method == 'POST':
+    if request.method == "POST":
         form = IngredientForm(request.POST, request.FILES, instance=ingredient)
         if form.is_valid():
             form.save()
             messages.success(request, "Ingredient successfully editted.")
-            return redirect('main:show_inventory')
+            return redirect("main:show_inventory")
         else:
             messages.error(request, "Failed to edit ingredient.")
-    return redirect('main:show_inventory')
+    return redirect("main:show_inventory")
 
-@login_required(login_url='main:login_account')
+
+@login_required(login_url="main:login_account")
 def delete_ingredient(request, pk):
     ingredient = get_object_or_404(Ingredient, pk=pk, user=request.user)
     ingredient.delete()
-    return redirect('main:show_inventory')
+    return redirect("main:show_inventory")
 
 
-''' ===============================
+def get_ingredients_json(request):
+    name_query = request.GET.get("name", "").strip()
+    ingredients = (
+        Ingredient.objects.filter(user=request.user)
+        if request.user.is_authenticated
+        else Ingredient.objects.none()
+    )
+
+    if name_query:
+        ingredients = ingredients.filter(name__icontains=name_query)
+
+    ingredients_json = serializers.serialize("json", ingredients)
+    return HttpResponse(ingredients_json, content_type="application/json")
+
+
+""" ===============================
     Functions for Discover & Products
-    =============================== '''
+    =============================== """
 
 PAGE_SIZE = 6
 
@@ -764,6 +925,8 @@ def recipe_delete(request, pk):
     if request.headers.get("HX-Request") == "true":
         return HttpResponse(headers={"HX-Redirect": reverse("main:recipe_saved_list")})
     return redirect("main:recipe_saved_list")
+
+
 @login_required
 @require_POST
 def product_delete(request, barcode):
@@ -804,6 +967,7 @@ def htmx_login_required(view):
             response["HX-Redirect"] = reverse("main:login_account")
             return response
         return view(request, *args, **kwargs)
+
     return wrapper
 
 
@@ -829,7 +993,9 @@ def toggle_bookmark(request, barcode):
 
 def products_json(request):
     qs, _ = _filtered_products(request)
-    return JsonResponse({"count": qs.count(), "results": [p.to_dict() for p in qs[:50]]})
+    return JsonResponse(
+        {"count": qs.count(), "results": [p.to_dict() for p in qs[:50]]}
+    )
 
 
 def product_json(request, barcode):

@@ -3,14 +3,14 @@
    ================================== */
 
 .hef-page-title {
-    color: var(--hef-brand-forest, #32694A);
+    color: var(--hef-brand-forest);
     font-family: 'Space Grotesk', sans-serif;
     font-weight: 700;
     font-size: 32px;
 }
 
 .hef-page-desc {
-    color: var(--hef-text-secondary, #617064);
+    color: var(--hef-text-secondary);
     font-family: 'Space Grotesk', sans-serif;
     font-size: 15px;
 }
@@ -25,17 +25,17 @@
     width: 100%;
     height: 43px;
     padding: 0 16px;
-    background: var(--hef-surface-card, #FFFFFF);
+    background: var(--hef-surface-card);
     border-radius: 999px;
-    border: 1px solid var(--hef-border-default, #D9E2D6);
+    border: 1px solid var(--hef-border-default);
     font-family: 'Source Sans 3', sans-serif;
     font-size: 13px;
-    color: var(--hef-text-primary, #21352A);
+    color: var(--hef-text-primary);
 }
 
 .hef-search-input:focus {
     outline: none;
-    border-color: var(--hef-brand-forest, #32694A);
+    border-color: var(--hef-brand-forest);
     box-shadow: 0 0 0 3px rgba(50, 105, 74, 0.15);
 }
 
@@ -51,43 +51,43 @@
 }
 
 .hef-pill-btn {
-    background: var(--hef-surface-card, #FFFFFF);
-    border: 1px solid var(--hef-border-default, #D9E2D6);
+    background: var(--hef-surface-card);
+    border: 1px solid var(--hef-border-default);
     border-radius: 999px;
     padding: 8px 18px;
     font-family: 'Source Sans 3', sans-serif;
     font-size: 13px;
-    color: var(--hef-text-primary, #21352A);
+    color: var(--hef-text-primary);
     transition: all 0.2s ease-in-out;
     cursor: pointer;
 }
 
 .hef-pill-btn:hover,
 .hef-pill-btn.active {
-    background-color: var(--hef-brand-mint, #DDEBD4);
-    border-color: var(--hef-brand-forest, #32694A);
-    color: var(--hef-brand-forest, #32694A);
+    background-color: var(--hef-brand-mint);
+    border-color: var(--hef-brand-forest);
+    color: var(--hef-brand-forest);
 }
 
 /* Expiry Warning & Expired States (Using Design Tokens) */
 .hef-expiry-pill.warning {
-    background-color: var(--hef-brand-citrus, #E6B95C) !important;
-    color: var(--hef-text-primary, #21352A) !important;
+    background-color: var(--hef-brand-citrus) ;
+    color: var(--hef-text-primary) ;
     font-weight: 600;
 }
 
 .hef-expiry-pill.expired {
-    background-color: var(--hef-brand-watermelon, #E97560) !important;
-    color: #FFFFFF !important;
+    background-color: var(--hef-brand-watermelon) ;
+    color: #FFFFFF ;
     font-weight: 600;
 }
 
 /* Inventory Cards */
 .hef-inventory-card {
-    background: var(--hef-surface-card, #FFFFFF);
+    background: var(--hef-surface-card);
     box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.04);
     border-radius: 22px;
-    border: 1px solid var(--hef-border-default, #D9E2D6);
+    border: 1px solid var(--hef-border-default);
     height: 100%;
     transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
@@ -100,19 +100,19 @@
 .hef-card-img-wrapper {
     width: 140px;
     height: 140px;
-    background: var(--hef-surface-paper, #F7F7F0);
-    border-radius: 999px;
+    background: var(--hef-surface-paper);
+    border-radius: 24px;
 }
 
 .hef-card-title {
-    color: var(--hef-brand-forest, #32694A);
+    color: var(--hef-brand-forest);
     font-size: 24px;
     font-family: 'Space Grotesk', sans-serif;
     font-weight: 700;
 }
 
 .hef-card-subtitle {
-    color: var(--hef-text-secondary, #617064);
+    color: var(--hef-text-secondary);
     font-size: 14px;
     font-family: 'Source Sans 3', sans-serif;
     line-height: 20px;
@@ -121,22 +121,22 @@
 .hef-expiry-pill {
     height: 36px;
     padding: 8px 12px;
-    background: var(--hef-surface-paper, #F7F7F0);
+    background: var(--hef-surface-paper);
     border-radius: 999px;
     font-family: 'Source Sans 3', sans-serif;
     font-size: 13px;
-    color: var(--hef-text-primary, #21352A);
+    color: var(--hef-text-primary);
 }
 
 .btn-hef-primary.btn-fill-white {
-    background-color: var(--hef-surface-card, #FFFFFF);
-    color: var(--hef-brand-forest, #32694A) !important;
-    border: 1px solid var(--hef-border-default, #D9E2D6);
+    background-color: var(--hef-surface-card);
+    color: var(--hef-brand-forest) ;
+    border: 1px solid var(--hef-border-default);
 }
 
 .btn-hef-primary.btn-fill-white:hover {
-    background-color: var(--hef-surface-paper, #F7F7F0);
-    color: var(--hef-brand-forest, #32694A) !important;
+    background-color: var(--hef-surface-paper);
+    color: var(--hef-brand-forest) ;
 }
 
 /* Responsive Overrides */
@@ -157,38 +157,42 @@
     font-weight: 700;
     font-size: 16px;
     line-height: 22px;
-    color: var(--hef-text-primary, #21352A);
+    color: var(--hef-text-primary);
     margin-bottom: 6px;
 }
 
+.hef-modal-card {
+    background-color: var(--hef-surface-card);
+}
+
 .hef-modal-card .hef-input {
-    width: 100% !important;
-    height: 42px !important;
-    padding: 0 18px !important;
-    border: 1px solid var(--hef-border-default, #D9E2D6) !important;
-    border-radius: 999px !important;
-    background-color: var(--hef-surface-card, #FFFFFF) !important;
-    font-family: 'Source Sans 3', sans-serif !important;
-    font-size: 14px !important;
-    color: var(--hef-text-primary, #21352A) !important;
-    box-sizing: border-box !important;
-    outline: none !important;
+    width: 100% ;
+    height: 42px ;
+    padding: 0 18px ;
+    border: 1px solid var(--hef-border-default) ;
+    border-radius: 999px ;
+    background-color: var(--hef-surface-card);
+    font-family: 'Source Sans 3', sans-serif ;
+    font-size: 14px ;
+    color: var(--hef-text-primary) ;
+    box-sizing: border-box ;
+    outline: none ;
 }
 
 .hef-modal-card .hef-input:focus {
-    border-color: var(--hef-brand-forest, #32694A) !important;
-    box-shadow: 0 0 0 3px rgba(50, 105, 74, 0.15) !important;
+    border-color: var(--hef-brand-forest) ;
+    box-shadow: 0 0 0 3px rgba(50, 105, 74, 0.15) ;
 }
 
 /* Select dropdown arrows */
 .hef-modal-card select.hef-input {
-    appearance: none !important;
-    -webkit-appearance: none !important;
-    -moz-appearance: none !important;
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%23617064' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E") !important;
-    background-repeat: no-repeat !important;
-    background-position: right 18px center !important;
-    padding-right: 40px !important;
+    appearance: none ;
+    -webkit-appearance: none ;
+    -moz-appearance: none ;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%23617064' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E") ;
+    background-repeat: no-repeat ;
+    background-position: right 18px center ;
+    padding-right: 40px ;
 }
 
 /* Modal Buttons Container Layout */
@@ -200,7 +204,7 @@
 }
 
 .hef-modal-card .hef-auth-actions button {
-    width: 100% !important;
+    width: 100% ;
 }
 
 @media (min-width: 576px) {
@@ -211,7 +215,7 @@
     }
 
     .hef-modal-card .hef-auth-actions button {
-        width: auto !important;
-        min-width: 140px !important;
+        width: auto ;
+        min-width: 140px ;
     }
 }
