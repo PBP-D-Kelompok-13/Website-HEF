@@ -600,3 +600,36 @@
 .compare-save-actions .btn-hef-secondary {
     color: var(--hef-text-primary) !important;
 }
+
+.compare-results-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    width: 100%;
+    margin-top: 20px;
+}
+
+.compare-results-footer .compare-source {
+    flex: 1;
+    min-width: 0;
+    margin: 0;
+}
+
+.compare-results-footer #compare-save-open {
+    flex: 0 0 250px;
+    width: 250px;
+    min-height: 45px;
+}
+
+@media (max-width: 767px) {
+    .compare-results-footer {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .compare-results-footer #compare-save-open {
+        flex: none;
+        width: 100%;
+    }
+}
