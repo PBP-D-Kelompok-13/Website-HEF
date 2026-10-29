@@ -552,3 +552,44 @@ def compare_saved_edit(request, pk):
         }
     )
     return render(request, "partials/compare_edit_form.html", context)
+
+
+@login_required
+@require_http_methods(["GET", "POST"])
+@never_cache
+@vary_on_headers("HX-Request")
+def compare_saved_delete(request, pk):
+    """GET membuka konfirmasi; POST terkonfirmasi menghapus milik pengguna."""
+    comparison = get_object_or_404(
+        SavedComparison, pk=pk, user=request.user,
+    )
+    errors = []
+    is_htmx = request.headers.get("HX-Request") == "true"
+
+    if request.method == "POST":
+        if request.POST.get("confirm") == "yes":
+            deleted = {"pk": comparison.pk, "title": comparison.title}
+            comparison.delete()
+
+            if is_htmx:
+                response = render(
+                    request,
+                    "partials/compare_delete_success.html",
+                    {"comparison": deleted},
+                )
+                response["HX-Trigger-After-Swap"] = "comparisonDeleted"
+                return response
+
+            return JsonResponse(
+                {"ok": True, "comparison_id": deleted["pk"]}
+            )
+
+        errors = ["Please confirm that you want to delete this comparison."]
+        if not is_htmx:
+            return JsonResponse({"ok": False, "errors": errors}, status=400)
+
+    return render(
+        request,
+        "partials/compare_delete_form.html",
+        {"comparison": comparison, "errors": errors},
+    )

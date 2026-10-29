@@ -24,7 +24,7 @@
           method="get"
           action="{% url 'main:compare_saved_list' %}"
           hx-get="{% url 'main:compare_saved_list' %}"
-          hx-trigger="submit, input delay:300ms, comparisonUpdated from:body"
+          hx-trigger="submit, input delay:300ms, comparisonUpdated from:body, comparisonDeleted from:body"
           hx-target="#saved-comparison-results"
           hx-swap="outerHTML"
           hx-sync="this:replace"
@@ -96,12 +96,19 @@
        tabindex="-1"
        hidden></p>
 
+    <p id="compare-delete-status"
+       class="compare-notice"
+       role="status"
+       tabindex="-1"
+       hidden></p>
     {% include "partials/compare_saved_results.html" %}
 </main>
 {% include "partials/compare_edit_modal.html" %}
+{% include "partials/compare_delete_modal.html" %}
 {% endblock content %}
 
 {% block script %}
     <script src="{% static 'js/compare_saved.js' %}" defer></script>
     <script src="{% static 'js/compare_edit.js' %}" defer></script>
+    <script src="{% static 'js/compare_delete.js' %}" defer></script>
 {% endblock script %}

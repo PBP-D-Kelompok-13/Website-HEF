@@ -67,6 +67,20 @@
                                 aria-label="Edit {{ item.comparison.title }}">
                             Edit
                         </button>
+                        <button type="button"
+                                class="btn-hef-danger saved-delete-button"
+                                data-compare-delete
+                                data-bs-toggle="modal"
+                                data-bs-target="#compareDeleteModal"
+                                hx-get="{% url 'main:compare_saved_delete' item.comparison.pk %}"
+                                hx-target="#compare-delete-content"
+                                hx-swap="innerHTML"
+                                hx-sync="#compareDeleteModal:replace"
+                                hx-disabled-elt="this"
+                                hx-request='{"timeout":10000}'
+                                aria-label="Delete {{ item.comparison.title }}">
+                            Delete
+                        </button>
                     </div>
                 </article>
             {% endfor %}

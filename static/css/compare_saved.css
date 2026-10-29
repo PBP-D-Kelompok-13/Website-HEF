@@ -292,3 +292,23 @@
 #compare-edit-feedback {
     overflow-wrap: anywhere;
 }
+
+.compare-delete .modal-dialog {
+    --bs-modal-width: 480px;
+}
+
+.saved-delete-button {
+    min-width: 180px;
+}
+
+.compare-delete-copy,
+#compare-delete-confirmation {
+    overflow-wrap: anywhere;
+}
+
+@media (max-width: 767px) {
+    .saved-delete-button {
+        width: 100%;
+        min-width: 0;
+    }
+}
