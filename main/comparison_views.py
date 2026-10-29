@@ -470,3 +470,85 @@ def compare_clear(request):
             "can_compare": False,
         }
     )
+
+@login_required
+@require_http_methods(["GET", "POST"])
+@never_cache
+@vary_on_headers("HX-Request")
+def compare_saved_edit(request, pk):
+    """Edit perbandingan milik pengguna tanpa mengubah pilihan aktif."""
+    comparison = get_object_or_404(
+        SavedComparison,
+        pk=pk,
+        user=request.user,
+    )
+    is_post = request.method == "POST"
+    is_htmx = request.headers.get("HX-Request") == "true"
+    selected = (
+        request.POST.getlist("barcodes")
+        if is_post
+        else list(comparison.barcodes)
+    )
+
+    form = SavedComparisonForm(
+        request.POST if is_post else None,
+        initial={"title": comparison.title},
+        selected_barcodes=selected,
+    )
+    form.fields["title"].widget.attrs.update(
+        {
+            "id": "compare-edit-title",
+            "aria-describedby": "compare-edit-title-errors",
+        }
+    )
+
+    if is_post:
+        if form.is_valid():
+            comparison.title = form.cleaned_data["title"]
+            comparison.barcodes = list(form.cleaned_data["barcodes"])
+            comparison.full_clean()
+            comparison.save(
+                update_fields=["title", "barcodes", "updated_at"]
+            )
+
+            if is_htmx:
+                response = render(
+                    request,
+                    "partials/compare_edit_success.html",
+                    {"comparison": comparison},
+                )
+                response["HX-Trigger-After-Swap"] = "comparisonUpdated"
+                return response
+
+            return JsonResponse(
+                {
+                    "ok": True,
+                    "comparison_id": comparison.pk,
+                    "title": comparison.title,
+                }
+            )
+
+        if not is_htmx:
+            return JsonResponse(
+                {"ok": False, "errors": form.errors.get_json_data()},
+                status=400,
+            )
+
+    # Validasi memakai seluruh input; dialog hanya menyediakan 3 slot.
+    context = build_comparison_context_for_barcodes(selected[:3])
+    context.update(
+        {
+            "comparison": comparison,
+            "form": form,
+            "edit_slots": (
+                context["products"]
+                + [None] * max(0, 2 - len(context["products"]))
+            ),
+            "product_choices": list(
+                Product.objects.order_by("name", "barcode").values(
+                    "barcode", "name", "brand"
+                )
+            ),
+        }
+    )
+    return render(request, "partials/compare_edit_form.html", context)

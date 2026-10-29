@@ -7,8 +7,11 @@
     let focusResults = false;
 
     function isSavedRequest(event) {
-        const element = event.detail.elt;
-        return element instanceof Element && page.contains(element);
+        const element = event.detail.requestConfig?.elt || event.detail.elt;
+        return element instanceof Element && (
+            element.closest("#saved-filter-form") ||
+            element.matches("[data-saved-pagination]")
+        );
     }
 
     document.body.addEventListener("htmx:beforeRequest", (event) => {

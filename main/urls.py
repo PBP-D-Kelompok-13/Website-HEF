@@ -6,6 +6,7 @@ from .comparison_views import (
     compare_save,
     compare_saved_list,
     compare_saved_detail,
+    compare_saved_edit,
 )
 from django.urls import path
 from .views import *
@@ -52,6 +53,11 @@ urlpatterns = [
         "compare/saved/<int:pk>/",
         compare_saved_detail,
         name="compare_saved_detail",
+    ),
+    path(
+        "compare/saved/<int:pk>/edit/",
+        compare_saved_edit,
+        name="compare_saved_edit",
     ),
     path("pantry/", show_inventory, name="show_inventory"),
     path("pantry/add/", add_ingredient, name="add_ingredient"),

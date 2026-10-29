@@ -224,3 +224,71 @@
         width: 100%;
     }
 }
+
+/* Edit saved comparison: reuse the shared Compare dialog and theme. */
+.compare-edit-form fieldset {
+    min-width: 0;
+    padding: 0;
+    margin: 0;
+    border: 0;
+}
+
+.compare-edit-form legend {
+    font-size: 16px;
+    font-weight: 500;
+}
+
+#compare-edit-products {
+    display: grid;
+    gap: 12px;
+    margin-bottom: 12px;
+}
+
+.saved-edit-row {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 45px;
+    gap: 8px 12px;
+    padding: 14px;
+    border: 1px solid var(--hef-border-default);
+    border-radius: 14px;
+    background: var(--hef-surface-paper);
+}
+
+.saved-edit-row label {
+    grid-column: 1 / -1;
+    font-size: 13px;
+}
+
+.saved-edit-row select {
+    width: 100%;
+    min-width: 0;
+    min-height: 45px;
+    padding: 10px 12px;
+    border: 1px solid var(--hef-border-default);
+    border-radius: 999px;
+    background: var(--hef-surface-card);
+    color: var(--hef-text-primary);
+    text-overflow: ellipsis;
+}
+
+.saved-edit-row select:focus-visible,
+.compare-edit-form input:focus-visible {
+    outline: 2px solid var(--hef-brand-forest);
+    outline-offset: 2px;
+}
+
+.compare-edit-form .compare-save-title:focus {
+    color: var(--hef-text-primary);
+}
+
+.compare-edit-form [data-edit-add] {
+    width: 100%;
+}
+
+.compare-edit-form button:disabled {
+    opacity: 0.5;
+}
+
+#compare-edit-feedback {
+    overflow-wrap: anywhere;
+}

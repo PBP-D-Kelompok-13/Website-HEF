@@ -1,0 +1,121 @@
+<div class="modal-header compare-picker-heading">
+    <h2 id="compare-edit-dialog-title">Edit comparison</h2>
+    <button type="button"
+            class="compare-picker-icon-button"
+            data-bs-dismiss="modal"
+            aria-label="Close edit comparison dialog">
+        <span aria-hidden="true">&times;</span>
+    </button>
+</div>
+
+<div class="modal-body compare-picker-body">
+    <p class="compare-muted compare-save-description">
+        Update the title and choose 2–3 different products from Discover.
+        Your active Compare selection stays unchanged.
+    </p>
+
+    <form method="post"
+          action="{% url 'main:compare_saved_edit' comparison.pk %}"
+          hx-post="{% url 'main:compare_saved_edit' comparison.pk %}"
+          hx-target="#compare-edit-content"
+          hx-swap="innerHTML"
+          hx-sync="this:drop"
+          hx-disabled-elt="find button"
+          hx-indicator="#compare-edit-loading"
+          hx-request='{"timeout":10000}'
+          class="compare-save-form compare-edit-form"
+          novalidate>
+        {% csrf_token %}
+
+        <div>
+            <label for="{{ form.title.id_for_label }}">{{ form.title.label }}</label>
+            {{ form.title }}
+            <div id="compare-edit-title-errors">
+                {% for error in form.title.errors %}
+                    <p class="compare-validation" role="alert">{{ error }}</p>
+                {% endfor %}
+            </div>
+        </div>
+
+        <fieldset aria-describedby="compare-edit-product-help compare-edit-product-errors">
+            <legend>Products</legend>
+            <p id="compare-edit-product-help" class="compare-muted">
+                Change a product using its dropdown. Add a third product,
+                or remove one when three are selected.
+            </p>
+            <div id="compare-edit-product-errors">
+                {% for error in form.non_field_errors %}
+                    <p class="compare-validation" role="alert">{{ error }}</p>
+                {% endfor %}
+            </div>
+
+            <div id="compare-edit-products">
+                {% for product in edit_slots %}
+                    <div class="saved-edit-row" data-edit-row>
+                        <label for="compare-edit-product-{{ forloop.counter }}">
+                            Product {{ forloop.counter }}
+                        </label>
+                        <select id="compare-edit-product-{{ forloop.counter }}"
+                                name="barcodes"
+                                aria-describedby="compare-edit-product-errors"
+                                required>
+                            <option value="">Choose a product</option>
+                            {% if product.barcode and not product.available %}
+                                <option value="{{ product.barcode }}" selected data-unavailable>
+                                    Product unavailable — {{ product.barcode }}
+                                </option>
+                            {% endif %}
+                            {% for choice in product_choices %}
+                                <option value="{{ choice.barcode }}"
+                                        {% if choice.barcode == product.barcode %}selected{% endif %}>
+                                    {{ choice.name }} · {{ choice.brand|default:"No brand" }} · {{ choice.barcode }}
+                                </option>
+                            {% endfor %}
+                        </select>
+                        <button type="button"
+                                class="compare-remove"
+                                data-edit-remove
+                                aria-label="Remove product {{ forloop.counter }}"
+                                {% if edit_slots|length <= 2 %}disabled{% endif %}>
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                {% endfor %}
+            </div>
+
+            <button type="button"
+                    class="btn-hef-secondary"
+                    data-edit-add
+                    {% if edit_slots|length >= 3 %}disabled{% endif %}>
+                Add third product
+            </button>
+
+            {% if not product_choices %}
+                <p class="compare-validation" role="status">
+                    No products are available in Discover yet.
+                </p>
+            {% endif %}
+        </fieldset>
+
+        <div class="compare-save-actions">
+            <button type="button"
+                    class="btn-hef-secondary"
+                    data-bs-dismiss="modal">
+                Cancel
+            </button>
+            <button type="submit" class="btn-hef-primary">
+                Save changes
+            </button>
+        </div>
+    </form>
+
+    <span id="compare-edit-loading"
+          class="htmx-indicator compare-muted"
+          role="status">
+        Saving changes...
+    </span>
+    <p id="compare-edit-feedback"
+       class="compare-validation"
+       role="alert"
+       hidden></p>
+</div>

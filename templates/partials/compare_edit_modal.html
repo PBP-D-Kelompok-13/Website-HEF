@@ -1,0 +1,29 @@
+<div class="modal compare-picker"
+     id="compareEditModal"
+     tabindex="-1"
+     aria-labelledby="compare-edit-dialog-title"
+     aria-hidden="true"
+     data-login-url="{% url 'main:login_account' %}">
+    <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
+        <div class="modal-content" id="compare-edit-content">
+            <div class="modal-header compare-picker-heading">
+                <h2 id="compare-edit-dialog-title">Edit comparison</h2>
+                <button type="button"
+                        class="compare-picker-icon-button"
+                        data-bs-dismiss="modal"
+                        aria-label="Close edit comparison dialog">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body compare-picker-body">
+                <p id="compare-edit-opening" class="compare-muted" role="status">
+                    Loading comparison...
+                </p>
+                <p id="compare-edit-feedback"
+                   class="compare-validation"
+                   role="alert"
+                   hidden></p>
+            </div>
+        </div>
+    </div>
+</div>

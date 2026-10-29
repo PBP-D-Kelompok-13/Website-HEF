@@ -53,6 +53,20 @@
                            class="btn-hef-secondary">
                             Open comparison
                         </a>
+                        <button type="button"
+                                class="compare-clear-button saved-edit-button"
+                                data-compare-edit
+                                data-bs-toggle="modal"
+                                data-bs-target="#compareEditModal"
+                                hx-get="{% url 'main:compare_saved_edit' item.comparison.pk %}"
+                                hx-target="#compare-edit-content"
+                                hx-swap="innerHTML"
+                                hx-sync="#compareEditModal:replace"
+                                hx-disabled-elt="this"
+                                hx-request='{"timeout":10000}'
+                                aria-label="Edit {{ item.comparison.title }}">
+                            Edit
+                        </button>
                     </div>
                 </article>
             {% endfor %}
