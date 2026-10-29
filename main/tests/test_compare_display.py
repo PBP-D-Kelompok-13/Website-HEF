@@ -46,19 +46,20 @@ class CompareDisplayTests(TestCase):
         session["comparison_barcodes"] = barcodes
         session.save()
 
-    def get_page(self, htmx=False):
+    def get_page(self, htmx=False, run=False):
         headers = {"HTTP_HX_REQUEST": "true"} if htmx else {}
+        params = {"run": "1"} if run else {}
 
         with patch(
             "main.comparison_views.resolve_product",
             side_effect=lambda barcode: self.products.get(barcode),
         ):
-            return self.client.get(self.url, **headers)
+            return self.client.get(self.url, params, **headers)
 
     def test_selected_products_are_displayed(self):
         self.set_selection(["001", "002"])
 
-        response = self.get_page()
+        response = self.get_page(run=True)
 
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, "Example Oat Drink")
@@ -79,7 +80,7 @@ class CompareDisplayTests(TestCase):
     def test_missing_score_has_explicit_label(self):
         self.set_selection(["001", "002"])
 
-        response = self.get_page()
+        response = self.get_page(run=True)
 
         self.assertContains(
             response,
@@ -90,7 +91,7 @@ class CompareDisplayTests(TestCase):
         self.products["001"].name = "<script>alert(1)</script>"
         self.set_selection(["001", "002"])
 
-        response = self.get_page()
+        response = self.get_page(run=True)
 
         self.assertContains(
             response,
@@ -115,7 +116,7 @@ class CompareDisplayTests(TestCase):
     def test_htmx_returns_workspace_without_full_page(self):
         self.set_selection(["001", "002"])
 
-        response = self.get_page(htmx=True)
+        response = self.get_page(htmx=True, run=True)
 
         self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(
