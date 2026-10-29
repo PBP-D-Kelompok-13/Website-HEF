@@ -1,10 +1,10 @@
 {% extends "base.html" %}
 {% load static %}
 {% block title %}Recipe Analyzer | Discover{% endblock %}
-{% block head %}<link rel="stylesheet" href="{% static 'css/recipe_analyzer.css' %}?v=recipe-modal-layout-3">{% endblock %}
+{% block head %}<link rel="stylesheet" href="{% static 'css/recipe_analyzer.css' %}?v=forest-title-1">{% endblock %}
 {% block content %}
 <section class="container my-4 my-md-5">
-  <div class="mb-4"><h1 class="mb-2">Recipe Analyzer</h1><p class="text-secondary mb-0">Discover recipes from Spoonacular, or create your own and analyze its nutrition.</p></div>
+  <div class="mb-4"><h1 class="hef-recipe-title mb-2">Recipe Analyzer</h1><p class="text-secondary mb-0">Discover recipes from Spoonacular, or create your own and analyze its nutrition.</p></div>
   {% include "pages/recipes/_tabs.html" with active_tab="discover" %}
   <form class="row g-2 align-items-center mb-4" method="get" action="{% url 'main:recipe_discover' %}" hx-get="{% url 'main:recipe_discover' %}" hx-target="#recipe-results" hx-swap="innerHTML">
     <div class="col-12 col-lg-5"><label class="visually-hidden" for="recipe-query">Search recipes</label><input id="recipe-query" name="query" class="form-control rounded-pill" value="{{ query }}" placeholder="Search recipes, e.g. pasta, tofu, salad"></div>

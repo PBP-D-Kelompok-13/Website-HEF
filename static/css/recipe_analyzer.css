@@ -1,3 +1,7 @@
+.hef-recipe-title {
+    color: var(--hef-brand-forest);
+}
+
 .hef-recipe-tabs .nav-link {
     color: var(--hef-text-secondary);
     padding: .55rem 1rem;

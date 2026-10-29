@@ -1,11 +1,11 @@
 {% extends "base.html" %}
 {% load static %}
 {% block title %}Recipe Analyzer | Create{% endblock %}
-{% block head %}<link rel="stylesheet" href="{% static 'css/recipe_analyzer.css' %}?v=recipe-modal-layout-3">{% endblock %}
+{% block head %}<link rel="stylesheet" href="{% static 'css/recipe_analyzer.css' %}?v=forest-title-1">{% endblock %}
 {% block content %}
 <section class="container my-4 my-md-5">
   <div class="mb-4">
-    <h1 class="mb-2">Recipe Analyzer</h1>
+    <h1 class="hef-recipe-title mb-2">Recipe Analyzer</h1>
     <p class="text-secondary">Create your recipe, then ask Spoonacular to estimate nutrition, health score, and dietary labels.</p>
   </div>
   {% include "pages/recipes/_tabs.html" with active_tab="create" %}

@@ -1,9 +1,9 @@
 {% extends "base.html" %}
 {% load static %}
 {% block title %}Recipe Analyzer | Saved{% endblock %}
-{% block head %}<link rel="stylesheet" href="{% static 'css/recipe_analyzer.css' %}?v=recipe-modal-layout-3">{% endblock %}
+{% block head %}<link rel="stylesheet" href="{% static 'css/recipe_analyzer.css' %}?v=forest-title-1">{% endblock %}
 {% block content %}
-<section class="container my-4 my-md-5"><div class="mb-4"><h1 class="mb-2">Recipe Analyzer</h1><p class="text-secondary">Sample recipes. Spoonacular estimates nutrition and health score; dietary labels appear when available.</p></div>
+<section class="container my-4 my-md-5"><div class="mb-4"><h1 class="hef-recipe-title mb-2">Recipe Analyzer</h1><p class="text-secondary">Sample recipes. Spoonacular estimates nutrition and health score; dietary labels appear when available.</p></div>
 {% include "pages/recipes/_tabs.html" with active_tab="saved" %}
 <form method="get" class="row g-2 align-items-center mb-4"><div class="col-12 col-md-5"><input class="form-control rounded-pill" name="query" value="{{ query }}" placeholder="Search saved recipes" aria-label="Search saved recipes"></div><div class="col-8 col-md-3"><select class="form-select rounded-pill" name="sort" aria-label="Sort saved recipes"><option value="newest" {% if sort == 'newest' %}selected{% endif %}>Sort: Newest first</option><option value="oldest" {% if sort == 'oldest' %}selected{% endif %}>Sort: Oldest first</option><option value="title" {% if sort == 'title' %}selected{% endif %}>Sort: Title</option></select></div><div class="col-auto"><button class="btn-hef-secondary">Search</button></div></form>
 <section class="mb-5"><div class="d-flex justify-content-between align-items-center mb-3"><h2 class="h4 mb-0">From Spoonacular <span class="badge rounded-pill text-bg-success">{{ spoonacular_recipes|length }} saved</span></h2><a class="small text-decoration-none" href="{% url 'main:recipe_discover' %}">Find more recipes →</a></div>
