@@ -534,3 +534,69 @@
         padding: 16px 20px 20px;
     }
 }
+
+/* Save comparison dialog */
+.compare-save .modal-dialog {
+    --bs-modal-width: 540px;
+}
+
+.compare-save-description {
+    margin-bottom: 20px;
+    font-size: 14px;
+    line-height: 20px;
+}
+
+.compare-save-form {
+    display: grid;
+    gap: 20px;
+}
+
+.compare-save-form label {
+    font-weight: 500;
+    line-height: 21px;
+}
+
+.compare-save-title {
+    min-height: 47px;
+    padding: 12px;
+    border-radius: 999px;
+    background: var(--hef-surface-paper);
+    color: var(--hef-text-primary);
+    font-size: 15px;
+    line-height: 21px;
+}
+
+.compare-save-title:focus {
+    background: var(--hef-surface-paper);
+    outline: 2px solid var(--hef-brand-forest);
+    outline-offset: 2px;
+    box-shadow: none;
+}
+
+.compare-save-count {
+    margin: 0;
+    font-size: 13px;
+    line-height: 19px;
+}
+
+.compare-save-actions {
+    display: flex;
+    gap: 12px;
+}
+
+.compare-save-actions button {
+    flex: 1;
+    min-width: 0;
+    min-height: 45px;
+    height: auto;
+    padding: 12px;
+}
+
+.compare-save-actions button:disabled {
+    opacity: 0.6;
+    cursor: wait;
+}
+
+.compare-save-actions .btn-hef-secondary {
+    color: var(--hef-text-primary) !important;
+}

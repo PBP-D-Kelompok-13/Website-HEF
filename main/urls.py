@@ -2,6 +2,7 @@ from .comparison_views import (
     compare_add,
     compare_remove,
     compare_product_picker,
+    compare_save,
 )
 from django.urls import path
 from .views import *
@@ -31,6 +32,7 @@ urlpatterns = [
     path("profile/deactivate/", deactivate_account, name="deactivate_account"),
     path("compare/", show_compare, name="show_compare"),
     path("compare/add/", compare_add, name="compare_add"),
+    path("compare/save/", compare_save, name="compare_save"),
     path("compare/remove/", compare_remove, name="compare_remove"),
     path(
             "compare/products/",

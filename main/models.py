@@ -1,3 +1,4 @@
+from .comparison_selection import validate_comparison
 from datetime import date
 from django.conf import settings
 from django.contrib.auth.models import AbstractUser
@@ -284,3 +285,23 @@ class Bookmark(models.Model):
                 fields=["user", "product"], name="unique_user_product_bookmark"
             )
         ]
+        
+class SavedComparison(models.Model):
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="saved_comparisons",
+    )
+    title = models.CharField(max_length=120)
+    barcodes = models.JSONField(
+        default=list,
+        validators=[validate_comparison],
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ["-updated_at", "-pk"]
+
+    def __str__(self):
+        return self.title

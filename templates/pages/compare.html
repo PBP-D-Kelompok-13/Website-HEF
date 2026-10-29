@@ -10,6 +10,11 @@
 {% block content %}
 <main class="container compare-page">
     {% include "partials/compare_workspace.html" %}
+
+    <p id="compare-save-status"
+       class="compare-notice"
+       role="status"
+       hidden></p>
 </main>
 
 <div class="modal compare-picker"
@@ -43,8 +48,10 @@
         </div>
     </div>
 </div>
+{% include "partials/compare_save_modal.html" %}
 {% endblock content %}
 
 {% block script %}
     <script src="{% static 'js/compare_picker.js' %}" defer></script>
+    <script src="{% static 'js/compare_save.js' %}" defer></script>
 {% endblock script %}

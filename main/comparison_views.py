@@ -4,9 +4,15 @@ from django.core.exceptions import ValidationError
 from django.http import HttpResponse, JsonResponse
 from django.shortcuts import render
 from django.urls import reverse
-from django.views.decorators.http import require_GET, require_POST
+from django.views.decorators.http import (
+    require_GET,
+    require_POST,
+    require_http_methods,
+)
 from django.core.paginator import Paginator
-from .models import Product
+from .models import Product, SavedComparison
+from django.views.decorators.cache import never_cache
+from .comparison_forms import SavedComparisonForm
 
 from .comparison_selection import add_product, remove_product
 
@@ -243,5 +249,70 @@ def compare_product_picker(request):
         {
             "query": query,
             "page": page,
+        },
+    )
+    
+@login_required
+@require_http_methods(["GET", "POST"])
+@never_cache
+def compare_save(request):
+    selected = request.session.get(SESSION_KEY, [])
+    is_htmx = request.headers.get("HX-Request") == "true"
+
+    form = SavedComparisonForm(
+        request.POST if request.method == "POST" else None,
+        selected_barcodes=selected,
+    )
+
+    if request.method == "POST":
+        if form.is_valid():
+            comparison = SavedComparison(
+                user=request.user,
+                title=form.cleaned_data["title"],
+                barcodes=list(form.cleaned_data["barcodes"]),
+            )
+
+            comparison.full_clean()
+            comparison.save()
+
+            if is_htmx:
+                response = render(
+                    request,
+                    "partials/compare_save_success.html",
+                    {"comparison": comparison},
+                )
+                response["HX-Trigger-After-Swap"] = "comparisonSaved"
+                return response
+
+            return JsonResponse(
+                {
+                    "ok": True,
+                    "comparison_id": comparison.pk,
+                    "title": comparison.title,
+                },
+                status=201,
+            )
+
+        if not is_htmx:
+            return JsonResponse(
+                {
+                    "ok": False,
+                    "errors": form.errors.get_json_data(),
+                },
+                status=400,
+            )
+
+    selected_count = (
+        len(selected)
+        if isinstance(selected, (list, tuple))
+        else 0
+    )
+
+    return render(
+        request,
+        "partials/compare_save_form.html",
+        {
+            "form": form,
+            "selected_count": selected_count,
         },
     )

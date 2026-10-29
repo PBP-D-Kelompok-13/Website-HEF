@@ -1,0 +1,80 @@
+<div class="modal-header compare-picker-heading">
+    <h2 id="compare-save-dialog-title">Save comparison</h2>
+
+    <button type="button"
+            class="compare-picker-icon-button"
+            data-bs-dismiss="modal"
+            aria-label="Close save comparison dialog">
+        <span aria-hidden="true">×</span>
+    </button>
+</div>
+
+<div class="modal-body compare-picker-body">
+    <p class="compare-muted compare-save-description">
+        Keep this comparison in your saved list.
+    </p>
+
+    <form method="post"
+          action="{% url 'main:compare_save' %}"
+          hx-post="{% url 'main:compare_save' %}"
+          hx-target="#compare-save-content"
+          hx-swap="innerHTML"
+          hx-sync="this:drop"
+          hx-disabled-elt="find button[type='submit']"
+          hx-indicator="#compare-save-loading"
+          hx-request='{"timeout":10000}'
+          class="compare-save-form"
+          novalidate>
+        {% csrf_token %}
+
+        {% if form.non_field_errors %}
+            <div class="compare-validation" role="alert">
+                {% for error in form.non_field_errors %}
+                    <p>{{ error }}</p>
+                {% endfor %}
+            </div>
+        {% endif %}
+
+        <label for="{{ form.title.id_for_label }}">
+            {{ form.title.label }}
+        </label>
+
+        <div>
+            {{ form.title }}
+
+            <div id="compare-save-title-errors">
+                {% if form.title.errors %}
+                    <div class="compare-validation" role="alert">
+                        {% for error in form.title.errors %}
+                            <p>{{ error }}</p>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <p class="compare-muted compare-save-count">
+            {{ selected_count }} of 3 products
+        </p>
+
+        <div class="compare-save-actions">
+            <button type="button"
+                    class="btn-hef-secondary"
+                    data-bs-dismiss="modal">
+                Cancel
+            </button>
+
+            <button type="submit" class="btn-hef-primary">
+                Save comparison
+            </button>
+        </div>
+    </form>
+
+    <span id="compare-save-loading"
+          class="htmx-indicator compare-muted"
+          role="status">
+        Saving comparison…
+    </span>
+
+    <div id="compare-save-feedback" aria-live="polite"></div>
+</div>

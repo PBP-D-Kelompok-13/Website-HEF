@@ -220,6 +220,18 @@
             <p class="compare-source">
                 Source: Open Food Facts via the shared product data.
             </p>
+            <button type="button"
+                    id="compare-save-open"
+                    class="btn-hef-primary"
+                    data-bs-toggle="modal"
+                    data-bs-target="#compareSaveModal"
+                    hx-get="{% url 'main:compare_save' %}"
+                    hx-target="#compare-save-content"
+                    hx-swap="innerHTML"
+                    hx-sync="#compare-save-content:drop"
+                    hx-request='{"timeout":10000}'>
+                Save comparison
+            </button>
         </section>
     {% else %}
         <section class="compare-pending" aria-labelledby="compare-ready-title">
