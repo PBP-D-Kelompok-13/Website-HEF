@@ -1,3 +1,7 @@
+from django.views.decorators.http import require_GET
+from django.views.decorators.vary import vary_on_headers
+
+from .comparison_views import build_comparison_context
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import render, redirect
 from django.contrib import messages
@@ -165,5 +169,14 @@ def deactivate_account(request):
     return redirect("main:show_landing_page")
 
 @login_required
+@require_GET
+@vary_on_headers("HX-Request")
 def show_compare(request):
-    return render(request, "pages/compare.html")
+    context = build_comparison_context(request)
+
+    if request.headers.get("HX-Request") == "true":
+        template = "partials/compare_workspace.html"
+    else:
+        template = "pages/compare.html"
+
+    return render(request, template, context)

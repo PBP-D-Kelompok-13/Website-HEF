@@ -1,9 +1,14 @@
 {% extends "base.html" %}
+{% load static %}
 
 {% block title %}Compare Products | HEF{% endblock %}
 
+{% block head %}
+    <link rel="stylesheet" href="{% static 'css/compare.css' %}">
+{% endblock %}
+
 {% block content %}
-<main class="container my-5">
+<main class="container compare-page">
     {% include "partials/compare_workspace.html" %}
 </main>
 {% endblock content %}

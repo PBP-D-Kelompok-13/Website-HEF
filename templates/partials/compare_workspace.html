@@ -1,33 +1,172 @@
-<section aria-labelledby="compare-title">
-    <h1 id="compare-title" class="mb-2">Compare Products</h1>
-
-    <p class="text-body">
+<section id="compare-workspace" aria-labelledby="compare-title">
+    <h1 id="compare-title">Compare Products</h1>
+    <p class="compare-muted">
         Select 2–3 different products to compare.
     </p>
 
-    <div class="border rounded-3 p-4 mt-4">
-        <h2 class="h5">No products selected</h2>
-        <p class="mb-3">
-            Selected products will appear here for comparison.
+    {% if source_unavailable %}
+        <p class="compare-notice" role="status">
+            Discover product data is not available yet.
+            Your selection has been kept.
+        </p>
+    {% endif %}
+
+    {% if products %}
+        <p class="compare-muted">
+            {{ selected_count }} of 3 products selected
         </p>
 
-        <button
-            type="button"
-            class="btn btn-secondary"
-            disabled
-            aria-describedby="compare-help"
-        >
-            Compare products
-        </button>
+        <div class="compare-product-grid">
+            {% for product in products %}
+                <article class="compare-card">
+                    <div class="compare-image">
+                        {% if product.image_url %}
+                            <img
+                                src="{{ product.image_url }}"
+                                alt="{{ product.name }}"
+                                loading="lazy"
+                            >
+                        {% else %}
+                            <span class="compare-muted">
+                                No image available
+                            </span>
+                        {% endif %}
+                    </div>
 
-        <p id="compare-help" class="small mt-2 mb-0">
-            Choose at least two different products before comparing.
+                    <h2 class="compare-product-name">
+                        {{ product.name }}
+                    </h2>
+
+                    {% if product.available %}
+                        <p class="compare-muted">
+                            {{ product.brand|default:"Brand not available" }}
+                        </p>
+                    {% else %}
+                        <p class="compare-muted">
+                            This product could not be loaded.
+                        </p>
+                    {% endif %}
+
+                    <p class="compare-muted">
+                        Barcode: {{ product.barcode }}
+                    </p>
+                </article>
+            {% endfor %}
+        </div>
+
+        {% if can_compare %}
+            <h2 class="mt-4">Scores at a glance</h2>
+
+            <p id="compare-scroll-help" class="compare-muted">
+                On smaller screens, scroll horizontally inside the table.
+            </p>
+
+            <div
+                class="compare-table-scroll"
+                role="region"
+                aria-label="Product score comparison"
+                aria-describedby="compare-scroll-help"
+                tabindex="0"
+            >
+                <table class="compare-table">
+                    <caption class="visually-hidden">
+                        Eco-Score and Nutri-Score for selected products
+                    </caption>
+
+                    <thead>
+                        <tr>
+                            <th scope="col">Information</th>
+                            {% for product in products %}
+                                <th scope="col">{{ product.name }}</th>
+                            {% endfor %}
+                        </tr>
+                    </thead>
+
+                    <tbody>
+                        <tr>
+                            <th scope="row">
+                                Eco-Score
+                                <span class="compare-description">
+                                    Environmental impact
+                                </span>
+                            </th>
+
+                            {% for product in products %}
+                                <td>
+                                    {% if product.eco_grade %}
+                                        <span
+                                            class="compare-score compare-score-{{ product.eco_grade }}"
+                                            aria-label="Eco-Score {{ product.eco_grade|upper }}"
+                                        >
+                                            {{ product.eco_grade|upper }}
+                                        </span>
+                                    {% else %}
+                                        <span
+                                            class="compare-muted"
+                                            aria-label="Eco-Score not available"
+                                        >
+                                            Not available
+                                        </span>
+                                    {% endif %}
+                                </td>
+                            {% endfor %}
+                        </tr>
+
+                        <tr>
+                            <th scope="row">
+                                Nutri-Score
+                                <span class="compare-description">
+                                    Nutritional quality
+                                </span>
+                            </th>
+
+                            {% for product in products %}
+                                <td>
+                                    {% if product.nutri_grade %}
+                                        <span
+                                            class="compare-score compare-score-{{ product.nutri_grade }}"
+                                            aria-label="Nutri-Score {{ product.nutri_grade|upper }}"
+                                        >
+                                            {{ product.nutri_grade|upper }}
+                                        </span>
+                                    {% else %}
+                                        <span
+                                            class="compare-muted"
+                                            aria-label="Nutri-Score not available"
+                                        >
+                                            Not available
+                                        </span>
+                                    {% endif %}
+                                </td>
+                            {% endfor %}
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        {% else %}
+            <p class="compare-notice">
+                Select 2–3 different, available products to view the comparison.
+            </p>
+        {% endif %}
+
+    {% else %}
+        <div class="compare-card compare-empty">
+            <h2>No products selected</h2>
+            <p class="compare-muted">
+                Products selected from Discover will appear here.
+            </p>
+        </div>
+    {% endif %}
+
+    <aside class="compare-notice mt-4" aria-label="About the scores">
+        <p>
+            <strong>Eco-Score</strong> describes environmental impact.
+            <strong>Nutri-Score</strong> describes nutritional quality.
+            Eco-Score alone does not determine how healthy a product is.
         </p>
-    </div>
-
-    <p class="small mt-3">
-        Eco-Score describes environmental impact.
-        Nutri-Score describes nutritional quality.
-        Unavailable scores will be shown as “Not available”.
-    </p>
+        <p class="mb-0">
+            Source: Open Food Facts via the shared product data.
+            Missing scores are shown as “Not available”, not zero.
+        </p>
+    </aside>
 </section>

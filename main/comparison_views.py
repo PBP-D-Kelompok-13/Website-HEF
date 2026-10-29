@@ -110,3 +110,61 @@ def compare_remove(request):
             "can_compare": len(updated_selection) >= 2,
         }
     )
+    
+def display_grade(value):
+    """Hanya tampilkan grade A–E; data kosong tetap tidak tersedia."""
+    if not isinstance(value, str):
+        return ""
+
+    grade = value.strip().lower()
+    return grade if grade in {"a", "b", "c", "d", "e"} else ""
+
+
+def build_comparison_context(request):
+    selected = request.session.get(SESSION_KEY, [])
+    products = []
+    source_unavailable = False
+
+    for barcode in selected:
+        try:
+            product = resolve_product(barcode)
+        except ProductSourceUnavailable:
+            product = None
+            source_unavailable = True
+
+        if product is None:
+            products.append({
+                "barcode": barcode,
+                "name": "Product unavailable",
+                "brand": "",
+                "image_url": "",
+                "eco_grade": "",
+                "nutri_grade": "",
+                "available": False,
+            })
+            continue
+
+        image_url = product.image_url or ""
+        if not image_url.startswith(("https://", "http://")):
+            image_url = ""
+
+        products.append({
+            "barcode": barcode,
+            "name": product.name,
+            "brand": product.brand,
+            "image_url": image_url,
+            "eco_grade": display_grade(product.eco_grade),
+            "nutri_grade": display_grade(product.nutri_grade),
+            "available": True,
+        })
+
+    return {
+        "products": products,
+        "selected_count": len(products),
+        "source_unavailable": source_unavailable,
+        "can_compare": (
+            2 <= len(products) <= 3
+            and len(set(selected)) == len(selected)
+            and all(product["available"] for product in products)
+        ),
+    }
