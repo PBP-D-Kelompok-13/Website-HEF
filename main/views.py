@@ -219,6 +219,15 @@ def show_compare(request):
 
     return render(request, template, context, status=status)
 
+
+''' ===============================
+    Recipe
+    =============================== '''
+# Recipe Analyzer views keep saved data scoped to the signed-in owner.
+
+ALLOWED_DIETS = {"vegetarian", "vegan", "gluten free"}
+
+
 @login_required
 def recipe_ingredient_suggestions(request):
     query = (request.GET.get("q") or next(
