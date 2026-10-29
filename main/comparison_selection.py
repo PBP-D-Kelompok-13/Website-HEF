@@ -4,7 +4,6 @@ from django.core.exceptions import ValidationError
 MAX_PRODUCTS = 3
 MIN_PRODUCTS = 2
 
-#ValidationError memberi tahu bagian aplikasi yang memanggil fungsi bahwa pilihannya tidak valid.
 def _check_selection(selected):
     """Periksa pilihan tanpa mengubah daftar aslinya."""
     if not isinstance(selected, (list, tuple)):
@@ -24,7 +23,6 @@ def _check_selection(selected):
 
     return products
 
-#add_product menambahkan pilihan dan menolak duplikat atau produk keempat.
 def add_product(selected, barcode):
     """Tambahkan satu produk dan kembalikan daftar pilihan baru."""
     products = _check_selection(selected)
@@ -43,7 +41,6 @@ def add_product(selected, barcode):
     return products + [barcode]
 
 
-#remove_product melepas satu produk.
 def remove_product(selected, barcode):
     """Lepaskan produk tanpa mengubah daftar pilihan aslinya."""
     products = _check_selection(selected)
@@ -55,7 +52,6 @@ def remove_product(selected, barcode):
     ]
 
 
-#validate_comparison memastikan terdapat 2–3 produk berbeda sebelum dibandingkan.
 def validate_comparison(selected):
     """Pastikan pilihan siap digunakan untuk membandingkan produk."""
     products = _check_selection(selected)
