@@ -1,0 +1,79 @@
+{% load static %}
+
+<div class="modal-header compare-picker-heading">
+    <h2 id="compare-picker-title">Choose a product</h2>
+
+    <button type="button"
+            class="compare-picker-icon-button"
+            data-bs-dismiss="modal"
+            aria-label="Close product picker">
+        <span aria-hidden="true">×</span>
+    </button>
+</div>
+
+<div class="modal-body compare-picker-body">
+    <p class="compare-muted">
+        Select a different product for each slot.
+    </p>
+
+    <form method="get"
+          action="{% url 'main:compare_product_picker' %}"
+          hx-get="{% url 'main:compare_product_picker' %}"
+          hx-trigger="submit, input delay:300ms"
+          hx-target="#compare-picker-results"
+          hx-swap="innerHTML"
+          hx-sync="#compare-picker-content:replace"
+          hx-indicator="#compare-picker-loading"
+          hx-request='{"timeout":10000}'
+          class="compare-picker-search">
+
+        <input type="hidden" name="results" value="1">
+
+        <label for="compare-picker-query" class="visually-hidden">
+            Search product name, brand, or barcode
+        </label>
+
+        <div class="compare-picker-input">
+            <img src="{% static 'img/compare-search.png' %}"
+                 width="16"
+                 height="16"
+                 alt=""
+                 aria-hidden="true">
+
+            <input id="compare-picker-query"
+                   type="search"
+                   name="q"
+                   value="{{ query }}"
+                   maxlength="120"
+                   placeholder="Search name or barcode"
+                   autocomplete="off">
+        </div>
+
+        <button type="button"
+                class="compare-picker-icon-button"
+                data-compare-clear-search
+                aria-label="Clear search">
+            <span aria-hidden="true">×</span>
+        </button>
+
+        <button type="submit" class="visually-hidden">
+            Search
+        </button>
+    </form>
+
+    <div id="compare-picker-feedback" aria-live="polite"></div>
+
+    <span id="compare-picker-loading"
+          class="htmx-indicator compare-muted"
+          role="status">
+        Searching products…
+    </span>
+
+    <div id="compare-picker-results">
+        {% include "partials/compare_picker_results.html" %}
+    </div>
+
+    <p class="compare-picker-note compare-muted">
+        Products from Discover. Already selected products are hidden.
+    </p>
+</div>

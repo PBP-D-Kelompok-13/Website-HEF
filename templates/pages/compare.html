@@ -11,4 +11,40 @@
 <main class="container compare-page">
     {% include "partials/compare_workspace.html" %}
 </main>
+
+<div class="modal compare-picker"
+     id="compareProductPicker"
+     tabindex="-1"
+     aria-labelledby="compare-picker-title"
+     aria-hidden="true"
+     data-login-url="{% url 'main:login_account' %}">
+
+    <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
+        <div class="modal-content" id="compare-picker-content">
+            <div class="modal-header compare-picker-heading">
+                <h2 id="compare-picker-title">Choose a product</h2>
+
+                <button type="button"
+                        class="compare-picker-icon-button"
+                        data-bs-dismiss="modal"
+                        aria-label="Close product picker">
+                    <span aria-hidden="true">×</span>
+                </button>
+            </div>
+
+            <div class="modal-body compare-picker-body">
+                <p class="compare-muted" role="status">
+                    Loading products…
+                </p>
+
+                <div id="compare-picker-feedback"
+                     aria-live="polite"></div>
+            </div>
+        </div>
+    </div>
+</div>
 {% endblock content %}
+
+{% block script %}
+    <script src="{% static 'js/compare_picker.js' %}" defer></script>
+{% endblock script %}

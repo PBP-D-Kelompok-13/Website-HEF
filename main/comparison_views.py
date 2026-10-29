@@ -4,7 +4,9 @@ from django.core.exceptions import ValidationError
 from django.http import HttpResponse, JsonResponse
 from django.shortcuts import render
 from django.urls import reverse
-from django.views.decorators.http import require_POST
+from django.views.decorators.http import require_GET, require_POST
+from django.core.paginator import Paginator
+from .models import Product
 
 from .comparison_selection import add_product, remove_product
 
@@ -29,11 +31,17 @@ def resolve_product(barcode):
 
 def comparison_add_error(request, errors, status):
     if request.headers.get("HX-Request") == "true":
-        return render(
+        response = render(
             request,
             "partials/compare_add_feedback.html",
             {"errors": errors},
         )
+
+        if request.POST.get("source") == "workspace":
+            response["HX-Retarget"] = "#compare-picker-feedback"
+            response["HX-Reswap"] = "innerHTML"
+
+        return response
 
     return JsonResponse(
         {"ok": False, "errors": errors},
@@ -74,6 +82,18 @@ def compare_add(request):
     request.session[SESSION_KEY] = updated_selection
 
     if request.headers.get("HX-Request") == "true":
+        if request.POST.get("source") == "workspace":
+            context = build_comparison_context(request)
+            context["show_results"] = False
+
+            response = render(
+                request,
+                "partials/compare_workspace.html",
+                context,
+            )
+            response["HX-Trigger-After-Swap"] = "compareProductAdded"
+            return response
+
         response = HttpResponse()
         response["HX-Redirect"] = reverse("main:show_compare")
         return response
@@ -188,3 +208,40 @@ def build_comparison_context(request):
             and all(product["available"] for product in products)
         ),
     }
+
+@login_required
+@require_GET
+def compare_product_picker(request):
+    """Tampilkan produk Discover yang belum masuk pilihan Compare."""
+    query = request.GET.get("q", "").strip()[:120]
+    selected = request.session.get(SESSION_KEY, [])
+
+    queryset = (
+        Product.objects.search(query)
+        .exclude(barcode__in=selected)
+        .order_by("name", "barcode")
+    )
+
+    page = Paginator(queryset, 3).get_page(request.GET.get("page"))
+
+    for product in page.object_list:
+        image_url = product.image_url or ""
+        product.picker_image_url = (
+            image_url
+            if image_url.startswith(("https://", "http://"))
+            else ""
+        )
+
+    template = "partials/compare_product_picker.html"
+
+    if request.GET.get("results") == "1":
+        template = "partials/compare_picker_results.html"
+
+    return render(
+        request,
+        template,
+        {
+            "query": query,
+            "page": page,
+        },
+    )

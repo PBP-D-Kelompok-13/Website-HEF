@@ -1,6 +1,6 @@
 <section id="compare-workspace" aria-labelledby="compare-title">
     <header class="compare-heading">
-        <h1 id="compare-title">Compare Products</h1>
+        <h1 id="compare-title" tabindex="-1">Compare Products</h1>
         <p class="compare-muted">
             Compare 2–3 products to understand their environmental impact and nutrition.
         </p>
@@ -81,8 +81,17 @@
                             Choose a product from Discover.
                         {% endif %}
                     </p>
-                    <a class="btn-hef-secondary compare-add-product"
-                       href="{% url 'main:discover' %}">Add product</a>
+                    <button type="button"
+                            class="btn-hef-secondary compare-add-product"
+                            data-bs-toggle="modal"
+                            data-bs-target="#compareProductPicker"
+                            hx-get="{% url 'main:compare_product_picker' %}"
+                            hx-target="#compare-picker-content"
+                            hx-swap="innerHTML"
+                            hx-sync="#compare-picker-content:replace"
+                            hx-request='{"timeout":10000}'>
+                        Add product
+                    </button>
                 {% endif %}
             </article>
         {% endfor %}

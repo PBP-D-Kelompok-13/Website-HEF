@@ -1,4 +1,8 @@
-from .comparison_views import compare_add, compare_remove
+from .comparison_views import (
+    compare_add,
+    compare_remove,
+    compare_product_picker,
+)
 from django.urls import path
 from .views import *
 
@@ -28,6 +32,11 @@ urlpatterns = [
     path("compare/", show_compare, name="show_compare"),
     path("compare/add/", compare_add, name="compare_add"),
     path("compare/remove/", compare_remove, name="compare_remove"),
+    path(
+            "compare/products/",
+            compare_product_picker,
+            name="compare_product_picker",
+    ),
     path("pantry/", show_inventory, name="show_inventory"),
     path("pantry/add/", add_ingredient, name="add_ingredient"),
     path("pantry/edit/<int:pk>/", edit_ingredient, name="edit_ingredient"),
