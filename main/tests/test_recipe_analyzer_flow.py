@@ -206,6 +206,15 @@ class RecipeAnalyzerFlowTests(TestCase):
         self.assertContains(response, 'class="hef-recipe-help h-100"')
         self.assertContains(response, 'type="hidden" name="ingredient-0-DELETE"')
 
+    def test_create_form_explains_analysis_inputs_and_results_clearly(self):
+        response = self.client.get(reverse("main:recipe_create"))
+
+        self.assertContains(response, "• Enter each ingredient with its amount in grams.")
+        self.assertContains(response, "• Nutrition values are estimates per serving based on the ingredients provided.")
+        self.assertContains(response, "• Health score and dietary labels are shown only when Spoonacular returns them.")
+        self.assertContains(response, "• Save as draft to keep working on your recipe later.")
+        self.assertContains(response, "• Add clear preparation steps so you can follow the recipe later.")
+
     def test_create_form_limits_initial_ingredient_rows_and_aligns_clear_action(self):
         response = self.client.get(reverse("main:recipe_create"))
 
