@@ -14,6 +14,41 @@
         <div class="d-flex flex-wrap align-items-center gap-2">
             <span class="text-label">Open Food Facts · Barcode {{ product.barcode }}</span>
             {% include "partials/bookmark_button.html" with product=product saved=product.is_saved %}
+                        {% if user.is_authenticated %}
+                <div>
+                    <form
+                        method="post"
+                        action="{% url 'main:compare_add' %}"
+                        hx-post="{% url 'main:compare_add' %}"
+                        hx-target="#compare-add-feedback"
+                        hx-swap="innerHTML"
+                        hx-disabled-elt="find button"
+                        hx-sync="this:drop"
+                        hx-indicator="#compare-add-loading"
+                    >
+                        {% csrf_token %}
+                        <input type="hidden" name="barcode" value="{{ product.barcode }}">
+
+                        <button type="submit" class="btn-hef-outline">
+                            Add to Compare
+                        </button>
+
+                        <span
+                            id="compare-add-loading"
+                            class="htmx-indicator text-label ms-2"
+                            role="status"
+                        >
+                            Adding…
+                        </span>
+                    </form>
+
+                    <div
+                        id="compare-add-feedback"
+                        class="mt-2"
+                        aria-live="polite"
+                    ></div>
+                </div>
+            {% endif %}
             {% if can_manage %}
                 <a href="{% url 'main:product_edit' product.barcode %}" class="btn-hef-outline">Edit</a>
                 <button type="button" class="btn-hef-danger" data-bs-toggle="modal" data-bs-target="#deleteProductModal">

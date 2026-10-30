@@ -1,0 +1,32 @@
+<div class="modal compare-picker compare-save"
+     id="compareSaveModal"
+     tabindex="-1"
+     aria-labelledby="compare-save-dialog-title"
+     aria-hidden="true"
+     data-login-url="{% url 'main:login_account' %}">
+
+    <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
+        <div class="modal-content" id="compare-save-content">
+            <div class="modal-header compare-picker-heading">
+                <h2 id="compare-save-dialog-title">Save comparison</h2>
+
+                <button type="button"
+                        class="compare-picker-icon-button"
+                        data-bs-dismiss="modal"
+                        aria-label="Close save comparison dialog">
+                    <span aria-hidden="true">×</span>
+                </button>
+            </div>
+
+            <div class="modal-body compare-picker-body">
+                <p id="compare-save-opening"
+                   class="compare-muted"
+                   role="status">
+                    Loading form…
+                </p>
+
+                <div id="compare-save-feedback" aria-live="polite"></div>
+            </div>
+        </div>
+    </div>
+</div>

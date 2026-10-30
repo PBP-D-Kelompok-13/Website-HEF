@@ -1,3 +1,5 @@
+from django.views.decorators.http import require_GET
+from .comparison_views import build_comparison_context
 from django.contrib import messages
 from django.contrib.auth import login, logout, update_session_auth_hash
 from django.core.exceptions import ImproperlyConfigured
@@ -210,6 +212,34 @@ def deactivate_account(request):
 
     return redirect("main:show_landing_page")
 
+@login_required
+@require_GET
+@vary_on_headers("HX-Request")
+def show_compare(request):
+    context = build_comparison_context(request)
+    requested = request.GET.get("run") == "1"
+
+    context["show_results"] = requested and context["can_compare"]
+
+    if requested and not context["can_compare"]:
+        context["comparison_error"] = (
+            "Choose 2–3 different, available products before comparing."
+        )
+
+    is_htmx = request.headers.get("HX-Request") == "true"
+
+    if is_htmx:
+        template = "partials/compare_workspace.html"
+    else:
+        template = "pages/compare.html"
+
+    # HTMX menampilkan pesan validasi sebagai HTML.
+    # Request halaman biasa menerima status 400 jika pilihan tidak valid.
+    status = 200
+    if requested and not context["can_compare"] and not is_htmx:
+        status = 400
+
+    return render(request, template, context, status=status)
 
 """ =============================== 
     Recipe
@@ -753,7 +783,7 @@ def edit_ingredient(request, pk):
         form = IngredientForm(request.POST, request.FILES, instance=ingredient)
         if form.is_valid():
             form.save()
-            messages.success(request, "Ingredient successfully editted.")
+            messages.success(request, "Ingredient successfully edited.")
             return redirect("main:show_inventory")
         else:
             messages.error(request, "Failed to edit ingredient.")

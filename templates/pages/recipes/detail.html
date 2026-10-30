@@ -9,8 +9,7 @@
         <div>
             <p class="text-label mb-1">{% if is_spoonacular %}From Spoonacular{% else %}MY RECIPE{% endif %}</p>
             <h1 class="mb-2">{{ recipe.title }}</h1>
-            <p class="text-secondary mb-0">{% if ready_time %}Ready in {{ ready_time }} min · {% endif %}{{
-                recipe.servings }} servings{% if health_score %} · Health score {{ health_score }}{% endif %}</p>
+            <p class="text-secondary mb-0">{% if ready_time %}Ready in {{ ready_time }} min · {% endif %}{{ recipe.servings }} servings{% if health_score %} · Health score {{ health_score }}{% endif %}</p>
         </div>
         <div class="d-flex flex-wrap gap-2">{% if is_spoonacular and not saved_recipe %}<a class="btn-hef-secondary"
                 href="{% url 'main:recipe_discover' %}?query={{ back_query|urlencode }}">Back to results</a>
@@ -19,19 +18,11 @@
                     class="btn-hef-primary" type="submit">Save recipe</button></form>{% elif saved_recipe %}<a
                 class="btn-hef-secondary" href="{% url 'main:recipe_saved_list' %}">Back to saved</a><button
                 class="btn-hef-danger" type="button" data-bs-toggle="modal"
-                data-bs-target="#removeRecipeModal-{{ recipe.pk }}">Remove saved recipe</button>{% url
-            'main:recipe_delete' saved_recipe.pk as remove_saved_url %}{% include
-            "pages/recipes/_confirmation_modal.html" with modal_prefix="removeRecipeModal-" modal_suffix=recipe.pk
-            modal_title="Are you sure you want to remove this recipe?" confirm_label="Yes, remove recipe"
-            cancel_label="No, keep recipe" form_url=remove_saved_url %}{% else %}<a class="btn-hef-secondary"
+                data-bs-target="#removeRecipeModal-{{ recipe.pk }}">Remove saved recipe</button>{% url 'main:recipe_delete' saved_recipe.pk as remove_saved_url %}{% include "pages/recipes/_confirmation_modal.html" with modal_prefix="removeRecipeModal-" modal_suffix=recipe.pk modal_title="Are you sure you want to remove this recipe?" confirm_label="Yes, remove recipe" cancel_label="No, keep recipe" form_url=remove_saved_url %}{% else %}<a class="btn-hef-secondary"
                 href="{% url 'main:recipe_saved_list' %}"><span>Back to My recipes</span></a><a class="btn-hef-primary"
                 href="{% url 'main:recipe_update' recipe.pk %}">Edit recipe</a><button class="btn-hef-danger"
                 type="button" data-bs-toggle="modal"
-                data-bs-target="#removeRecipeModal-{{ recipe.pk }}">Delete</button>{% url 'main:recipe_delete' recipe.pk
-            as delete_recipe_url %}{% include "pages/recipes/_confirmation_modal.html" with
-            modal_prefix="removeRecipeModal-" modal_suffix=recipe.pk modal_title="Are you sure you want to delete this
-            recipe?" confirm_label="Yes, delete recipe" cancel_label="No, keep recipe" form_url=delete_recipe_url %}{%
-            endif %}
+                data-bs-target="#removeRecipeModal-{{ recipe.pk }}">Delete</button>{% url 'main:recipe_delete' recipe.pk as delete_recipe_url %}{% include "pages/recipes/_confirmation_modal.html" with modal_prefix="removeRecipeModal-" modal_suffix=recipe.pk modal_title="Are you sure you want to delete this recipe?" confirm_label="Yes, delete recipe" cancel_label="No, keep recipe" form_url=delete_recipe_url %}{% endif %}
         </div>
     </div>
     <div class="row g-3 mb-3">
@@ -39,10 +30,8 @@
             <section class="hef-recipe-panel h-100 p-3 p-md-4">
                 <h2 class="h4 mb-3">About this recipe</h2>{% if image_url %}<img
                     class="hef-recipe-photo-detail w-100 mb-3" src="{{ image_url }}" alt="{{ recipe.title }}">{% else %}
-                <div class="hef-recipe-photo-detail w-100 mb-3"></div>{% endif %}<p>{{
-                    recipe_description|default:"Nutrition and recipe details supplied by Spoonacular." }}</p>
-                <div class="d-flex flex-wrap gap-2">{% for diet in recipe.diets %}<span class="hef-diet-chip">{{
-                        diet|title }}</span>{% endfor %}</div>
+                <div class="hef-recipe-photo-detail w-100 mb-3"></div>{% endif %}<p>{{ recipe_description|default:"Nutrition and recipe details supplied by Spoonacular." }}</p>
+                <div class="d-flex flex-wrap gap-2">{% for diet in recipe.diets %}<span class="hef-diet-chip">{{ diet|title }}</span>{% endfor %}</div>
             </section>
         </div>
         <div class="col-lg-4">
@@ -50,8 +39,7 @@
                 <div class="d-flex justify-content-between align-items-center">
                     <h2 class="h4 mb-0">Health score</h2><small class="text-secondary">Spoonacular</small>
                 </div>
-                <div class="d-flex align-items-baseline gap-2 my-3"><strong class="display-5 text-success">{{
-                        health_score|default:"—" }}</strong><span class="text-secondary">/ 100</span></div><progress
+                <div class="d-flex align-items-baseline gap-2 my-3"><strong class="display-5 text-success">{{ health_score|default:"—" }}</strong><span class="text-secondary">/ 100</span></div><progress
                     class="hef-score-progress mb-3" value="{{ health_score|default:0 }}" max="100"
                     aria-label="Health score"></progress>
                 <p class="small text-secondary mb-0">Spoonacular’s Health Score reflects a recipe’s nutritional profile.
@@ -59,13 +47,11 @@
             </section>
             <section class="hef-recipe-panel p-3 p-md-4">
                 <h2 class="h4">Calories per serving</h2>
-                <div class="d-flex align-items-baseline gap-2 my-3"><strong class="display-5">{{ nutrition_view.calories
-                        }}</strong><span class="text-secondary">kcal</span></div>
+                <div class="d-flex align-items-baseline gap-2 my-3"><strong class="display-5">{{ nutrition_view.calories }}</strong><span class="text-secondary">kcal</span></div>
                 <div class="hef-macro-track mb-3">{% for macro in nutrition_view.macros %}<progress
                         class="hef-macro-progress {% if macro.name == 'Carbohydrates' %}hef-macro-progress--carbohydrates{% elif macro.name == 'Protein' %}hef-macro-progress--protein{% else %}hef-macro-progress--fat{% endif %}"
                         value="{{ macro.percentage }}" max="100"
-                        aria-label="{{ macro.name }} {{ macro.percentage }} percent">{{ macro.percentage
-                        }}%</progress>{% endfor %}</div>
+                        aria-label="{{ macro.name }} {{ macro.percentage }} percent">{{ macro.percentage }}%</progress>{% endfor %}</div>
                 <div class="d-flex flex-wrap gap-3 small">{% for macro in nutrition_view.macros %}<span>{{ macro.name }}
                         {{ macro.percentage }}%</span>{% endfor %}</div>
             </section>
@@ -81,8 +67,7 @@
                 <div class="hef-nutrient-tile h-100"><small class="text-secondary">{{ item.name }}</small>
                     <div class="h4 mb-0 mt-2">{{ item.amount|floatformat:1 }} <small>{{ item.unit }}</small></div>
                 </div>
-            </div>{% empty %}<p class="text-secondary">Nutrition details are not available for this recipe.</p>{% endfor
-            %}</div>
+            </div>{% empty %}<p class="text-secondary">Nutrition details are not available for this recipe.</p>{% endfor %}</div>
     </section>
     <div class="row g-3">
         <div class="col-lg-6">
@@ -103,8 +88,7 @@
                         ingredients · {{ steps|length }} steps</small>
                 </div>
                 <ol class="list-unstyled mb-3">{% for step in steps %}<li class="d-flex gap-3 mb-3"><span
-                            class="badge rounded-circle text-bg-success align-self-start">{{ forloop.counter
-                            }}</span><span>{{ step }}</span></li>{% empty %}<li class="text-secondary">No instructions
+                            class="badge rounded-circle text-bg-success align-self-start">{{ forloop.counter }}</span><span>{{ step }}</span></li>{% empty %}<li class="text-secondary">No instructions
                         provided.</li>{% endfor %}</ol>{% if source_url %}<a class="small" href="{{ source_url }}"
                     target="_blank" rel="noopener noreferrer">Instructions and nutrition provided by Spoonacular · View
                     original recipe →</a>{% endif %}
