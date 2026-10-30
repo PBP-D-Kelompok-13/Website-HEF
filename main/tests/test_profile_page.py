@@ -38,7 +38,7 @@ class ProfilePageTests(TestCase):
         self.assertContains(response, "healthyuser")
         self.assertContains(response, "healthy@example.com")
         self.assertContains(response, "01/01/2000")
-        self.assertContains(response, "Product Search History")
+        self.assertContains(response, "Products Added to Shelf")
         self.assertContains(response, "Your Pantry")
         self.assertContains(response, "Saved Recipes")
         self.assertNotContains(response, self.user.password)
