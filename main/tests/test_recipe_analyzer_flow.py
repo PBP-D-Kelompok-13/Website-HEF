@@ -222,6 +222,29 @@ class RecipeAnalyzerFlowTests(TestCase):
         self.assertContains(response, 'id="recipe-actions" class="col-12 col-xl-7 d-flex justify-content-end"')
         self.assertLess(response.content.index(b"Save as draft"), response.content.index(b"Clear form"))
 
+    def test_description_and_instructions_use_non_resizable_auto_growing_fields(self):
+        response = self.client.get(reverse("main:recipe_create"))
+
+        self.assertContains(response, 'class="form-control hef-recipe-textarea"', count=2)
+        self.assertContains(response, 'querySelectorAll(\'.hef-recipe-textarea[name="instructions"]\')')
+        self.assertContains(response, "resize: none; max-height: 320px")
+        self.assertContains(response, "recipe_analyzer.css?v=recipe-description-align-1")
+
+    def test_create_form_uses_rounded_input_styles(self):
+        response = self.client.get(reverse("main:recipe_create"))
+
+        self.assertContains(response, 'class="mt-3 hef-recipe-create-form"')
+        self.assertContains(response, "recipe_analyzer.css?v=recipe-description-align-1")
+
+    def test_description_field_stretches_to_match_photo_upload(self):
+        response = self.client.get(reverse("main:recipe_create"))
+
+        self.assertRegex(
+            response.content.decode(),
+            r'<div class="col-md-6 hef-recipe-description-field">\s*<label class="form-label" for="id_description">Description</label>',
+        )
+        self.assertContains(response, "recipe_analyzer.css?v=recipe-description-align-1")
+
     @patch("main.views.analyze_with_spoonacular", side_effect=ValueError("API error"))
     def test_create_renders_form_when_spoonacular_analysis_fails(self, analyze):
         response = self.client.post(reverse("main:recipe_create"), {
