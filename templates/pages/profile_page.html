@@ -30,11 +30,18 @@
 
             <section class="hef-profile-section hef-profile-section--green">
                 <div class="d-flex justify-content-between align-items-baseline mb-3">
-                    <h2 class="hef-profile-section-title mb-0">Product Search History</h2>
-                    <a href="{% url 'main:recipe_saved_list' %}" class="hef-profile-view-all text-label">View all →</a>
+                    <h2 class="hef-profile-section-title mb-0">Products Added to Shelf</h2>
+                    <a href="{% url 'main:discover' %}" class="hef-profile-view-all text-label">View all →</a>
                 </div>
-                <div class="hef-profile-row hef-profile-row--head text-label"><span>Product</span><span>Searched at</span></div>
-                <div class="hef-profile-row"><span>Placeholder</span><span>Placeholder Date</span></div>
+                <div class="hef-profile-row hef-profile-row--head text-label"><span>Product</span><span>Added at</span></div>
+                {% for product in added_products %}
+                    <a class="hef-profile-row text-decoration-none text-reset" href="{{ product.get_absolute_url }}">
+                        <span>{{ product.name }}</span>
+                        <span>{{ product.created_at|date:"M j, Y" }}</span>
+                    </a>
+                {% empty %}
+                    <div class="hef-profile-row"><span>No products added to the shelf yet.</span><span>-</span></div>
+                {% endfor %}
             </section>
 
             <section class="hef-profile-section hef-profile-section--yellow">
@@ -45,6 +52,8 @@
                 <div class="hef-profile-row hef-profile-row--head text-label"><span>Ingredient</span><span>Expiry date</span></div>
                 {% for item in ingredients %}
                 <div class="hef-profile-row"><span>{{ item.name }}</span><span>{{ item.expiration_date }}</span></div>
+                {% empty %}
+                <div class="hef-profile-row"><span>No saved ingredients in your pantry yet.</span><span>-</span></div>
                 {% endfor %}
             </section>
 

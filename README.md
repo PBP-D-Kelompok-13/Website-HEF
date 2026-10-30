@@ -95,5 +95,8 @@ Open http://localhost:8000 in your browser.
 - requests & urllib3: Facilitates external API communication.
 
 ## 📝 Tambahan File untuk Grading
+Akun di PWS dengan search history and shelf udah di setup:
+Username: admin 
+Password : kitaoranghef
 - [File terkait AI Documentation masing-masing anggota](docs/ai-documentation.md) 
 - [File terkait Git Extra Contributions masing-masing anggota](docs/extra-contributions.md) 
