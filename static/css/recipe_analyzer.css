@@ -47,6 +47,69 @@
     background: var(--hef-brand-mint)
 }
 
+.hef-score-progress,
+.hef-macro-progress {
+    appearance: none;
+    -webkit-appearance: none;
+    display: block;
+    border: 0;
+    border-radius: 999px;
+    overflow: hidden;
+    background: var(--hef-brand-mint);
+}
+
+.hef-score-progress {
+    width: 100%;
+    height: 10px;
+}
+
+.hef-macro-progress {
+    flex: 1 1 0;
+    min-width: 0;
+    height: 10px;
+    margin: 0;
+}
+
+.hef-score-progress::-webkit-progress-bar,
+.hef-macro-progress::-webkit-progress-bar {
+    border-radius: 999px;
+    background: var(--hef-brand-mint);
+}
+
+.hef-score-progress::-webkit-progress-value {
+    border-radius: 999px;
+    background: var(--hef-brand-forest);
+}
+
+.hef-score-progress::-moz-progress-bar {
+    border-radius: 999px;
+    background: var(--hef-brand-forest);
+}
+
+.hef-macro-progress--carbohydrates::-webkit-progress-value {
+    background: var(--hef-brand-forest);
+}
+
+.hef-macro-progress--carbohydrates::-moz-progress-bar {
+    background: var(--hef-brand-forest);
+}
+
+.hef-macro-progress--protein::-webkit-progress-value {
+    background: var(--hef-brand-citrus);
+}
+
+.hef-macro-progress--protein::-moz-progress-bar {
+    background: var(--hef-brand-citrus);
+}
+
+.hef-macro-progress--fat::-webkit-progress-value {
+    background: var(--hef-brand-watermelon);
+}
+
+.hef-macro-progress--fat::-moz-progress-bar {
+    background: var(--hef-brand-watermelon);
+}
+
 .hef-recipe-help {
     background: var(--hef-brand-mint);
     border-radius: 14px;
@@ -98,20 +161,6 @@
     object-fit: cover;
     border-radius: 12px;
     background: var(--hef-brand-mint)
-}
-
-.hef-score-track {
-    height: 10px;
-    border-radius: 999px;
-    background: var(--hef-brand-mint);
-    overflow: hidden
-}
-
-.hef-score-track>span {
-    display: block;
-    height: 100%;
-    background: var(--hef-brand-forest);
-    border-radius: 999px
 }
 
 .hef-nutrient-tile {
