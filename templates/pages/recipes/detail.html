@@ -2,7 +2,7 @@
 {% load static %}
 {% block title %}{{ recipe.title }} | Recipe Analyzer{% endblock %}
 {% block head %}
-<link rel="stylesheet" href="{% static 'css/recipe_analyzer.css' %}?v=recipe-progress-1">
+<link rel="stylesheet" href="{% static 'css/recipe_analyzer.css' %}?v=recipe-save-modal-1">
 {% endblock %}
 {% block content %}
 <section class="container my-4 my-md-5">
@@ -15,10 +15,9 @@
         <div class="d-flex flex-wrap gap-2">
             {% if is_spoonacular and not saved_recipe %}
                 <a class="btn-hef-secondary" href="{% url 'main:recipe_discover' %}?query={{ back_query|urlencode }}">Back to results</a>
-                <form method="post" action="{% url 'main:recipe_save_spoonacular' recipe.id %}" hx-post="{% url 'main:recipe_save_spoonacular' recipe.id %}">
-                    {% csrf_token %}
-                    <button class="btn-hef-primary" type="submit">Save recipe</button>
-                </form>
+                <button class="btn-hef-primary" type="button" data-bs-toggle="modal" data-bs-target="#saveRecipeModal-{{ recipe.id }}">Save recipe</button>
+                {% url 'main:recipe_save_spoonacular' recipe.id as save_recipe_url %}
+                {% include "pages/recipes/_confirmation_modal.html" with modal_prefix="saveRecipeModal-" modal_suffix=recipe.id modal_title="Are you sure you want to save this recipe?" confirm_label="Yes, save recipe" cancel_label="No, take me back!" form_url=save_recipe_url confirm_variant="save" %}
             {% elif saved_recipe %}
                 <a class="btn-hef-secondary" href="{% url 'main:recipe_saved_list' %}">Back to saved</a>
                 <button class="btn-hef-danger" type="button" data-bs-toggle="modal" data-bs-target="#removeRecipeModal-{{ recipe.pk }}">Remove saved recipe</button>

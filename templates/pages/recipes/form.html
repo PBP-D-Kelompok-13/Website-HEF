@@ -112,7 +112,7 @@
         <div class="d-flex flex-wrap justify-content-end gap-2">
           <button class="btn-hef-primary" type="submit" name="action" value="analyze">Analyze recipe</button>
           <button class="btn-hef-secondary" type="submit" name="action" value="draft">Save as draft</button>
-          <button class="btn-hef-secondary" type="reset">Clear form</button>
+          <button class="btn-hef-secondary" type="button" id="clear-recipe-form">Clear form</button>
         </div>
       </div>
     </div>
@@ -145,8 +145,15 @@
   });
 
   const container = document.getElementById("ingredient-rows");
-  document.querySelector("form").addEventListener("reset", () => {
-    window.setTimeout(() => textareas.forEach(autoGrow));
+  document.getElementById("clear-recipe-form").addEventListener("click", () => {
+    document.querySelectorAll("#id_title, #id_description, #id_servings, #id_photo, #id_instructions, #ingredient-rows input:not([type=\"hidden\"])")
+      .forEach(field => { field.value = ""; });
+    container.querySelectorAll(".ingredient-row").forEach(row => {
+      row.classList.remove("d-none");
+      const deletion = row.querySelector('input[name$="-DELETE"]');
+      if (deletion) deletion.value = "";
+    });
+    textareas.forEach(autoGrow);
   });
   const total = document.getElementById("id_ingredient-TOTAL_FORMS");
   const template = document.getElementById("empty-ingredient-row");

@@ -2,10 +2,10 @@
   <div class="modal-dialog modal-dialog-centered">
     <div class="modal-content hef-modal-content">
       <h2 class="h2 hef-modal-title text-center" id="{{ modal_prefix }}{{ modal_suffix }}-title">{{ modal_title }}</h2>
-      <div class="hef-recipe-confirm-actions">
+      <div class="hef-recipe-confirm-actions{% if confirm_variant == 'save' %} hef-recipe-confirm-actions--save{% endif %}">
         <form method="post" action="{{ form_url }}" hx-post="{{ form_url }}">
           {% csrf_token %}
-          <button type="submit" class="btn-hef-danger w-100" data-bs-dismiss="modal">{{ confirm_label }}</button>
+          <button type="submit" class="{% if confirm_variant == 'save' %}btn-hef-primary{% else %}btn-hef-danger{% endif %} w-100" data-bs-dismiss="modal">{{ confirm_label }}</button>
         </form>
         <button type="button" class="btn-hef-secondary w-100" data-bs-dismiss="modal">{{ cancel_label }}</button>
       </div>

@@ -229,6 +229,16 @@
     min-width: 0;
 }
 
+.hef-recipe-confirm-actions--save form {
+    grid-column: 2;
+    grid-row: 1;
+}
+
+.hef-recipe-confirm-actions--save > button {
+    grid-column: 1;
+    grid-row: 1;
+}
+
 .hef-recipe-confirm-actions .btn-hef-danger,
 .hef-recipe-confirm-actions .btn-hef-secondary {
     height: auto;
