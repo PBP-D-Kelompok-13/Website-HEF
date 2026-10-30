@@ -1,0 +1,114 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Saved Comparisons | HEF{% endblock %}
+
+{% block head %}
+    <link rel="stylesheet" href="{% static 'css/compare.css' %}">
+    <link rel="stylesheet" href="{% static 'css/compare_saved.css' %}">
+{% endblock %}
+
+{% block content %}
+<main id="saved-comparisons-page"
+      class="container compare-page compare-saved-page"
+      data-login-url="{% url 'main:login_account' %}">
+
+    <header class="compare-saved-heading">
+        <h1>Saved Comparisons</h1>
+        <p class="compare-muted">
+            Revisit your saved product comparisons.
+        </p>
+    </header>
+
+    <form id="saved-filter-form"
+          method="get"
+          action="{% url 'main:compare_saved_list' %}"
+          hx-get="{% url 'main:compare_saved_list' %}"
+          hx-trigger="submit, input delay:300ms, comparisonUpdated from:body, comparisonDeleted from:body"
+          hx-target="#saved-comparison-results"
+          hx-swap="outerHTML"
+          hx-sync="this:replace"
+          hx-indicator="#saved-search-loading"
+          hx-request='{"timeout":10000}'>
+
+        <div class="saved-toolbar">
+            <label class="saved-search">
+                <span class="visually-hidden">
+                    Search comparisons by title
+                </span>
+
+                <img src="{% static 'img/compare-search.png' %}"
+                     width="17"
+                     height="17"
+                     alt=""
+                     aria-hidden="true">
+
+                <input type="search"
+                       name="q"
+                       value="{{ query }}"
+                       maxlength="120"
+                       placeholder="Search comparisons"
+                       autocomplete="off">
+            </label>
+
+            <a href="{% url 'main:show_compare' %}"
+               class="btn-hef-primary saved-back-button">
+                Back to Compare
+            </a>
+        </div>
+
+        <fieldset class="saved-filters">
+            <legend class="visually-hidden">
+                Filter by number of products
+            </legend>
+
+            {% for value, label in count_options %}
+                <label class="saved-filter-choice">
+                    <input type="radio"
+                           class="visually-hidden"
+                           name="count"
+                           value="{{ value }}"
+                           {% if count_filter == value %}checked{% endif %}>
+                    <span>{{ label }}</span>
+                </label>
+            {% endfor %}
+        </fieldset>
+
+        <button type="submit" class="visually-hidden" tabindex="-1">
+            Search
+        </button>
+    </form>
+
+    <span id="saved-search-loading"
+          class="htmx-indicator compare-muted"
+          role="status">
+        Loading comparisons…
+    </span>
+
+    <p id="saved-search-error"
+       class="compare-validation"
+       role="alert"
+       hidden></p>
+
+    <p id="compare-edit-status"
+       class="compare-notice"
+       role="status"
+       tabindex="-1"
+       hidden></p>
+
+    <p id="compare-delete-status"
+       class="compare-notice"
+       role="status"
+       tabindex="-1"
+       hidden></p>
+    {% include "partials/compare_saved_results.html" %}
+</main>
+{% include "partials/compare_edit_modal.html" %}
+{% include "partials/compare_delete_modal.html" %}
+{% endblock content %}
+
+{% block script %}
+    <script src="{% static 'js/compare_saved.js' %}" defer></script>
+    <script src="{% static 'js/compare_edit.js' %}" defer></script>
+    <script src="{% static 'js/compare_delete.js' %}" defer></script>
+{% endblock script %}

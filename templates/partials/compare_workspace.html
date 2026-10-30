@@ -1,0 +1,321 @@
+<section id="compare-workspace" aria-labelledby="compare-title">
+    <header class="compare-heading">
+        <h1 id="compare-title" tabindex="-1">Compare Products</h1>
+        <p class="compare-muted">
+            Compare 2–3 products to understand their environmental impact and nutrition.
+        </p>
+        <p class="visually-hidden">
+            Select 2–3 different products to compare.
+        </p>
+        <div class="compare-page-actions">
+            <a href="{% url 'main:compare_saved_list' %}"
+            class="btn-hef-secondary">
+                Saved comparisons
+            </a>
+
+            <form
+                id="compare-clear-form"
+                method="post"
+                action="{% url 'main:compare_clear' %}"
+                hx-post="{% url 'main:compare_clear' %}"
+                hx-target="#compare-workspace"
+                hx-swap="outerHTML"
+                hx-sync="#compare-workspace:drop"
+                hx-disabled-elt="find button"
+                hx-indicator="#compare-clear-loading"
+                hx-request='{"timeout": 10000}'
+                data-login-url="{% url 'main:login_account' %}">
+                {% csrf_token %}
+
+                <button
+                    type="submit"
+                    class="compare-clear-button"
+                    {% if not selected_count %}disabled{% endif %}>
+                    Clear selection
+                </button>
+
+                <span
+                    id="compare-clear-loading"
+                    class="htmx-indicator compare-clear-loading compare-muted"
+                    role="status">
+                    Clearing…
+                </span>
+            </form>
+        </div>
+
+        {% if selection_notice %}
+            <p id="compare-clear-status"
+            class="compare-notice"
+            role="status"
+            tabindex="-1">
+                {{ selection_notice }}
+            </p>
+        {% endif %}
+
+        <p id="compare-clear-error"
+        class="compare-notice"
+        role="alert"
+        hidden></p>
+    </header>
+
+    {% if source_unavailable %}
+        <p class="compare-notice" role="status">
+            Discover product data is not available yet.
+            Your selection has been kept.
+        </p>
+    {% endif %}
+
+    {% if not products %}
+        <p class="compare-muted">No products selected</p>
+    {% endif %}
+
+    <div class="compare-product-grid">
+        {% for product in slots %}
+            <article class="compare-card" data-compare-slot="{{ forloop.counter }}">
+                {% if product %}
+                    <div class="compare-product-identity">
+                        <div class="compare-image">
+                            {% if product.image_url %}
+                                <img src="{{ product.image_url }}"
+                                     alt="{{ product.name }}" loading="lazy">
+                            {% else %}
+                                <span class="compare-muted">No image available</span>
+                            {% endif %}
+                        </div>
+
+                        <div class="compare-product-copy">
+                            <h2 class="compare-product-name">{{ product.name }}</h2>
+                            <p class="compare-muted">
+                                {{ product.brand|default:"Brand not available" }}
+                            </p>
+                        </div>
+                    </div>
+
+                    {% if not product.available %}
+                        <p class="compare-muted">This product could not be loaded.</p>
+                    {% endif %}
+
+                    <div class="compare-selection-actions">
+                        <span class="compare-barcode">
+                            Barcode: {{ product.barcode }}
+                        </span>
+
+                        <form method="post"
+                              action="{% url 'main:compare_remove' %}"
+                              hx-post="{% url 'main:compare_remove' %}"
+                              hx-target="#compare-workspace"
+                              hx-swap="outerHTML"
+                              hx-sync="#compare-workspace:drop"
+                              hx-disabled-elt="find button">
+                            {% csrf_token %}
+                            <input type="hidden" name="barcode" value="{{ product.barcode }}">
+                            <button type="submit" class="compare-remove"
+                                    aria-label="Remove {{ product.name }}">
+                                <span aria-hidden="true">×</span>
+                            </button>
+                        </form>
+                    </div>
+                {% else %}
+                    <h2 class="compare-product-name">
+                        {% if forloop.counter == 3 %}
+                            Add a third product
+                        {% else %}
+                            Choose a product
+                        {% endif %}
+                    </h2>
+                    <p class="compare-muted">
+                        {% if forloop.counter == 3 %}
+                            Optional · compare up to three different products
+                        {% else %}
+                            Choose a product from Discover.
+                        {% endif %}
+                    </p>
+                    <button type="button"
+                            class="btn-hef-secondary compare-add-product"
+                            data-bs-toggle="modal"
+                            data-bs-target="#compareProductPicker"
+                            hx-get="{% url 'main:compare_product_picker' %}"
+                            hx-target="#compare-picker-content"
+                            hx-swap="innerHTML"
+                            hx-sync="#compare-picker-content:replace"
+                            hx-request='{"timeout":10000}'>
+                        Add product
+                    </button>
+                {% endif %}
+            </article>
+        {% endfor %}
+    </div>
+
+    <div class="compare-controls">
+        <div class="compare-selection-status" role="status">
+            <p>{{ selected_count }} of 3 products selected</p>
+            <p class="compare-muted">
+                Choose at least 2 different products. Maximum 3.
+            </p>
+        </div>
+
+        <form method="get"
+              action="{% url 'main:show_compare' %}"
+              hx-get="{% url 'main:show_compare' %}"
+              hx-target="#compare-workspace"
+              hx-swap="outerHTML"
+              hx-sync="#compare-workspace:drop"
+              hx-disabled-elt="find button"
+              hx-indicator="#compare-run-loading">
+            <input type="hidden" name="run" value="1">
+
+            <button type="submit"
+                    class="btn-hef-primary compare-run"
+                    {% if not can_compare %}disabled{% endif %}>
+                Compare products
+            </button>
+
+            <span id="compare-run-loading"
+                  class="htmx-indicator compare-muted"
+                  role="status">
+                Comparing…
+            </span>
+        </form>
+    </div>
+
+    {% if show_results %}
+        <section class="compare-results" aria-labelledby="compare-results-title">
+            <h2 id="compare-results-title">Scores at a glance</h2>
+
+            <p id="compare-scroll-help" class="compare-muted compare-scroll-help">
+                On smaller screens, scroll horizontally inside the table.
+            </p>
+
+            <div class="compare-table-scroll"
+                 role="region"
+                 aria-label="Product score comparison"
+                 aria-describedby="compare-scroll-help"
+                 tabindex="0">
+                <table class="compare-table">
+                    <caption class="visually-hidden">
+                        Eco-Score and Nutri-Score for selected products
+                    </caption>
+                    <thead>
+                        <tr>
+                            <th scope="col">Product</th>
+                            {% for product in slots %}
+                                <th scope="col">
+                                    {% if product %}
+                                        {{ product.name }}
+                                        <span class="compare-description">
+                                            {{ product.brand|default:"Brand not available" }}
+                                        </span>
+                                    {% else %}
+                                        Choose a product
+                                        <span class="compare-description">
+                                            Optional third product
+                                        </span>
+                                    {% endif %}
+                                </th>
+                            {% endfor %}
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <th scope="row">
+                                Eco-Score
+                                <span class="compare-description">Environmental impact</span>
+                            </th>
+                            {% for product in slots %}
+                                <td>
+                                    {% if product.eco_grade %}
+                                        <div class="compare-score compare-score-{{ product.eco_grade }}"
+                                             aria-label="Eco-Score {{ product.eco_grade|upper }}">
+                                            <strong>{{ product.eco_grade|upper }}</strong>
+                                            <span>Grade provided</span>
+                                        </div>
+                                    {% else %}
+                                        <div class="compare-score compare-score-na"
+                                             aria-label="Eco-Score {% if product %}not available{% else %}not selected{% endif %}">
+                                            <strong aria-hidden="true">—</strong>
+                                            <span>{% if product %}Not available{% else %}Not selected{% endif %}</span>
+                                        </div>
+                                    {% endif %}
+                                </td>
+                            {% endfor %}
+                        </tr>
+                        <tr>
+                            <th scope="row">
+                                Nutri-Score
+                                <span class="compare-description">Nutritional quality</span>
+                            </th>
+                            {% for product in slots %}
+                                <td>
+                                    {% if product.nutri_grade %}
+                                        <div class="compare-score compare-score-{{ product.nutri_grade }}"
+                                             aria-label="Nutri-Score {{ product.nutri_grade|upper }}">
+                                            <strong>{{ product.nutri_grade|upper }}</strong>
+                                            <span>Grade provided</span>
+                                        </div>
+                                    {% else %}
+                                        <div class="compare-score compare-score-na"
+                                             aria-label="Nutri-Score {% if product %}not available{% else %}not selected{% endif %}">
+                                            <strong aria-hidden="true">—</strong>
+                                            <span>{% if product %}Not available{% else %}Not selected{% endif %}</span>
+                                        </div>
+                                    {% endif %}
+                                </td>
+                            {% endfor %}
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="compare-results-footer">
+                <p class="compare-source">
+                    Source: Open Food Facts via the shared product data.
+                </p>
+
+                <button
+                    type="button"
+                    id="compare-save-open"
+                    class="btn-hef-primary"
+                    hx-get="{% url 'main:compare_save' %}"
+                    hx-target="#compare-save-content"
+                    hx-swap="innerHTML"
+                    hx-sync="#compare-save-content:drop"
+                    hx-indicator="#compare-save-opening"
+                    hx-request='{"timeout": 10000}'
+                    data-bs-toggle="modal"
+                    data-bs-target="#compareSaveModal">
+                    Save comparison
+                </button>
+            </div>
+        </section>
+    {% else %}
+        <section class="compare-pending" aria-labelledby="compare-ready-title">
+            <h2 id="compare-ready-title">Ready when you are</h2>
+            <p class="compare-muted">
+                Select your products, then press Compare products to see the scores.
+            </p>
+
+            {% if comparison_error %}
+                <p class="compare-validation" role="alert">
+                    {{ comparison_error }}
+                </p>
+            {% endif %}
+        </section>
+    {% endif %}
+
+    <aside class="compare-explanations" aria-label="About the scores">
+        <div>
+            <h2>Eco-Score</h2>
+            <p>
+                Describes environmental impact.
+                Eco-Score alone does not determine how healthy a product is.
+            </p>
+        </div>
+        <div>
+            <h2>Nutri-Score</h2>
+            <p>
+                Describes nutritional quality.
+                Missing scores are shown as “Not available”, not zero.
+            </p>
+        </div>
+    </aside>
+</section>

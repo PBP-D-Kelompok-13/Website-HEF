@@ -40,10 +40,12 @@
             <section class="hef-profile-section hef-profile-section--yellow">
                 <div class="d-flex justify-content-between align-items-baseline mb-3">
                     <h2 class="hef-profile-section-title mb-0">Your Pantry</h2>
-                    <a href="#" class="hef-profile-view-all text-label">View all →</a>
+                    <a href="{% url 'main:show_inventory' %}" class="hef-profile-view-all text-label">View all →</a>
                 </div>
                 <div class="hef-profile-row hef-profile-row--head text-label"><span>Ingredient</span><span>Expiry date</span></div>
-                <div class="hef-profile-row"><span>Placeholder</span><span>Placeholder Date</span></div>
+                {% for item in ingredients %}
+                <div class="hef-profile-row"><span>{{ item.name }}</span><span>{{ item.expiration_date }}</span></div>
+                {% endfor %}
             </section>
 
             <section class="hef-profile-section hef-profile-section--pink">

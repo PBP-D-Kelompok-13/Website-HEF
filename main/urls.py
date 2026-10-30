@@ -1,3 +1,14 @@
+from .comparison_views import (
+    compare_add,
+    compare_remove,
+    compare_clear,
+    compare_product_picker,
+    compare_save,
+    compare_saved_list,
+    compare_saved_detail,
+    compare_saved_edit,
+    compare_saved_delete,
+)
 from django.urls import path
 from .views import *
 
@@ -24,10 +35,41 @@ urlpatterns = [
     path("profile/change-password/", change_password, name="change_password"),
     path("reactivate/", reactivate_account, name="reactivate_account"),
     path("profile/deactivate/", deactivate_account, name="deactivate_account"),
-    path('pantry/', show_inventory, name='show_inventory'),
-    path('pantry/add/', add_ingredient, name='add_ingredient'),
-    path('pantry/edit/<int:pk>/', edit_ingredient, name='edit_ingredient'),
-    path('pantry/delete/<int:pk>/', delete_ingredient, name='delete_ingredient'),
+    path("compare/", show_compare, name="show_compare"),
+    path("compare/add/", compare_add, name="compare_add"),
+    path("compare/save/", compare_save, name="compare_save"),
+    path("compare/remove/", compare_remove, name="compare_remove"),
+    path(
+            "compare/products/",
+            compare_product_picker,
+            name="compare_product_picker",
+    ),
+    path("compare/clear/", compare_clear, name="compare_clear"),
+    path(
+        "compare/saved/",
+        compare_saved_list,
+        name="compare_saved_list",
+    ),
+    path(
+        "compare/saved/<int:pk>/",
+        compare_saved_detail,
+        name="compare_saved_detail",
+    ),
+    path(
+        "compare/saved/<int:pk>/edit/",
+        compare_saved_edit,
+        name="compare_saved_edit",
+    ),
+    path(
+        "compare/saved/<int:pk>/delete/",
+        compare_saved_delete,
+        name="compare_saved_delete",
+    ),
+    path("pantry/", show_inventory, name="show_inventory"),
+    path("pantry/add/", add_ingredient, name="add_ingredient"),
+    path("pantry/edit/<int:pk>/", edit_ingredient, name="edit_ingredient"),
+    path("pantry/delete/<int:pk>/", delete_ingredient, name="delete_ingredient"),
+    path("api/pantry/", get_ingredients_json, name="get_ingredients_json"),
     path("discover/", discover, name="discover"),
     path("discover/new/", product_create, name="product_create"),
     path("products/lookup/<str:barcode>/", lookup_product, name="lookup_product"),

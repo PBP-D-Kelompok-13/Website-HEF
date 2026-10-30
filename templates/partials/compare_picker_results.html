@@ -1,0 +1,103 @@
+{% load static %}
+
+<div class="compare-picker-list">
+    {% for product in page %}
+        <article class="compare-picker-card">
+            <div class="compare-picker-product">
+                {% if product.picker_image_url %}
+                    <img class="compare-picker-image"
+                         src="{{ product.picker_image_url }}"
+                         alt=""
+                         width="52"
+                         height="52"
+                         loading="lazy">
+                {% else %}
+                    <img class="compare-picker-image"
+                         src="{% static 'img/compare-product-placeholder.png' %}"
+                         alt="Product image unavailable"
+                         width="52"
+                         height="52">
+                {% endif %}
+
+                <div class="compare-picker-product-copy">
+                    <h3>{{ product.name }}</h3>
+                    <p class="compare-muted">
+                        {{ product.brand|default:"Brand not available" }}
+                        {% if product.quantity %} · {{ product.quantity }}{% endif %}
+                    </p>
+                </div>
+            </div>
+
+            <form method="post"
+                  action="{% url 'main:compare_add' %}"
+                  hx-post="{% url 'main:compare_add' %}"
+                  hx-target="#compare-workspace"
+                  hx-swap="outerHTML"
+                  hx-sync="#compare-workspace:drop"
+                  hx-disabled-elt="#compareProductPicker .compare-picker-select"
+                  hx-indicator="#compare-picker-adding"
+                  hx-request='{"timeout":10000}'>
+                {% csrf_token %}
+
+                <input type="hidden"
+                       name="barcode"
+                       value="{{ product.barcode }}">
+
+                <input type="hidden" name="source" value="workspace">
+
+                <button type="submit"
+                        class="btn-hef-secondary compare-picker-select">
+                    Select {{ product.name }}
+                </button>
+            </form>
+        </article>
+    {% empty %}
+        <div class="compare-notice" role="status">
+            <p>No products found.</p>
+            <p class="compare-muted mb-0">
+                Try another name or barcode. Products must already be
+                available in Discover.
+            </p>
+        </div>
+    {% endfor %}
+</div>
+
+<span id="compare-picker-adding"
+      class="htmx-indicator compare-muted"
+      role="status">
+    Adding product…
+</span>
+
+{% if page.has_other_pages %}
+    <nav class="compare-picker-pagination" aria-label="Product results pages">
+        {% if page.has_previous %}
+            <button type="button"
+                    class="btn-hef-secondary"
+                    hx-get="{% url 'main:compare_product_picker' %}?results=1&amp;q={{ query|urlencode }}&amp;page={{ page.previous_page_number }}"
+                    hx-target="#compare-picker-results"
+                    hx-swap="innerHTML"
+                    hx-sync="#compare-picker-content:replace"
+                    hx-indicator="#compare-picker-loading"
+                    hx-request='{"timeout":10000}'>
+                Previous
+            </button>
+        {% endif %}
+
+        <span class="compare-muted">
+            {{ page.number }} / {{ page.paginator.num_pages }}
+        </span>
+
+        {% if page.has_next %}
+            <button type="button"
+                    class="btn-hef-secondary"
+                    hx-get="{% url 'main:compare_product_picker' %}?results=1&amp;q={{ query|urlencode }}&amp;page={{ page.next_page_number }}"
+                    hx-target="#compare-picker-results"
+                    hx-swap="innerHTML"
+                    hx-sync="#compare-picker-content:replace"
+                    hx-indicator="#compare-picker-loading"
+                    hx-request='{"timeout":10000}'>
+                Next
+            </button>
+        {% endif %}
+    </nav>
+{% endif %}
