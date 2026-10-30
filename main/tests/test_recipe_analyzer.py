@@ -90,6 +90,7 @@ class RecipeAnalyzerTests(TestCase):
         SavedRecipe.objects.create(user=self.other, title="Private curry", ingredients="rice", servings=1)
         response = self.client.get(reverse("main:recipe_saved_list"))
         self.assertContains(response, "Lentil bowl")
+        self.assertContains(response, "img/recipe-placeholder.png")
         self.assertNotContains(response, "Private curry")
         detail = reverse("main:recipe_detail", args=[self.recipe.pk])
         detail_response = self.client.get(detail)
@@ -99,6 +100,7 @@ class RecipeAnalyzerTests(TestCase):
         self.assertContains(detail_response, 'class="modal-dialog modal-dialog-centered"')
         self.assertContains(detail_response, 'class="hef-recipe-confirm-actions"')
         self.assertContains(detail_response, "recipe_analyzer.css?v=recipe-progress-1")
+        self.assertContains(detail_response, "img/recipe-placeholder.png")
         self.client.force_login(self.other)
         self.assertEqual(self.client.get(detail).status_code, 404)
 
