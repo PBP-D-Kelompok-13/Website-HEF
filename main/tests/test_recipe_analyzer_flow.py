@@ -34,6 +34,9 @@ class RecipeAnalyzerFlowTests(TestCase):
         self.assertNotContains(response, "▮")
         self.assertContains(response, 'data-bs-target="#saveRecipeModal-123"')
         self.assertContains(response, 'id="saveRecipeModal-123"')
+        self.assertContains(response, 'class="hef-recipe-confirm-actions hef-recipe-confirm-actions--save"')
+        self.assertContains(response, 'class="btn-hef-primary w-100"')
+        self.assertContains(response, "recipe_analyzer.css?v=recipe-save-modal-1")
         self.assertContains(response, "Are you sure you want to save this recipe?")
         self.assertContains(response, "Yes, save recipe")
         search.assert_called_once_with(query="tofu", diet="vegan", max_ready_time=30, offset=0)
@@ -278,6 +281,18 @@ class RecipeAnalyzerFlowTests(TestCase):
         self.assertTrue(recipe.is_draft)
         self.assertEqual(recipe.ingredient_items[0], {"name": "Black beans", "amount_g": ""})
 
+    def test_edit_form_clear_button_clears_fields_instead_of_resetting_to_saved_values(self):
+        recipe = SavedRecipe.objects.create(
+            user=self.user, title="Old beans", description="A saved description.",
+            instructions="Soak beans.\nCook beans.", servings=2,
+            ingredient_items=[{"name": "Black beans", "amount_g": "150"}],
+        )
+
+        response = self.client.get(reverse("main:recipe_update", args=[recipe.pk]))
+
+        self.assertContains(response, 'type="button" id="clear-recipe-form"')
+        self.assertContains(response, 'querySelectorAll("#id_title, #id_description, #id_servings, #id_photo, #id_instructions, #ingredient-rows input:not')
+
     @patch("main.views.analyze_with_spoonacular", side_effect=requests.RequestException("API unavailable"))
     def test_update_renders_form_when_reanalysis_fails(self, analyze):
         recipe = SavedRecipe.objects.create(
@@ -312,6 +327,10 @@ class RecipeAnalyzerFlowTests(TestCase):
         self.assertEqual(detail_response.status_code, 200)
         self.assertContains(detail_response, "Bake the tofu.")
         self.assertContains(detail_response, "A tofu bowl.")
+        self.assertContains(detail_response, 'data-bs-target="#saveRecipeModal-123"')
+        self.assertContains(detail_response, 'id="saveRecipeModal-123"')
+        self.assertContains(detail_response, "Yes, save recipe")
+        self.assertContains(detail_response, "recipe_analyzer.css?v=recipe-save-modal-1")
         self.assertContains(
             detail_response,
             '<progress class="hef-score-progress mb-3" value="75" max="100" aria-label="Health score"></progress>',

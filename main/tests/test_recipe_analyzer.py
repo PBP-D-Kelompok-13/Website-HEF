@@ -99,7 +99,7 @@ class RecipeAnalyzerTests(TestCase):
         self.assertContains(detail_response, f'id="removeRecipeModal-{self.recipe.pk}"')
         self.assertContains(detail_response, 'class="modal-dialog modal-dialog-centered"')
         self.assertContains(detail_response, 'class="hef-recipe-confirm-actions"')
-        self.assertContains(detail_response, "recipe_analyzer.css?v=recipe-progress-1")
+        self.assertContains(detail_response, "recipe_analyzer.css?v=recipe-save-modal-1")
         self.assertContains(detail_response, "img/recipe-placeholder.png")
         self.client.force_login(self.other)
         self.assertEqual(self.client.get(detail).status_code, 404)
