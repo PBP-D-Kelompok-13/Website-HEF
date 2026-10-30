@@ -11,7 +11,11 @@ class SharedLayoutTests(TestCase):
         self.assertTemplateUsed(self.response, "components/footer.html")
 
     def test_discover_link_is_wired_in_desktop_and_mobile_nav(self):
-        self.assertContains(self.response, f'href="{reverse("main:discover")}"', count=2)
+        discover_nav_link = (
+            f'href="{reverse("main:discover")}" '
+            'class="nav-link p-0">Discover</a>'
+        )
+        self.assertContains(self.response, discover_nav_link, count=2)
 
     def test_open_food_facts_attribution_is_in_footer(self):
         self.assertContains(self.response, "Open Food Facts")
