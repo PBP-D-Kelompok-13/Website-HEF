@@ -135,7 +135,7 @@ def show_profile_page(request):
     saved_recipe = (
         SavedRecipe.objects.filter(user=request.user).order_by("-created_at").first()
     )
-    ingredients = Ingredient.objects.filter(user=request.user)
+    ingredients = Ingredient.objects.filter(user=request.user).order_by("created_at")[:3]
     context = {
         "avatar": avatar,
         "ingredients": ingredients,

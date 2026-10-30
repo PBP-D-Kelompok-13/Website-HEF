@@ -73,6 +73,7 @@ class Ingredient(models.Model):
     quantity = models.CharField(max_length=50)
     expiration_date = models.DateField()
     image = models.ImageField(upload_to='ingredients/', blank=True, null=True)
+    created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
         return f"{self.name} ({self.user.username})"
