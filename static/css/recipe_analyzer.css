@@ -123,9 +123,29 @@
     align-items: center
 }
 
+.hef-recipe-create-form .form-control {
+    border-radius: 16px;
+}
+
+.hef-recipe-description-field {
+    display: flex;
+    flex-direction: column;
+}
+
+.hef-recipe-description-field textarea {
+    flex: 1 1 auto;
+    min-height: 110px;
+}
+
 .hef-step-area textarea {
     min-height: 170px;
     border-radius: 18px
+}
+
+.hef-recipe-textarea {
+    resize: none;
+    overflow-y: hidden;
+    max-height: 320px;
 }
 
 .hef-photo-drop {
@@ -207,6 +227,16 @@
 
 .hef-recipe-confirm-actions > button {
     min-width: 0;
+}
+
+.hef-recipe-confirm-actions--save form {
+    grid-column: 2;
+    grid-row: 1;
+}
+
+.hef-recipe-confirm-actions--save > button {
+    grid-column: 1;
+    grid-row: 1;
 }
 
 .hef-recipe-confirm-actions .btn-hef-danger,

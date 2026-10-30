@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 {% load static %}
 {% block title %}Recipe Analyzer | Create{% endblock %}
-{% block head %}<link rel="stylesheet" href="{% static 'css/recipe_analyzer.css' %}?v=forest-title-1">{% endblock %}
+{% block head %}<link rel="stylesheet" href="{% static 'css/recipe_analyzer.css' %}?v=recipe-description-align-1">{% endblock %}
 {% block content %}
 <section class="container my-4 my-md-5">
   <div class="mb-4">
@@ -10,7 +10,7 @@
   </div>
   {% include "pages/recipes/_tabs.html" with active_tab="create" %}
 
-  <form method="post" enctype="multipart/form-data" class="mt-3">
+  <form method="post" enctype="multipart/form-data" class="mt-3 hef-recipe-create-form">
     {% csrf_token %}
     {{ ingredient_formset.management_form }}
 
@@ -38,7 +38,7 @@
                 {% for error in form.photo.errors %}<div class="invalid-feedback d-block">{{ error }}</div>{% endfor %}
               </div>
             </div>
-            <div class="col-md-6">
+            <div class="col-md-6 hef-recipe-description-field">
               <label class="form-label" for="{{ form.description.id_for_label }}">Description</label>
               {{ form.description }}
               {% for error in form.description.errors %}<div class="invalid-feedback d-block">{{ error }}</div>{% endfor %}
@@ -50,10 +50,11 @@
       <div class="col-12 col-xl-5">
         <aside class="hef-recipe-help h-100">
           <h2 class="h4 mb-3">How it works</h2>
-          <p>• Add ingredients and amounts. Spoonacular estimates nutrition per serving from these details.</p>
-          <p>• Analysis can return a health score (0–100) and dietary labels when available.</p>
-          <p>• Health score describes nutrition, not environmental impact or carbon footprint.</p>
-          <p class="mb-0">• Your analyzed recipe is saved under “My recipes”, separate from Spoonacular recipes.</p>
+          <p>• Enter each ingredient with its amount in grams.</p>
+          <p>• Nutrition values are estimates per serving based on the ingredients provided.</p>
+          <p>• Health score and dietary labels are shown only when Spoonacular returns them.</p>
+          <p>• Add clear preparation steps so you can follow the recipe later.</p>
+          <p class="mb-0">• Save as draft to keep working on your recipe later.</p>
         </aside>
       </div>
     </div>
@@ -111,7 +112,7 @@
         <div class="d-flex flex-wrap justify-content-end gap-2">
           <button class="btn-hef-primary" type="submit" name="action" value="analyze">Analyze recipe</button>
           <button class="btn-hef-secondary" type="submit" name="action" value="draft">Save as draft</button>
-          <button class="btn-hef-secondary" type="reset">Clear form</button>
+          <button class="btn-hef-secondary" type="button" id="clear-recipe-form">Clear form</button>
         </div>
       </div>
     </div>
@@ -131,7 +132,29 @@
 {% block script %}
 <script>
 (() => {
+  const textareas = document.querySelectorAll('.hef-recipe-textarea[name="instructions"]');
+  const autoGrow = textarea => {
+    textarea.style.height = "auto";
+    const maxHeight = Number.parseFloat(getComputedStyle(textarea).maxHeight) || 320;
+    textarea.style.height = `${Math.min(textarea.scrollHeight, maxHeight)}px`;
+    textarea.style.overflowY = textarea.scrollHeight > maxHeight ? "auto" : "hidden";
+  };
+  textareas.forEach(textarea => {
+    textarea.addEventListener("input", () => autoGrow(textarea));
+    autoGrow(textarea);
+  });
+
   const container = document.getElementById("ingredient-rows");
+  document.getElementById("clear-recipe-form").addEventListener("click", () => {
+    document.querySelectorAll("#id_title, #id_description, #id_servings, #id_photo, #id_instructions, #ingredient-rows input:not([type=\"hidden\"])")
+      .forEach(field => { field.value = ""; });
+    container.querySelectorAll(".ingredient-row").forEach(row => {
+      row.classList.remove("d-none");
+      const deletion = row.querySelector('input[name$="-DELETE"]');
+      if (deletion) deletion.value = "";
+    });
+    textareas.forEach(autoGrow);
+  });
   const total = document.getElementById("id_ingredient-TOTAL_FORMS");
   const template = document.getElementById("empty-ingredient-row");
   document.getElementById("add-ingredient").addEventListener("click", () => {
@@ -149,10 +172,12 @@
   const instructions = document.getElementById("{{ form.instructions.id_for_label }}");
   document.getElementById("add-step").addEventListener("click", () => {
     instructions.value += (instructions.value ? "\n" : "");
+    autoGrow(instructions);
     instructions.focus();
   });
   document.getElementById("remove-step").addEventListener("click", () => {
     instructions.value = instructions.value.split("\n").slice(0, -1).join("\n");
+    autoGrow(instructions);
   });
 })();
 </script>

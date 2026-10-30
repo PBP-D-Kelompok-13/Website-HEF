@@ -34,6 +34,9 @@ class RecipeAnalyzerFlowTests(TestCase):
         self.assertNotContains(response, "▮")
         self.assertContains(response, 'data-bs-target="#saveRecipeModal-123"')
         self.assertContains(response, 'id="saveRecipeModal-123"')
+        self.assertContains(response, 'class="hef-recipe-confirm-actions hef-recipe-confirm-actions--save"')
+        self.assertContains(response, 'class="btn-hef-primary w-100"')
+        self.assertContains(response, "recipe_analyzer.css?v=recipe-save-modal-1")
         self.assertContains(response, "Are you sure you want to save this recipe?")
         self.assertContains(response, "Yes, save recipe")
         search.assert_called_once_with(query="tofu", diet="vegan", max_ready_time=30, offset=0)
@@ -206,12 +209,44 @@ class RecipeAnalyzerFlowTests(TestCase):
         self.assertContains(response, 'class="hef-recipe-help h-100"')
         self.assertContains(response, 'type="hidden" name="ingredient-0-DELETE"')
 
+    def test_create_form_explains_analysis_inputs_and_results_clearly(self):
+        response = self.client.get(reverse("main:recipe_create"))
+
+        self.assertContains(response, "• Enter each ingredient with its amount in grams.")
+        self.assertContains(response, "• Nutrition values are estimates per serving based on the ingredients provided.")
+        self.assertContains(response, "• Health score and dietary labels are shown only when Spoonacular returns them.")
+        self.assertContains(response, "• Save as draft to keep working on your recipe later.")
+        self.assertContains(response, "• Add clear preparation steps so you can follow the recipe later.")
+
     def test_create_form_limits_initial_ingredient_rows_and_aligns_clear_action(self):
         response = self.client.get(reverse("main:recipe_create"))
 
         self.assertEqual(response.context["ingredient_formset"].total_form_count(), 4)
         self.assertContains(response, 'id="recipe-actions" class="col-12 col-xl-7 d-flex justify-content-end"')
         self.assertLess(response.content.index(b"Save as draft"), response.content.index(b"Clear form"))
+
+    def test_description_and_instructions_use_non_resizable_auto_growing_fields(self):
+        response = self.client.get(reverse("main:recipe_create"))
+
+        self.assertContains(response, 'class="form-control hef-recipe-textarea"', count=2)
+        self.assertContains(response, 'querySelectorAll(\'.hef-recipe-textarea[name="instructions"]\')')
+        self.assertContains(response, "resize: none; max-height: 320px")
+        self.assertContains(response, "recipe_analyzer.css?v=recipe-description-align-1")
+
+    def test_create_form_uses_rounded_input_styles(self):
+        response = self.client.get(reverse("main:recipe_create"))
+
+        self.assertContains(response, 'class="mt-3 hef-recipe-create-form"')
+        self.assertContains(response, "recipe_analyzer.css?v=recipe-description-align-1")
+
+    def test_description_field_stretches_to_match_photo_upload(self):
+        response = self.client.get(reverse("main:recipe_create"))
+
+        self.assertRegex(
+            response.content.decode(),
+            r'<div class="col-md-6 hef-recipe-description-field">\s*<label class="form-label" for="id_description">Description</label>',
+        )
+        self.assertContains(response, "recipe_analyzer.css?v=recipe-description-align-1")
 
     @patch("main.views.analyze_with_spoonacular", side_effect=ValueError("API error"))
     def test_create_renders_form_when_spoonacular_analysis_fails(self, analyze):
@@ -245,6 +280,18 @@ class RecipeAnalyzerFlowTests(TestCase):
         self.assertRedirects(post_response, reverse("main:recipe_detail", args=[recipe.pk]))
         self.assertTrue(recipe.is_draft)
         self.assertEqual(recipe.ingredient_items[0], {"name": "Black beans", "amount_g": ""})
+
+    def test_edit_form_clear_button_clears_fields_instead_of_resetting_to_saved_values(self):
+        recipe = SavedRecipe.objects.create(
+            user=self.user, title="Old beans", description="A saved description.",
+            instructions="Soak beans.\nCook beans.", servings=2,
+            ingredient_items=[{"name": "Black beans", "amount_g": "150"}],
+        )
+
+        response = self.client.get(reverse("main:recipe_update", args=[recipe.pk]))
+
+        self.assertContains(response, 'type="button" id="clear-recipe-form"')
+        self.assertContains(response, 'querySelectorAll("#id_title, #id_description, #id_servings, #id_photo, #id_instructions, #ingredient-rows input:not')
 
     @patch("main.views.analyze_with_spoonacular", side_effect=requests.RequestException("API unavailable"))
     def test_update_renders_form_when_reanalysis_fails(self, analyze):
@@ -280,6 +327,10 @@ class RecipeAnalyzerFlowTests(TestCase):
         self.assertEqual(detail_response.status_code, 200)
         self.assertContains(detail_response, "Bake the tofu.")
         self.assertContains(detail_response, "A tofu bowl.")
+        self.assertContains(detail_response, 'data-bs-target="#saveRecipeModal-123"')
+        self.assertContains(detail_response, 'id="saveRecipeModal-123"')
+        self.assertContains(detail_response, "Yes, save recipe")
+        self.assertContains(detail_response, "recipe_analyzer.css?v=recipe-save-modal-1")
         self.assertContains(
             detail_response,
             '<progress class="hef-score-progress mb-3" value="75" max="100" aria-label="Health score"></progress>',

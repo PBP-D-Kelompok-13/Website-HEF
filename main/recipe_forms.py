@@ -48,9 +48,11 @@ class RecipeAuthorForm(forms.ModelForm):
         widgets = {
             "title": forms.TextInput(attrs={"class": "form-control", "maxlength": 120,
                                            "placeholder": "e.g. Roasted Vegetable Quinoa Bowl"}),
-            "description": forms.Textarea(attrs={"class": "form-control", "rows": 3,
+            "description": forms.Textarea(attrs={"class": "form-control hef-recipe-textarea", "rows": 3,
+                                                  "style": "resize: none; max-height: 320px; overflow-y: hidden;",
                                                   "placeholder": "A short description of your recipe"}),
-            "instructions": forms.Textarea(attrs={"class": "form-control", "rows": 5,
+            "instructions": forms.Textarea(attrs={"class": "form-control hef-recipe-textarea", "rows": 5,
+                                                   "style": "resize: none; max-height: 320px; overflow-y: hidden;",
                                                    "placeholder": "Add one instruction step per line"}),
             "servings": forms.NumberInput(attrs={"class": "form-control", "min": 1, "max": 50}),
             "photo": forms.ClearableFileInput(attrs={"class": "form-control", "accept": "image/jpeg,image/png"}),

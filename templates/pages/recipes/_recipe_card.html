@@ -7,5 +7,5 @@
     <div class="d-flex align-items-center gap-2 small text-success mb-2">♨ {{ card.analysis.calories }} kcal per serving</div><small class="text-secondary mb-3">{{ card.diets|join:" · " }}</small>
     {% if card.saved_pk %}<a class="btn-hef-secondary text-center mt-auto" href="{% url 'main:recipe_detail' pk=card.saved_pk %}">View recipe</a>{% else %}<a class="btn-hef-primary text-center mt-auto" href="{% url 'main:recipe_spoonacular_detail' card.id %}?query={{ query|urlencode }}">View recipe</a>{% endif %}
   </div></article>
-  {% if not card.saved_pk %}{% url 'main:recipe_save_spoonacular' card.id as save_recipe_url %}{% include "pages/recipes/_confirmation_modal.html" with modal_prefix="saveRecipeModal-" modal_suffix=card.id modal_title="Are you sure you want to save this recipe?" confirm_label="Yes, save recipe" cancel_label="No, take me back!" form_url=save_recipe_url %}{% endif %}
+  {% if not card.saved_pk %}{% url 'main:recipe_save_spoonacular' card.id as save_recipe_url %}{% include "pages/recipes/_confirmation_modal.html" with modal_prefix="saveRecipeModal-" modal_suffix=card.id modal_title="Are you sure you want to save this recipe?" confirm_label="Yes, save recipe" cancel_label="No, take me back!" form_url=save_recipe_url confirm_variant="save" %}{% endif %}
 </div>

@@ -12,7 +12,7 @@ HEF (Healthy Eco Foody) adalah platform website yang membantu pengguna menerapka
 | :---: | :---: | :---: |
 | Angelica Christilia Talumewo | 2506536313 | Perbandingan 2-3 Produk melalui Eco/Nutrition Score
 | Celine Nafisa Setiawan | 2506590201 | Inventaris Bahan Makanan di Rumah beserta Pengingat Tanggal Kadaluarsa
-| Ferdinandus Pakasi | 2506602643 | Recipe Sustainability Analyzer
+| Ferdinandus Pakasi | 2506602643 | Pencarian dan Analisis Resep
 | Muhammad Raihananta Adzaky Yuwono | 2506547853 | Sistem Login dan Otentikasi Akun Pengguna
 | Yazid Khairul Firmansyah | 2506537064 | Pencarian Produk dan Eco/Nutrition Score melalui Scan Barcode
 
