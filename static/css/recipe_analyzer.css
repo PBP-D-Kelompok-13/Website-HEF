@@ -154,6 +154,40 @@
     padding: 18px
 }
 
+.hef-photo-drop input[type="checkbox"] {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+}
+
+.hef-photo-drop input[type="checkbox"] + label {
+    display: inline-flex;
+    align-items: center;
+    margin: 8px 0 0;
+    padding: 7px 12px;
+    border: 1px solid var(--hef-border-default);
+    border-radius: 999px;
+    color: var(--hef-text-secondary);
+    background: var(--hef-surface-paper);
+    font-size: .875rem;
+    cursor: pointer;
+    transition: color .15s ease, border-color .15s ease, background-color .15s ease;
+}
+
+.hef-photo-drop input[type="checkbox"]:checked + label {
+    color: var(--hef-danger, #a93226);
+    border-color: currentColor;
+    background: rgba(169, 50, 38, .07);
+}
+
+.hef-photo-drop input[type="checkbox"]:focus-visible + label {
+    outline: 3px solid rgba(34, 139, 105, .25);
+    outline-offset: 2px;
+}
+
 .hef-recipe-thumb {
     width: 46px;
     height: 46px;

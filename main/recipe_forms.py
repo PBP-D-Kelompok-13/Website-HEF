@@ -1,8 +1,13 @@
 from django import forms
+from django.core.files.uploadedfile import UploadedFile
 from django.forms import BaseFormSet, formset_factory
 from django.urls import reverse
 
 from .models import SavedRecipe
+
+
+class RecipePhotoInput(forms.ClearableFileInput):
+    clear_checkbox_label = "Clear"
 
 
 class RecipeIngredientForm(forms.Form):
@@ -55,7 +60,7 @@ class RecipeAuthorForm(forms.ModelForm):
                                                    "style": "resize: none; max-height: 320px; overflow-y: hidden;",
                                                    "placeholder": "Add one instruction step per line"}),
             "servings": forms.NumberInput(attrs={"class": "form-control", "min": 1, "max": 50}),
-            "photo": forms.ClearableFileInput(attrs={"class": "form-control", "accept": "image/jpeg,image/png"}),
+            "photo": RecipePhotoInput(attrs={"class": "form-control", "accept": "image/jpeg,image/png"}),
         }
 
     def __init__(self, *args, **kwargs):
@@ -75,7 +80,9 @@ class RecipeAuthorForm(forms.ModelForm):
 
     def clean_photo(self):
         photo = self.cleaned_data.get("photo")
-        if not photo or not getattr(photo, "size", None):
+        # On an edit with no replacement upload, ModelForm returns the
+        # instance's FieldFile. Validate only newly submitted uploads.
+        if not isinstance(photo, UploadedFile) or not photo.size:
             return photo
         if photo.size > 10 * 1024 * 1024:
             raise forms.ValidationError("The photo must be 10 MB or smaller.")
