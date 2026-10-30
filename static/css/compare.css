@@ -242,6 +242,12 @@
     color: var(--hef-text-primary);
 }
 
+#compare-save-status:not([hidden]) {
+    margin: 16px 0 0;
+    border: 1px solid var(--hef-border-default);
+    background: var(--hef-surface-card);
+}
+
 .compare-explanations {
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));

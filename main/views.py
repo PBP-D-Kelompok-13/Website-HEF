@@ -136,10 +136,14 @@ def show_profile_page(request):
         SavedRecipe.objects.filter(user=request.user).order_by("-created_at").first()
     )
     ingredients = Ingredient.objects.filter(user=request.user).order_by("created_at")[:3]
+    added_products = Product.objects.filter(created_by=request.user).order_by(
+        "-created_at", "-pk"
+    )[:3]
     context = {
         "avatar": avatar,
         "ingredients": ingredients,
         "saved_recipe": saved_recipe,
+        "added_products": added_products,
     }
 
     return render(request, "pages/profile_page.html", context)
@@ -789,7 +793,7 @@ def edit_ingredient(request, pk):
             messages.error(request, "Failed to edit ingredient.")
     return redirect("main:show_inventory")
 
-
+@require_POST
 @login_required(login_url="main:login_account")
 def delete_ingredient(request, pk):
     ingredient = get_object_or_404(Ingredient, pk=pk, user=request.user)
@@ -862,13 +866,12 @@ def _filtered_products(request):
 @vary_on_headers("HX-Request")
 def discover(request):
     qs, filters = _filtered_products(request)
+    query = filters["q"]
     paginator = Paginator(qs, PAGE_SIZE)
     page_obj = paginator.get_page(request.GET.get("page", 1))
 
     params = request.GET.copy()
     params.pop("page", None)
-    query = filters["q"]
-
     context = {
         "page_obj": page_obj,
         "total_count": paginator.count,
