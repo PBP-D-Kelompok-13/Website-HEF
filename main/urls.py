@@ -79,5 +79,6 @@ urlpatterns = [
     path("products/<str:barcode>/bookmark/", toggle_bookmark, name="toggle_bookmark"),
     path("api/products/", products_json, name="products_json"),
     path("api/products/<str:barcode>/", product_json, name="product_json"),
+    path("products/api/<str:barcode>/", product_detail_api, name="product_detail_api"),
 ]
  
