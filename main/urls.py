@@ -80,3 +80,4 @@ urlpatterns = [
     path("api/products/", products_json, name="products_json"),
     path("api/products/<str:barcode>/", product_json, name="product_json"),
 ]
+ 

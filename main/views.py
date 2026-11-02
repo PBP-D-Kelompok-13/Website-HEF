@@ -4,7 +4,7 @@ from django.contrib import messages
 from django.contrib.auth import login, logout, update_session_auth_hash
 from django.core.exceptions import ImproperlyConfigured
 from django.core.paginator import Paginator
-from django.http import HttpResponse, HttpResponseForbidden, JsonResponse
+from django.http import Http404, HttpResponse, HttpResponseForbidden, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
 from django.utils.html import strip_tags
@@ -16,6 +16,8 @@ from datetime import date, timedelta
 from functools import wraps
 import random
 import requests
+from django.http import JsonResponse
+from .models import Product
 
 from .forms import (
     CustomUserCreationForm,
@@ -913,7 +915,21 @@ def product_detail(request, barcode):
             "can_manage": _can_manage(request.user, product),
         },
     )
-
+ #Live Coding & Demo Yazid
+def product_detail_api(request, barcode):
+    try:
+        product = get_object_or_404(
+        Product.objects.with_saved_flag(request.user), barcode=barcode
+    )
+    except Http404:
+        return JsonResponse({"detail": "Product not found"}, status=404)
+    data = {
+            "nama": product.name,
+            "brand": product.brand,
+            "eco_grade": product.eco_grade,
+            "nutri_grade": product.nutri_grade,
+        }
+    return JsonResponse(data)
 
 @login_required
 def product_create(request):
