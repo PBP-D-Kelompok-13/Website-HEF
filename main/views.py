@@ -722,6 +722,17 @@ def recipe_save_spoonacular(request, spoonacular_id):
         return HttpResponse(headers={"HX-Redirect": reverse("main:recipe_saved_list")})
     return redirect("main:recipe_saved_list")
 
+def calculate_sustainability_score(category_list):
+    # implementasi
+    total = len(category_list)
+    counter = 0
+    for i in category_list:
+        if (i == 'Vegetables' or i == 'Fruits'):
+            counter += 1
+    return (counter/total * 100)
+# Contoh tes pemanggilan:
+# calculate_sustainability_score(['Vegetables', 'Fruits', 'Protein', 'Vegetables']) -> 75%
+
 
 """ ===============================
     Functions for Food Inventory
