@@ -1,6 +1,7 @@
 from django import forms
 from django.contrib.auth.forms import UserCreationForm, AuthenticationForm, PasswordChangeForm
 from .models import CustomUser, Ingredient, Product
+from datetime import date, datetime, timedelta
 from django.core.exceptions import ValidationError
 
 def style(field, placeholder):
@@ -23,6 +24,17 @@ class CustomUserCreationForm(UserCreationForm):
         style(self.fields['date_of_birth'], 'DD/MM/YYYY')
         self.fields['password2'].label = 'Confirm Password'
         self.fields['date_of_birth'].label = 'Date of Birth'
+
+    def clean_date_of_birth(self):
+        cleaned_data = super().clean()
+        current_date = date.today()
+        cleaned_dob = cleaned_data.get("date_of_birth")
+        age = current_date.year - cleaned_dob.year
+
+        if age < 13 :
+            raise ValidationError("Pengguna harus berusia minimal 13 tahun untuk mendaftar.")
+
+        return cleaned_dob
 
 class CustomAuthenticationForm(AuthenticationForm):
     def __init__(self, *args, **kwargs):
