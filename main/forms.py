@@ -2,6 +2,7 @@ from django import forms
 from django.contrib.auth.forms import UserCreationForm, AuthenticationForm, PasswordChangeForm
 from .models import CustomUser, Ingredient, Product
 from django.core.exceptions import ValidationError
+from datetime import date
 
 def style(field, placeholder):
     field.widget.attrs.update({'class': 'hef-input', 'placeholder': placeholder})
@@ -94,6 +95,8 @@ class IngredientForm(forms.ModelForm):
             'expiration_date': forms.DateInput(attrs={'class': 'hef-input', 'type': 'date'}),
             'image': forms.ClearableFileInput(attrs={'class': 'hef-input'}),
         }
+    
+    error_message = "Expiration date has passed. Unable to add to pantry."
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -103,6 +106,15 @@ class IngredientForm(forms.ModelForm):
 
         for field in self.fields.values():
             field.widget.attrs.update({'class': 'hef-input'})
+    
+    def clean_expiration_date(self):
+        cleaned_data = super().clean()
+        exp_date = cleaned_data.get("expiration_date")
+        
+        if exp_date < date.today:
+            raise ValidationError(self.error_message)
+    
+        return cleaned_data
 
 
 class ProductForm(forms.ModelForm):
