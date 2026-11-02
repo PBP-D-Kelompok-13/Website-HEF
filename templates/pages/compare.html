@@ -9,6 +9,25 @@
 
 {% block content %}
 <main class="container compare-page">
+    {% if product1 and product2 %}
+    <h2>Hasil Perbandingan Emisi</h2>
+
+    <p>{{ product1.name }}:
+        {{ product1.co2_kg|default_if_none:"Belum tersedia" }} kg CO₂
+    </p>
+    <p>{{ product2.name }}:
+        {{ product2.co2_kg|default_if_none:"Belum tersedia" }} kg CO₂
+    </p>
+
+    {% if eco_friendly_product %}
+        <p>
+            Produk yang lebih ramah lingkungan berdasarkan emisi:
+            <strong>{{ eco_friendly_product.name }}</strong>.
+        </p>
+    {% else %}
+        <p>{{ comparison_message }}</p>
+    {% endif %}
+{% endif %}
     {% include "partials/compare_workspace.html" %}
 
     <p id="compare-save-status"

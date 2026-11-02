@@ -36,6 +36,8 @@ urlpatterns = [
     path("reactivate/", reactivate_account, name="reactivate_account"),
     path("profile/deactivate/", deactivate_account, name="deactivate_account"),
     path("compare/", show_compare, name="show_compare"),
+    path("compare/", show_compare, name="show_compare"),
+    path("demo/compare/", compare_products, name="compare_products"),
     path("compare/add/", compare_add, name="compare_add"),
     path("compare/save/", compare_save, name="compare_save"),
     path("compare/remove/", compare_remove, name="compare_remove"),
@@ -79,4 +81,5 @@ urlpatterns = [
     path("products/<str:barcode>/bookmark/", toggle_bookmark, name="toggle_bookmark"),
     path("api/products/", products_json, name="products_json"),
     path("api/products/<str:barcode>/", product_json, name="product_json"),
+    path("demo/compare/", compare_products, name="compare_products"),
 ]

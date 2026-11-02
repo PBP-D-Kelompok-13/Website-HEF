@@ -245,6 +245,44 @@ def show_compare(request):
 
     return render(request, template, context, status=status)
 
+def compare_products(request):
+    # Membaca dua barcode dari query parameter URL.
+    p1 = request.GET.get("p1", "").strip()
+    p2 = request.GET.get("p2", "").strip()
+
+    if not p1 or not p2:
+        return HttpResponse(
+            "Parameter p1 dan p2 harus diisi.",
+            status=400,
+        )
+
+    # Mengambil kedua produk dari database.
+    product1 = get_object_or_404(Product, barcode=p1)
+    product2 = get_object_or_404(Product, barcode=p2)
+
+    eco_friendly_product = None
+    message = ""
+
+    # Memastikan data emisi tersedia, lalu membandingkannya.
+    if product1.co2_kg is None or product2.co2_kg is None:
+        message = "Data emisi belum lengkap sehingga belum bisa dibandingkan."
+    elif product1.co2_kg < product2.co2_kg:
+        eco_friendly_product = product1
+    elif product2.co2_kg < product1.co2_kg:
+        eco_friendly_product = product2
+    else:
+        message = "Kedua produk memiliki emisi yang sama."
+
+    # Mengirim data hasil perbandingan ke template.
+    context = {
+        "product1": product1,
+        "product2": product2,
+        "eco_friendly_product": eco_friendly_product,
+        "comparison_message": message,
+    }
+
+    return render(request, "pages/compare.html", context)
+
 """ =============================== 
     Recipe
     =============================== """
